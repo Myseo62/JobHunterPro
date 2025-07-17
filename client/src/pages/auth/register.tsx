@@ -73,25 +73,30 @@ export default function Register({ onLogin }: RegisterProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-purple-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
+          <div className="flex justify-center mb-6">
+            <div className="w-16 h-16 cb-gradient-primary rounded-2xl flex items-center justify-center">
+              <span className="text-2xl font-bold text-white">CB</span>
+            </div>
+          </div>
           <h2 className="text-3xl font-bold text-gray-900">Create your account</h2>
           <p className="mt-2 text-sm text-gray-600">
             Already have an account?{" "}
             <Link href="/login">
-              <a className="font-medium text-blue-600 hover:text-blue-500">
+              <span className="font-medium text-purple-600 hover:text-purple-700 cursor-pointer transition-colors">
                 Sign in
-              </a>
+              </span>
             </Link>
           </p>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Join Career-Bazaar today</CardTitle>
+        <Card className="border-0 shadow-2xl cb-shadow-glow bg-white/95 backdrop-blur-md">
+          <CardHeader className="text-center pb-2">
+            <CardTitle className="text-xl text-gray-900">Join Career-Bazaar today</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-8">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <div className="grid grid-cols-2 gap-4">
@@ -100,10 +105,11 @@ export default function Register({ onLogin }: RegisterProps) {
                     name="firstName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>First Name</FormLabel>
+                        <FormLabel className="text-gray-700 font-medium">First Name</FormLabel>
                         <FormControl>
                           <Input
                             placeholder="Enter first name"
+                            className="h-12 border-gray-200 focus:border-purple-500 focus:ring-purple-500 transition-colors"
                             {...field}
                           />
                         </FormControl>
@@ -117,10 +123,11 @@ export default function Register({ onLogin }: RegisterProps) {
                     name="lastName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Last Name</FormLabel>
+                        <FormLabel className="text-gray-700 font-medium">Last Name</FormLabel>
                         <FormControl>
                           <Input
                             placeholder="Enter last name"
+                            className="h-12 border-gray-200 focus:border-purple-500 focus:ring-purple-500 transition-colors"
                             {...field}
                           />
                         </FormControl>
@@ -135,11 +142,12 @@ export default function Register({ onLogin }: RegisterProps) {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email address</FormLabel>
+                      <FormLabel className="text-gray-700 font-medium">Email address</FormLabel>
                       <FormControl>
                         <Input
                           type="email"
                           placeholder="Enter your email"
+                          className="h-12 border-gray-200 focus:border-purple-500 focus:ring-purple-500 transition-colors"
                           {...field}
                         />
                       </FormControl>
@@ -153,11 +161,12 @@ export default function Register({ onLogin }: RegisterProps) {
                   name="phone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Phone Number (Optional)</FormLabel>
+                      <FormLabel className="text-gray-700 font-medium">Phone Number (Optional)</FormLabel>
                       <FormControl>
                         <Input
                           type="tel"
                           placeholder="Enter your phone number"
+                          className="h-12 border-gray-200 focus:border-purple-500 focus:ring-purple-500 transition-colors"
                           {...field}
                         />
                       </FormControl>
@@ -171,23 +180,24 @@ export default function Register({ onLogin }: RegisterProps) {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Password</FormLabel>
+                      <FormLabel className="text-gray-700 font-medium">Password</FormLabel>
                       <FormControl>
                         <div className="relative">
                           <Input
                             type={showPassword ? "text" : "password"}
                             placeholder="Create a password"
+                            className="h-12 border-gray-200 focus:border-purple-500 focus:ring-purple-500 transition-colors pr-12"
                             {...field}
                           />
                           <button
                             type="button"
-                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                            className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-purple-600 transition-colors"
                             onClick={() => setShowPassword(!showPassword)}
                           >
                             {showPassword ? (
-                              <EyeOff className="h-4 w-4" />
+                              <EyeOff className="h-5 w-5" />
                             ) : (
-                              <Eye className="h-4 w-4" />
+                              <Eye className="h-5 w-5" />
                             )}
                           </button>
                         </div>
@@ -202,23 +212,24 @@ export default function Register({ onLogin }: RegisterProps) {
                   name="confirmPassword"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Confirm Password</FormLabel>
+                      <FormLabel className="text-gray-700 font-medium">Confirm Password</FormLabel>
                       <FormControl>
                         <div className="relative">
                           <Input
                             type={showConfirmPassword ? "text" : "password"}
                             placeholder="Confirm your password"
+                            className="h-12 border-gray-200 focus:border-purple-500 focus:ring-purple-500 transition-colors pr-12"
                             {...field}
                           />
                           <button
                             type="button"
-                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                            className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-purple-600 transition-colors"
                             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                           >
                             {showConfirmPassword ? (
-                              <EyeOff className="h-4 w-4" />
+                              <EyeOff className="h-5 w-5" />
                             ) : (
-                              <Eye className="h-4 w-4" />
+                              <Eye className="h-5 w-5" />
                             )}
                           </button>
                         </div>
@@ -230,7 +241,7 @@ export default function Register({ onLogin }: RegisterProps) {
 
                 <Button
                   type="submit"
-                  className="w-full bg-orange-500 hover:bg-orange-600"
+                  className="w-full h-12 cb-gradient-primary hover:shadow-lg transition-all duration-300 border-0 font-semibold"
                   disabled={isLoading}
                 >
                   {isLoading ? "Creating account..." : "Create account"}
@@ -243,13 +254,13 @@ export default function Register({ onLogin }: RegisterProps) {
         <div className="text-center">
           <p className="text-sm text-gray-600">
             By creating an account, you agree to our{" "}
-            <a href="#" className="text-blue-600 hover:text-blue-500">
+            <span className="text-purple-600 hover:text-purple-700 cursor-pointer transition-colors">
               Terms of Service
-            </a>{" "}
+            </span>{" "}
             and{" "}
-            <a href="#" className="text-blue-600 hover:text-blue-500">
+            <span className="text-purple-600 hover:text-purple-700 cursor-pointer transition-colors">
               Privacy Policy
-            </a>
+            </span>
           </p>
         </div>
       </div>

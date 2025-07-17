@@ -1,58 +1,72 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
   --background: hsl(0, 0%, 100%);
-  --foreground: hsl(20, 14.3%, 4.1%);
-  --muted: hsl(60, 4.8%, 95.9%);
-  --muted-foreground: hsl(25, 5.3%, 44.7%);
+  --foreground: hsl(222, 25%, 10%);
+  --muted: hsl(220, 13%, 95%);
+  --muted-foreground: hsl(220, 8.9%, 46.1%);
   --popover: hsl(0, 0%, 100%);
-  --popover-foreground: hsl(20, 14.3%, 4.1%);
+  --popover-foreground: hsl(222, 25%, 10%);
   --card: hsl(0, 0%, 100%);
-  --card-foreground: hsl(20, 14.3%, 4.1%);
-  --border: hsl(20, 5.9%, 90%);
-  --input: hsl(20, 5.9%, 90%);
-  --primary: hsl(207, 90%, 54%);
-  --primary-foreground: hsl(211, 100%, 99%);
-  --secondary: hsl(60, 4.8%, 95.9%);
-  --secondary-foreground: hsl(24, 9.8%, 10%);
-  --accent: hsl(60, 4.8%, 95.9%);
-  --accent-foreground: hsl(24, 9.8%, 10%);
+  --card-foreground: hsl(222, 25%, 10%);
+  --border: hsl(220, 13%, 91%);
+  --input: hsl(220, 13%, 91%);
+  --primary: hsl(263, 70%, 50%);
+  --primary-foreground: hsl(0, 0%, 98%);
+  --secondary: hsl(220, 14.3%, 95.9%);
+  --secondary-foreground: hsl(220.9, 39.3%, 11%);
+  --accent: hsl(220, 14.3%, 95.9%);
+  --accent-foreground: hsl(220.9, 39.3%, 11%);
   --destructive: hsl(0, 84.2%, 60.2%);
-  --destructive-foreground: hsl(60, 9.1%, 97.8%);
-  --ring: hsl(20, 14.3%, 4.1%);
-  --radius: 0.5rem;
+  --destructive-foreground: hsl(210, 40%, 98%);
+  --ring: hsl(263, 70%, 50%);
+  --radius: 0.75rem;
   
-  /* Career-Bazaar-specific colors */
-  --career-bazaar-blue: hsl(207, 90%, 54%);
-  --career-bazaar-dark-blue: hsl(219, 78%, 51%);
-  --career-bazaar-orange: hsl(16, 100%, 60%);
-  --career-bazaar-gray: hsl(215, 20%, 44%);
-  --career-bazaar-light: hsl(210, 40%, 98%);
+  /* Career-Bazaar brand colors */
+  --cb-primary: hsl(263, 70%, 50%);
+  --cb-primary-light: hsl(263, 70%, 60%);
+  --cb-secondary: hsl(142, 76%, 36%);
+  --cb-accent: hsl(38, 92%, 50%);
+  --cb-success: hsl(142, 76%, 36%);
+  --cb-warning: hsl(38, 92%, 50%);
+  --cb-error: hsl(0, 84%, 60%);
+  --cb-gray-50: hsl(220, 20%, 98%);
+  --cb-gray-100: hsl(220, 13%, 95%);
+  --cb-gray-200: hsl(220, 13%, 91%);
+  --cb-gray-300: hsl(220, 9%, 78%);
+  --cb-gray-400: hsl(220, 9%, 60%);
+  --cb-gray-500: hsl(220, 9%, 46%);
+  --cb-gray-600: hsl(220, 14%, 37%);
+  --cb-gray-700: hsl(220, 25%, 25%);
+  --cb-gray-800: hsl(220, 25%, 15%);
+  --cb-gray-900: hsl(222, 25%, 10%);
 }
 
 .dark {
-  --background: hsl(240, 10%, 3.9%);
-  --foreground: hsl(0, 0%, 98%);
-  --muted: hsl(240, 3.7%, 15.9%);
-  --muted-foreground: hsl(240, 5%, 64.9%);
-  --popover: hsl(240, 10%, 3.9%);
-  --popover-foreground: hsl(0, 0%, 98%);
-  --card: hsl(240, 10%, 3.9%);
-  --card-foreground: hsl(0, 0%, 98%);
-  --border: hsl(240, 3.7%, 15.9%);
-  --input: hsl(240, 3.7%, 15.9%);
-  --primary: hsl(207, 90%, 54%);
-  --primary-foreground: hsl(211, 100%, 99%);
-  --secondary: hsl(240, 3.7%, 15.9%);
-  --secondary-foreground: hsl(0, 0%, 98%);
-  --accent: hsl(240, 3.7%, 15.9%);
-  --accent-foreground: hsl(0, 0%, 98%);
+  --background: hsl(222, 25%, 4%);
+  --foreground: hsl(210, 40%, 98%);
+  --muted: hsl(222, 24%, 8%);
+  --muted-foreground: hsl(215, 20.2%, 65.1%);
+  --popover: hsl(222, 25%, 4%);
+  --popover-foreground: hsl(210, 40%, 98%);
+  --card: hsl(222, 25%, 6%);
+  --card-foreground: hsl(210, 40%, 98%);
+  --border: hsl(217.2, 32.6%, 17.5%);
+  --input: hsl(217.2, 32.6%, 17.5%);
+  --primary: hsl(263, 70%, 60%);
+  --primary-foreground: hsl(210, 40%, 98%);
+  --secondary: hsl(217.2, 32.6%, 17.5%);
+  --secondary-foreground: hsl(210, 40%, 98%);
+  --accent: hsl(217.2, 32.6%, 17.5%);
+  --accent-foreground: hsl(210, 40%, 98%);
   --destructive: hsl(0, 62.8%, 30.6%);
-  --destructive-foreground: hsl(0, 0%, 98%);
-  --ring: hsl(240, 4.9%, 83.9%);
-  --radius: 0.5rem;
+  --destructive-foreground: hsl(210, 40%, 98%);
+  --ring: hsl(263, 70%, 60%);
+  --radius: 0.75rem;
 }
 
 @layer base {
@@ -60,20 +74,78 @@
     @apply border-border;
   }
 
+  html {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
   body {
-    @apply font-sans antialiased bg-background text-foreground;
+    @apply antialiased bg-background text-foreground;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-feature-settings: 'cv11', 'ss01';
+    font-variation-settings: 'opsz' 32;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.025em;
   }
 }
 
 @layer utilities {
-  .career-bazaar-gradient {
-    background: linear-gradient(135deg, var(--career-bazaar-blue), var(--career-bazaar-dark-blue));
+  .cb-gradient-primary {
+    background: linear-gradient(135deg, var(--cb-primary), var(--cb-primary-light));
   }
   
-  .career-bazaar-text-gradient {
-    background: linear-gradient(135deg, var(--career-bazaar-blue), var(--career-bazaar-dark-blue));
+  .cb-gradient-hero {
+    background: linear-gradient(135deg, var(--cb-primary) 0%, var(--cb-secondary) 100%);
+  }
+  
+  .cb-text-gradient {
+    background: linear-gradient(135deg, var(--cb-primary), var(--cb-secondary));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+  }
+
+  .cb-shadow-glow {
+    box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.1), 0 1px 2px 0 rgba(124, 58, 237, 0.1), 0 10px 25px -5px rgba(124, 58, 237, 0.1);
+  }
+
+  .cb-hover-lift {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .cb-hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.6s ease-out forwards;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-pulse-subtle {
+    animation: pulseSubtle 2s infinite;
+  }
+
+  @keyframes pulseSubtle {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.8;
+    }
   }
 }
