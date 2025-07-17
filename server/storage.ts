@@ -1,4 +1,6 @@
 import { users, companies, jobs, applications, jobCategories, type User, type InsertUser, type Company, type InsertCompany, type Job, type InsertJob, type Application, type InsertApplication, type JobCategory, type InsertJobCategory, type JobWithCompany, type ApplicationWithJobAndCompany, type JobSearchParams } from "@shared/schema";
+import { db } from "./db";
+import { eq, and, like, gte, lte, desc, sql } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
@@ -438,4 +440,210 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export class DatabaseStorage implements IStorage {
+  // User operations
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user || undefined;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
+    return user;
+  }
+
+  async updateUser(id: number, updateData: Partial<InsertUser>): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set(updateData)
+      .where(eq(users.id, id))
+      .returning();
+    return user || undefined;
+  }
+
+  // Company operations
+  async getCompany(id: number): Promise<Company | undefined> {
+    const [company] = await db.select().from(companies).where(eq(companies.id, id));
+    return company || undefined;
+  }
+
+  async getCompanies(): Promise<Company[]> {
+    return await db.select().from(companies);
+  }
+
+  async createCompany(insertCompany: InsertCompany): Promise<Company> {
+    const [company] = await db
+      .insert(companies)
+      .values(insertCompany)
+      .returning();
+    return company;
+  }
+
+  async getFeaturedCompanies(): Promise<Company[]> {
+    return await db.select().from(companies).limit(8);
+  }
+
+  // Job operations
+  async getJob(id: number): Promise<Job | undefined> {
+    const [job] = await db.select().from(jobs).where(eq(jobs.id, id));
+    return job || undefined;
+  }
+
+  async getJobWithCompany(id: number): Promise<JobWithCompany | undefined> {
+    const [result] = await db
+      .select()
+      .from(jobs)
+      .innerJoin(companies, eq(jobs.companyId, companies.id))
+      .where(eq(jobs.id, id));
+    
+    if (!result) return undefined;
+    
+    return {
+      ...result.jobs,
+      company: result.companies
+    };
+  }
+
+  async getJobs(params?: JobSearchParams): Promise<JobWithCompany[]> {
+    let query = db
+      .select()
+      .from(jobs)
+      .innerJoin(companies, eq(jobs.companyId, companies.id))
+      .where(eq(jobs.isActive, true));
+
+    // Apply filters
+    const conditions = [eq(jobs.isActive, true)];
+    
+    if (params?.query) {
+      conditions.push(
+        sql`(${jobs.title} ILIKE ${'%' + params.query + '%'} OR 
+             ${jobs.description} ILIKE ${'%' + params.query + '%'})`
+      );
+    }
+    
+    if (params?.location) {
+      conditions.push(like(jobs.location, `%${params.location}%`));
+    }
+    
+    if (params?.experience) {
+      conditions.push(eq(jobs.experience, params.experience));
+    }
+    
+    if (params?.salaryMin) {
+      conditions.push(gte(jobs.salaryMin, params.salaryMin.toString()));
+    }
+    
+    if (params?.salaryMax) {
+      conditions.push(lte(jobs.salaryMax, params.salaryMax.toString()));
+    }
+
+    const results = await query
+      .where(and(...conditions))
+      .orderBy(desc(jobs.postedAt));
+
+    return results.map(result => ({
+      ...result.jobs,
+      company: result.companies
+    }));
+  }
+
+  async createJob(insertJob: InsertJob): Promise<Job> {
+    const [job] = await db
+      .insert(jobs)
+      .values(insertJob)
+      .returning();
+    return job;
+  }
+
+  async updateJob(id: number, updateData: Partial<InsertJob>): Promise<Job | undefined> {
+    const [job] = await db
+      .update(jobs)
+      .set(updateData)
+      .where(eq(jobs.id, id))
+      .returning();
+    return job || undefined;
+  }
+
+  // Application operations
+  async getApplication(id: number): Promise<Application | undefined> {
+    const [application] = await db.select().from(applications).where(eq(applications.id, id));
+    return application || undefined;
+  }
+
+  async getApplicationsByUser(userId: number): Promise<ApplicationWithJobAndCompany[]> {
+    const results = await db
+      .select()
+      .from(applications)
+      .innerJoin(jobs, eq(applications.jobId, jobs.id))
+      .innerJoin(companies, eq(jobs.companyId, companies.id))
+      .where(eq(applications.userId, userId))
+      .orderBy(desc(applications.appliedAt));
+
+    return results.map(result => ({
+      ...result.applications,
+      job: {
+        ...result.jobs,
+        company: result.companies
+      }
+    }));
+  }
+
+  async getApplicationsByJob(jobId: number): Promise<Application[]> {
+    return await db.select().from(applications).where(eq(applications.jobId, jobId));
+  }
+
+  async createApplication(insertApplication: InsertApplication): Promise<Application> {
+    const [application] = await db
+      .insert(applications)
+      .values(insertApplication)
+      .returning();
+    
+    // Update job application count
+    await db
+      .update(jobs)
+      .set({ applicationCount: sql`${jobs.applicationCount} + 1` })
+      .where(eq(jobs.id, insertApplication.jobId));
+    
+    return application;
+  }
+
+  async updateApplication(id: number, updateData: Partial<InsertApplication>): Promise<Application | undefined> {
+    const [application] = await db
+      .update(applications)
+      .set(updateData)
+      .where(eq(applications.id, id))
+      .returning();
+    return application || undefined;
+  }
+
+  async hasUserApplied(userId: number, jobId: number): Promise<boolean> {
+    const [application] = await db
+      .select()
+      .from(applications)
+      .where(and(eq(applications.userId, userId), eq(applications.jobId, jobId)));
+    return !!application;
+  }
+
+  // Job category operations
+  async getJobCategories(): Promise<JobCategory[]> {
+    return await db.select().from(jobCategories);
+  }
+
+  async createJobCategory(insertCategory: InsertJobCategory): Promise<JobCategory> {
+    const [category] = await db
+      .insert(jobCategories)
+      .values(insertCategory)
+      .returning();
+    return category;
+  }
+}
+
+export const storage = new DatabaseStorage();

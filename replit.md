@@ -24,7 +24,7 @@ Preferred communication style: Simple, everyday language.
 - **Database**: PostgreSQL with Drizzle ORM
 - **Database Provider**: Neon Database (@neondatabase/serverless)
 - **Build Tool**: Vite for frontend, esbuild for backend
-- **Session Management**: In-memory storage (development) with planned PostgreSQL session store
+- **Session Management**: PostgreSQL database with persistent data storage
 
 ## Key Components
 
@@ -99,9 +99,19 @@ Preferred communication style: Simple, everyday language.
 - Static file serving: Express static middleware
 
 ### Database Management
-- Schema definition in `shared/schema.ts`
-- Migrations stored in `./migrations`
-- Database URL configuration via environment variables
-- Connection pooling through Neon's serverless driver
+- **Database**: PostgreSQL with Neon Database serverless driver
+- **ORM**: Drizzle ORM for type-safe database operations
+- **Schema**: Defined in `shared/schema.ts` with full type safety
+- **Connection**: Serverless connection pooling via environment variables
+- **Migration**: Use `npm run db:push` to sync schema changes
+- **Seeding**: Sample data populated via `server/seed.ts`
+
+### Recent Changes (July 17, 2025)
+- ✅ Successfully migrated from in-memory storage to PostgreSQL database
+- ✅ Implemented DatabaseStorage class with full CRUD operations
+- ✅ Created database schema with users, companies, jobs, applications, and job categories
+- ✅ Seeded database with sample Indian companies and job listings
+- ✅ All API endpoints now use persistent PostgreSQL storage
+- ✅ Fixed application branding from "Naukri.com" to "Career-Bazaar"
 
 The application uses a monorepo structure with shared types and schemas, enabling type safety across the full stack while maintaining clear separation between frontend and backend concerns.
