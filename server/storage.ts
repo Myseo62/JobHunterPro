@@ -14,6 +14,7 @@ export interface IStorage {
   getCompanies(): Promise<Company[]>;
   createCompany(company: InsertCompany): Promise<Company>;
   getFeaturedCompanies(): Promise<Company[]>;
+  getCompanyIndustries(): Promise<string[]>;
   
   // Job operations
   getJob(id: number): Promise<Job | undefined>;
@@ -299,6 +300,16 @@ export class MemStorage implements IStorage {
     return Array.from(this.companies.values()).slice(0, 8);
   }
 
+  async getCompanyIndustries(): Promise<string[]> {
+    const industries = new Set<string>();
+    Array.from(this.companies.values()).forEach(company => {
+      if (company.industry) {
+        industries.add(company.industry);
+      }
+    });
+    return Array.from(industries).sort();
+  }
+
   // Job operations
   async getJob(id: number): Promise<Job | undefined> {
     return this.jobs.get(id);
@@ -489,6 +500,15 @@ export class DatabaseStorage implements IStorage {
 
   async getFeaturedCompanies(): Promise<Company[]> {
     return await db.select().from(companies).limit(8);
+  }
+
+  async getCompanyIndustries(): Promise<string[]> {
+    const result = await db
+      .selectDistinct({ industry: companies.industry })
+      .from(companies)
+      .where(sql`${companies.industry} IS NOT NULL`);
+    
+    return result.map(r => r.industry).filter(Boolean).sort();
   }
 
   // Job operations

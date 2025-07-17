@@ -1,9 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import CompanyCard from "./company-card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Link } from "wouter";
+import { useLocation } from "wouter";
 
 export default function FeaturedCompanies() {
+  const [, setLocation] = useLocation();
   const { data: companies, isLoading } = useQuery({
     queryKey: ["/api/companies/featured"],
   });
@@ -35,9 +36,12 @@ export default function FeaturedCompanies() {
     <section className="mb-12">
       <div className="flex justify-between items-center mb-8">
         <h2 className="text-3xl font-bold text-gray-900">Top companies hiring now</h2>
-        <Link href="/companies">
-          <a className="text-blue-600 font-medium hover:underline">View all companies</a>
-        </Link>
+        <button 
+          onClick={() => setLocation("/companies")}
+          className="text-purple-600 font-medium hover:text-purple-700 transition-colors"
+        >
+          View all companies →
+        </button>
       </div>
       
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">

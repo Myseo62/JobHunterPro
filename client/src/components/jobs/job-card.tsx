@@ -2,9 +2,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Briefcase, IndianRupee, Star, Clock } from "lucide-react";
+import { useLocation } from "wouter";
 import { JobCardProps } from "@/lib/types";
 
 export default function JobCard({ job, onApply, hasApplied = false }: JobCardProps) {
+  const [, setLocation] = useLocation();
+  
   const formatSalary = (min: string, max: string) => {
     const minLakhs = Math.round(parseInt(min) / 100000);
     const maxLakhs = Math.round(parseInt(max) / 100000);
@@ -34,10 +37,21 @@ export default function JobCard({ job, onApply, hasApplied = false }: JobCardPro
               className="w-16 h-16 rounded-lg object-cover"
             />
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 hover:text-blue-600 cursor-pointer">
+              <h3 
+                className="text-lg font-semibold text-gray-900 hover:text-purple-600 cursor-pointer"
+                onClick={() => setLocation(`/jobs/${job.id}`)}
+              >
                 {job.title}
               </h3>
-              <p className="text-blue-600 font-medium">{job.company.name}</p>
+              <button 
+                className="text-purple-600 font-medium hover:text-purple-700 transition-colors text-left"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setLocation(`/companies/${job.companyId}`);
+                }}
+              >
+                {job.company.name}
+              </button>
               <div className="flex items-center space-x-4 mt-2 text-sm text-gray-600">
                 <span className="flex items-center">
                   <Briefcase className="h-4 w-4 mr-1" />

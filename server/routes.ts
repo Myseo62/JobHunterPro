@@ -114,7 +114,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Company routes
   app.get("/api/companies", async (req, res) => {
     try {
-      const companies = await storage.getCompanies();
+      let companies = await storage.getCompanies();
+      
+      // Apply filters
+      const { search, industry, type } = req.query;
+      
+      if (search && typeof search === 'string') {
+        companies = companies.filter(company => 
+          company.name.toLowerCase().includes(search.toLowerCase()) ||
+          company.description?.toLowerCase().includes(search.toLowerCase()) ||
+          company.location.toLowerCase().includes(search.toLowerCase())
+        );
+      }
+      
+      if (industry && typeof industry === 'string') {
+        companies = companies.filter(company => company.industry === industry);
+      }
+      
+      if (type && typeof type === 'string') {
+        companies = companies.filter(company => company.companyType === type);
+      }
+      
       res.json(companies);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch companies" });
@@ -127,6 +147,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(companies);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch featured companies" });
+    }
+  });
+
+  app.get("/api/companies/industries", async (req, res) => {
+    try {
+      const industries = await storage.getCompanyIndustries();
+      res.json(industries);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch company industries" });
     }
   });
 

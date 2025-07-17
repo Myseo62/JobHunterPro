@@ -394,11 +394,11 @@ export default function Profile({ user, onUpdateUser }: ProfileProps) {
             </Card>
 
             {/* Recent Applications */}
-            <Card>
+            <Card className="border-0 shadow-lg cb-shadow-glow bg-white/95 backdrop-blur-md">
               <CardHeader>
-                <CardTitle>Recent Applications</CardTitle>
+                <CardTitle className="text-xl text-gray-900">Recent Applications</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-6">
                 {applicationsLoading ? (
                   <div className="space-y-3">
                     {[...Array(3)].map((_, i) => (

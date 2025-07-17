@@ -1,10 +1,12 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Star, Users } from "lucide-react";
-import { Link } from "wouter";
+import { useLocation } from "wouter";
 import { CompanyCardProps } from "@/lib/types";
 
 export default function CompanyCard({ company }: CompanyCardProps) {
+  const [, setLocation] = useLocation();
+  
   const renderStars = (rating: string) => {
     const ratingNum = parseFloat(rating);
     return [...Array(5)].map((_, i) => (
@@ -20,7 +22,10 @@ export default function CompanyCard({ company }: CompanyCardProps) {
   };
 
   return (
-    <Card className="hover:shadow-md transition-shadow bg-white">
+    <Card 
+      className="hover:shadow-md transition-shadow bg-white cursor-pointer hover:scale-105 duration-300"
+      onClick={() => setLocation(`/companies/${company.id}`)}
+    >
       <CardContent className="p-6 text-center">
         <img
           src={company.logo || "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=80&h=80&fit=crop"}
@@ -56,11 +61,9 @@ export default function CompanyCard({ company }: CompanyCardProps) {
           </Badge>
         </div>
 
-        <Link href={`/companies/${company.id}`}>
-          <a className="text-blue-600 text-sm font-medium hover:underline">
-            View jobs
-          </a>
-        </Link>
+        <div className="text-purple-600 text-sm font-medium">
+          View Company →
+        </div>
       </CardContent>
     </Card>
   );
