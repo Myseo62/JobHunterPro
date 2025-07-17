@@ -21,24 +21,24 @@ function Router() {
 
   // Load user from localStorage on app start
   useEffect(() => {
-    const savedUser = localStorage.getItem("naukri_user");
+    const savedUser = localStorage.getItem("career_bazaar_user");
     if (savedUser) {
       try {
         setUser(JSON.parse(savedUser));
       } catch (error) {
-        localStorage.removeItem("naukri_user");
+        localStorage.removeItem("career_bazaar_user");
       }
     }
   }, []);
 
   const handleLogin = (userData: any) => {
     setUser(userData);
-    localStorage.setItem("naukri_user", JSON.stringify(userData));
+    localStorage.setItem("career_bazaar_user", JSON.stringify(userData));
   };
 
   const handleLogout = () => {
     setUser(null);
-    localStorage.removeItem("naukri_user");
+    localStorage.removeItem("career_bazaar_user");
   };
 
   return (

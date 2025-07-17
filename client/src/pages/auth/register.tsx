@@ -57,7 +57,7 @@ export default function Register({ onLogin }: RegisterProps) {
       
       onLogin(user);
       toast({
-        title: "Welcome to Naukri!",
+        title: "Welcome to Career-Bazaar!",
         description: "Your account has been created successfully.",
       });
       setLocation("/");
@@ -89,7 +89,7 @@ export default function Register({ onLogin }: RegisterProps) {
 
         <Card>
           <CardHeader>
-            <CardTitle>Join Naukri today</CardTitle>
+            <CardTitle>Join Career-Bazaar today</CardTitle>
           </CardHeader>
           <CardContent>
             <Form {...form}>

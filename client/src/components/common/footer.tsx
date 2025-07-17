@@ -6,7 +6,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <div className="text-2xl font-bold text-blue-500 mb-4">Naukri.com</div>
+            <div className="text-2xl font-bold text-blue-500 mb-4">Career-Bazaar</div>
             <p className="text-gray-300 text-sm mb-4">
               India's largest job portal helping millions find their dream careers.
             </p>
@@ -31,22 +31,22 @@ export default function Footer() {
             <ul className="space-y-2 text-sm text-gray-300">
               <li>
                 <Link href="/jobs">
-                  <a className="hover:text-white">Search Jobs</a>
+                  <span className="hover:text-white cursor-pointer">Search Jobs</span>
                 </Link>
               </li>
               <li>
                 <Link href="/companies">
-                  <a className="hover:text-white">Browse Companies</a>
+                  <span className="hover:text-white cursor-pointer">Browse Companies</span>
                 </Link>
               </li>
               <li>
                 <Link href="/resume">
-                  <a className="hover:text-white">Create Resume</a>
+                  <span className="hover:text-white cursor-pointer">Create Resume</span>
                 </Link>
               </li>
               <li>
                 <Link href="/job-alerts">
-                  <a className="hover:text-white">Job Alerts</a>
+                  <span className="hover:text-white cursor-pointer">Job Alerts</span>
                 </Link>
               </li>
             </ul>
@@ -57,22 +57,22 @@ export default function Footer() {
             <ul className="space-y-2 text-sm text-gray-300">
               <li>
                 <Link href="/employer/post-job">
-                  <a className="hover:text-white">Post Jobs</a>
+                  <span className="hover:text-white cursor-pointer">Post Jobs</span>
                 </Link>
               </li>
               <li>
                 <Link href="/employer/search-resume">
-                  <a className="hover:text-white">Search Resume</a>
+                  <span className="hover:text-white cursor-pointer">Search Resume</span>
                 </Link>
               </li>
               <li>
                 <Link href="/employer/login">
-                  <a className="hover:text-white">Recruiter Login</a>
+                  <span className="hover:text-white cursor-pointer">Recruiter Login</span>
                 </Link>
               </li>
               <li>
                 <Link href="/employer/pricing">
-                  <a className="hover:text-white">Pricing</a>
+                  <span className="hover:text-white cursor-pointer">Pricing</span>
                 </Link>
               </li>
             </ul>
@@ -83,22 +83,22 @@ export default function Footer() {
             <ul className="space-y-2 text-sm text-gray-300">
               <li>
                 <Link href="/career-advice">
-                  <a className="hover:text-white">Career Advice</a>
+                  <span className="hover:text-white cursor-pointer">Career Advice</span>
                 </Link>
               </li>
               <li>
                 <Link href="/interview-tips">
-                  <a className="hover:text-white">Interview Tips</a>
+                  <span className="hover:text-white cursor-pointer">Interview Tips</span>
                 </Link>
               </li>
               <li>
                 <Link href="/salary-calculator">
-                  <a className="hover:text-white">Salary Calculator</a>
+                  <span className="hover:text-white cursor-pointer">Salary Calculator</span>
                 </Link>
               </li>
               <li>
                 <Link href="/resume-builder">
-                  <a className="hover:text-white">Resume Builder</a>
+                  <span className="hover:text-white cursor-pointer">Resume Builder</span>
                 </Link>
               </li>
             </ul>
@@ -107,13 +107,13 @@ export default function Footer() {
 
         <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
           <p>
-            &copy; 2025 Naukri.com. All rights reserved. |{" "}
+            &copy; 2025 Career-Bazaar. All rights reserved. |{" "}
             <Link href="/privacy">
-              <a className="hover:text-white">Privacy Policy</a>
+              <span className="hover:text-white cursor-pointer">Privacy Policy</span>
             </Link>{" "}
             |{" "}
             <Link href="/terms">
-              <a className="hover:text-white">Terms of Service</a>
+              <span className="hover:text-white cursor-pointer">Terms of Service</span>
             </Link>
           </p>
         </div>

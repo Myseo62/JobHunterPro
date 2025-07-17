@@ -51,12 +51,12 @@ export default function JobFilters({ filters, onFiltersChange }: JobFiltersProps
         {/* Location Filter */}
         <div>
           <Label className="text-sm font-medium text-gray-700 mb-2 block">Location</Label>
-          <Select value={localFilters.location || ""} onValueChange={(value) => handleFilterChange("location", value)}>
+          <Select value={localFilters.location || "all"} onValueChange={(value) => handleFilterChange("location", value === "all" ? undefined : value)}>
             <SelectTrigger>
               <SelectValue placeholder="All Locations" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Locations</SelectItem>
+              <SelectItem value="all">All Locations</SelectItem>
               <SelectItem value="Bangalore">Bangalore</SelectItem>
               <SelectItem value="Mumbai">Mumbai</SelectItem>
               <SelectItem value="Delhi">Delhi</SelectItem>
@@ -96,9 +96,9 @@ export default function JobFilters({ filters, onFiltersChange }: JobFiltersProps
         <div>
           <Label className="text-sm font-medium text-gray-700 mb-2 block">Salary</Label>
           <Select 
-            value={localFilters.salaryMin ? `${localFilters.salaryMin}-${localFilters.salaryMax}` : ""} 
+            value={localFilters.salaryMin ? `${localFilters.salaryMin}-${localFilters.salaryMax}` : "any"} 
             onValueChange={(value) => {
-              if (value === "") {
+              if (value === "any") {
                 handleFilterChange("salaryMin", undefined);
                 handleFilterChange("salaryMax", undefined);
               } else {
@@ -112,7 +112,7 @@ export default function JobFilters({ filters, onFiltersChange }: JobFiltersProps
               <SelectValue placeholder="Any Salary" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Any Salary</SelectItem>
+              <SelectItem value="any">Any Salary</SelectItem>
               <SelectItem value="300000-600000">3-6 Lakhs</SelectItem>
               <SelectItem value="600000-1000000">6-10 Lakhs</SelectItem>
               <SelectItem value="1000000-1500000">10-15 Lakhs</SelectItem>

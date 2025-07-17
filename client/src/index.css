@@ -24,12 +24,12 @@
   --ring: hsl(20, 14.3%, 4.1%);
   --radius: 0.5rem;
   
-  /* Naukri-specific colors */
-  --naukri-blue: hsl(207, 90%, 54%);
-  --naukri-dark-blue: hsl(219, 78%, 51%);
-  --naukri-orange: hsl(16, 100%, 60%);
-  --naukri-gray: hsl(215, 20%, 44%);
-  --naukri-light: hsl(210, 40%, 98%);
+  /* Career-Bazaar-specific colors */
+  --career-bazaar-blue: hsl(207, 90%, 54%);
+  --career-bazaar-dark-blue: hsl(219, 78%, 51%);
+  --career-bazaar-orange: hsl(16, 100%, 60%);
+  --career-bazaar-gray: hsl(215, 20%, 44%);
+  --career-bazaar-light: hsl(210, 40%, 98%);
 }
 
 .dark {
@@ -66,12 +66,12 @@
 }
 
 @layer utilities {
-  .naukri-gradient {
-    background: linear-gradient(135deg, var(--naukri-blue), var(--naukri-dark-blue));
+  .career-bazaar-gradient {
+    background: linear-gradient(135deg, var(--career-bazaar-blue), var(--career-bazaar-dark-blue));
   }
   
-  .naukri-text-gradient {
-    background: linear-gradient(135deg, var(--naukri-blue), var(--naukri-dark-blue));
+  .career-bazaar-text-gradient {
+    background: linear-gradient(135deg, var(--career-bazaar-blue), var(--career-bazaar-dark-blue));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;

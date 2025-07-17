@@ -38,7 +38,7 @@ export default function Header({ user, onLogout }: HeaderProps) {
           <div className="flex items-center">
             <Link href="/">
               <div className="text-2xl font-bold text-blue-600 cursor-pointer">
-                Naukri.com
+                Career-Bazaar
               </div>
             </Link>
           </div>
@@ -47,16 +47,16 @@ export default function Header({ user, onLogout }: HeaderProps) {
           <nav className="hidden md:flex space-x-8">
             {navigation.map((item) => (
               <Link key={item.href} href={item.href}>
-                <a
+                <span
                   className={cn(
-                    "font-medium transition-colors hover:text-blue-600",
+                    "font-medium transition-colors hover:text-blue-600 cursor-pointer",
                     location === item.href
                       ? "text-blue-600"
                       : "text-gray-700"
                   )}
                 >
                   {item.label}
-                </a>
+                </span>
               </Link>
             ))}
           </nav>

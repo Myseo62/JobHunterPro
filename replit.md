@@ -1,8 +1,8 @@
-# Naukri.com Clone - Job Portal Application
+# Career-Bazaar - Job Portal Application
 
 ## Overview
 
-This is a full-stack job portal application built with React, Node.js/Express, and PostgreSQL. The application provides a platform for job seekers to search and apply for jobs, and for companies to post job listings. It features user authentication, job search functionality, company profiles, and application management.
+Career-Bazaar is a full-stack job portal application built with React, Node.js/Express, and PostgreSQL. The application provides a platform for job seekers to search and apply for jobs, and for companies to post job listings. It features user authentication, job search functionality, company profiles, and application management.
 
 ## User Preferences
 
