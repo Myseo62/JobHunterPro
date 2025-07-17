@@ -15,6 +15,9 @@ import CompanyProfile from "@/pages/company-profile";
 import Login from "@/pages/auth/login";
 import Register from "@/pages/auth/register";
 import Profile from "@/pages/profile";
+import CompaniesDirectory from "@/pages/companies-directory";
+import Services from "@/pages/services";
+import Resources from "@/pages/resources";
 
 function Router() {
   const [user, setUser] = useState<any>(null);
@@ -76,33 +79,10 @@ function Router() {
             </AuthGuard>
           </Route>
           
-          {/* Placeholder routes */}
-          <Route path="/companies" component={() => (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-              <div className="text-center">
-                <h1 className="text-2xl font-bold text-gray-900 mb-4">Companies Directory</h1>
-                <p className="text-gray-600">Coming soon...</p>
-              </div>
-            </div>
-          )} />
-          
-          <Route path="/services" component={() => (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-              <div className="text-center">
-                <h1 className="text-2xl font-bold text-gray-900 mb-4">Services</h1>
-                <p className="text-gray-600">Coming soon...</p>
-              </div>
-            </div>
-          )} />
-          
-          <Route path="/resources" component={() => (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-              <div className="text-center">
-                <h1 className="text-2xl font-bold text-gray-900 mb-4">Resources</h1>
-                <p className="text-gray-600">Coming soon...</p>
-              </div>
-            </div>
-          )} />
+          {/* Additional routes */}
+          <Route path="/companies" component={() => <CompaniesDirectory user={user} />} />
+          <Route path="/services" component={() => <Services user={user} />} />
+          <Route path="/resources" component={() => <Resources user={user} />} />
           
           {/* Fallback to 404 */}
           <Route component={NotFound} />

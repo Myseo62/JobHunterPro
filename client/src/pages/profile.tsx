@@ -119,24 +119,29 @@ export default function Profile({ user, onUpdateUser }: ProfileProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-purple-50 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
-          <p className="text-gray-600 mt-2">Manage your personal information and job preferences</p>
+        <div className="mb-8 text-center">
+          <div className="w-24 h-24 bg-gradient-to-br from-purple-500 to-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-white font-bold text-2xl">
+              {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
+            </span>
+          </div>
+          <h1 className="text-4xl font-bold text-gray-900">Welcome, {user?.firstName}</h1>
+          <p className="text-xl text-gray-600 mt-2">Manage your profile and track your career journey</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Profile Form */}
           <div className="lg:col-span-2">
-            <Card>
+            <Card className="border-0 shadow-lg cb-shadow-glow bg-white/95 backdrop-blur-md">
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <User className="h-5 w-5" />
+                <CardTitle className="flex items-center space-x-2 text-xl text-gray-900">
+                  <User className="h-6 w-6" />
                   <span>Personal Information</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-8">
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -314,7 +319,7 @@ export default function Profile({ user, onUpdateUser }: ProfileProps) {
 
                     <Button
                       type="submit"
-                      className="w-full bg-blue-600 hover:bg-blue-700"
+                      className="w-full h-12 cb-gradient-primary hover:shadow-lg transition-all duration-300 border-0 font-semibold"
                       disabled={isLoading}
                     >
                       {isLoading ? "Updating..." : "Update Profile"}
@@ -325,21 +330,23 @@ export default function Profile({ user, onUpdateUser }: ProfileProps) {
             </Card>
 
             {/* Resume Section */}
-            <Card className="mt-6">
+            <Card className="mt-6 border-0 shadow-lg cb-shadow-glow bg-white/95 backdrop-blur-md">
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Upload className="h-5 w-5" />
+                <CardTitle className="flex items-center space-x-2 text-xl text-gray-900">
+                  <Upload className="h-6 w-6" />
                   <span>Resume</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                  <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600 mb-2">Upload your resume</p>
-                  <p className="text-sm text-gray-500 mb-4">
+              <CardContent className="p-8">
+                <div className="border-2 border-dashed border-purple-300 rounded-xl p-8 text-center hover:border-purple-400 transition-colors">
+                  <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-green-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <Upload className="h-8 w-8 text-white" />
+                  </div>
+                  <p className="text-gray-700 mb-2 font-medium">Upload your resume</p>
+                  <p className="text-sm text-gray-500 mb-6">
                     Supported formats: PDF, DOC, DOCX (Max 5MB)
                   </p>
-                  <Button variant="outline">
+                  <Button className="cb-gradient-primary border-0 hover:shadow-lg transition-all duration-300">
                     Choose File
                   </Button>
                 </div>
@@ -350,11 +357,11 @@ export default function Profile({ user, onUpdateUser }: ProfileProps) {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Profile Summary */}
-            <Card>
+            <Card className="border-0 shadow-lg cb-shadow-glow bg-white/95 backdrop-blur-md">
               <CardHeader>
-                <CardTitle>Profile Summary</CardTitle>
+                <CardTitle className="text-xl text-gray-900">Profile Summary</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 p-6">
                 <div className="flex items-center space-x-2 text-sm">
                   <Mail className="h-4 w-4 text-gray-400" />
                   <span>{user?.email}</span>

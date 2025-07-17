@@ -99,50 +99,55 @@ export default function JobDetail({ user }: JobDetailProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-purple-50">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-6">
           {/* Job Header */}
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-start space-x-4">
-                <img
-                  src={job.company.logo || "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=80&h=80&fit=crop"}
-                  alt={`${job.company.name} logo`}
-                  className="w-20 h-20 rounded-lg object-cover"
-                />
+          <Card className="border-0 shadow-2xl cb-shadow-glow bg-white/95 backdrop-blur-md">
+            <CardContent className="p-8">
+              <div className="flex items-start space-x-6">
+                <div className="w-24 h-24 bg-gradient-to-br from-purple-500 to-green-500 rounded-2xl flex items-center justify-center">
+                  <span className="text-white font-bold text-2xl">
+                    {job.company.name.charAt(0)}
+                  </span>
+                </div>
                 <div className="flex-1">
-                  <h1 className="text-2xl font-bold text-gray-900 mb-2">{job.title}</h1>
-                  <p className="text-xl text-blue-600 font-medium mb-4">{job.company.name}</p>
+                  <h1 className="text-3xl font-bold text-gray-900 mb-2">{job.title}</h1>
+                  <button 
+                    onClick={() => setLocation(`/companies/${job.companyId}`)}
+                    className="text-xl text-purple-600 font-medium mb-4 hover:text-purple-700 transition-colors"
+                  >
+                    {job.company.name}
+                  </button>
                   
-                  <div className="flex flex-wrap items-center gap-6 text-sm text-gray-600 mb-4">
-                    <span className="flex items-center">
-                      <Briefcase className="h-4 w-4 mr-1" />
+                  <div className="flex flex-wrap items-center gap-6 text-sm text-gray-600 mb-6">
+                    <span className="flex items-center bg-gray-100 px-3 py-1 rounded-full">
+                      <Briefcase className="h-4 w-4 mr-2" />
                       {job.experience}
                     </span>
-                    <span className="flex items-center">
-                      <MapPin className="h-4 w-4 mr-1" />
+                    <span className="flex items-center bg-gray-100 px-3 py-1 rounded-full">
+                      <MapPin className="h-4 w-4 mr-2" />
                       {job.location}
                     </span>
                     {job.salaryMin && job.salaryMax && (
-                      <span className="flex items-center">
-                        <IndianRupee className="h-4 w-4 mr-1" />
+                      <span className="flex items-center bg-green-100 text-green-800 px-3 py-1 rounded-full">
+                        <IndianRupee className="h-4 w-4 mr-2" />
                         {formatSalary(job.salaryMin, job.salaryMax)}
                       </span>
                     )}
-                    <span className="flex items-center">
-                      <Clock className="h-4 w-4 mr-1" />
+                    <span className="flex items-center bg-blue-100 text-blue-800 px-3 py-1 rounded-full">
+                      <Clock className="h-4 w-4 mr-2" />
                       {getTimeAgo(job.postedAt)}
                     </span>
                   </div>
 
-                  <div className="flex items-center space-x-4 mb-4">
-                    <div className="flex items-center space-x-1">
+                  <div className="flex items-center space-x-6 mb-6">
+                    <div className="flex items-center space-x-2">
                       <div className="flex text-yellow-400">
                         {[...Array(5)].map((_, i) => (
                           <Star
                             key={i}
-                            className={`h-4 w-4 ${
+                            className={`h-5 w-5 ${
                               i < Math.floor(parseFloat(job.company.rating || "0"))
                                 ? "fill-current"
                                 : "text-gray-300"
@@ -150,27 +155,34 @@ export default function JobDetail({ user }: JobDetailProps) {
                           />
                         ))}
                       </div>
-                      <span className="text-sm text-gray-600">{job.company.rating || "N/A"}</span>
+                      <span className="text-sm font-medium text-gray-700">{job.company.rating || "N/A"}</span>
                     </div>
                     <span className="text-sm text-gray-600">
                       {job.company.reviewCount?.toLocaleString() || "0"} reviews
                     </span>
+                    <Badge className="bg-purple-100 text-purple-800">
+                      {job.applicationCount || 0} applicants
+                    </Badge>
                   </div>
 
                   <div className="flex items-center space-x-4">
                     <Button
                       onClick={handleApply}
                       disabled={hasApplied}
+                      size="lg"
                       className={`${
                         hasApplied
                           ? "bg-green-500 hover:bg-green-600"
-                          : "bg-orange-500 hover:bg-orange-600"
-                      } text-white`}
+                          : "cb-gradient-primary hover:shadow-lg"
+                      } border-0 font-semibold transition-all duration-300`}
                     >
-                      {hasApplied ? "Applied" : "Apply Now"}
+                      {hasApplied ? "✓ Applied" : "Apply Now"}
                     </Button>
-                    <Button variant="outline">
+                    <Button variant="outline" size="lg" className="border-purple-200 text-purple-600 hover:bg-purple-50">
                       Save Job
+                    </Button>
+                    <Button variant="outline" size="lg" className="border-purple-200 text-purple-600 hover:bg-purple-50">
+                      Share
                     </Button>
                   </div>
                 </div>
@@ -179,27 +191,27 @@ export default function JobDetail({ user }: JobDetailProps) {
           </Card>
 
           {/* Job Description */}
-          <Card>
+          <Card className="border-0 shadow-lg cb-shadow-glow bg-white/95 backdrop-blur-md">
             <CardHeader>
-              <CardTitle>Job Description</CardTitle>
+              <CardTitle className="text-xl text-gray-900">Job Description</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="prose max-w-none">
-                <p className="text-gray-700 whitespace-pre-wrap">{job.description}</p>
+                <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">{job.description}</p>
               </div>
             </CardContent>
           </Card>
 
           {/* Skills & Requirements */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
+            <Card className="border-0 shadow-lg cb-shadow-glow bg-white/95 backdrop-blur-md">
               <CardHeader>
-                <CardTitle>Skills Required</CardTitle>
+                <CardTitle className="text-xl text-gray-900">Skills Required</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-3">
                   {job.skills?.map((skill: string, index: number) => (
-                    <Badge key={index} variant="secondary">
+                    <Badge key={index} className="bg-purple-100 text-purple-800 hover:bg-purple-200 transition-colors px-3 py-1">
                       {skill}
                     </Badge>
                   ))}
@@ -207,22 +219,22 @@ export default function JobDetail({ user }: JobDetailProps) {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="border-0 shadow-lg cb-shadow-glow bg-white/95 backdrop-blur-md">
               <CardHeader>
-                <CardTitle>Job Details</CardTitle>
+                <CardTitle className="text-xl text-gray-900">Job Details</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Job Type:</span>
-                  <span className="font-medium">{job.jobType || "Full-time"}</span>
+                <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                  <span className="text-gray-600 font-medium">Job Type:</span>
+                  <Badge className="bg-green-100 text-green-800">{job.jobType || "Full-time"}</Badge>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Experience:</span>
-                  <span className="font-medium">{job.experience}</span>
+                <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                  <span className="text-gray-600 font-medium">Experience:</span>
+                  <span className="font-semibold text-gray-900">{job.experience}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Applications:</span>
-                  <span className="font-medium">{job.applicationCount || 0}</span>
+                <div className="flex justify-between items-center py-2">
+                  <span className="text-gray-600 font-medium">Applications:</span>
+                  <span className="font-semibold text-gray-900">{job.applicationCount || 0}</span>
                 </div>
               </CardContent>
             </Card>
@@ -230,16 +242,16 @@ export default function JobDetail({ user }: JobDetailProps) {
 
           {/* Requirements */}
           {job.requirements && job.requirements.length > 0 && (
-            <Card>
+            <Card className="border-0 shadow-lg cb-shadow-glow bg-white/95 backdrop-blur-md">
               <CardHeader>
-                <CardTitle>Requirements</CardTitle>
+                <CardTitle className="text-xl text-gray-900">Requirements</CardTitle>
               </CardHeader>
               <CardContent>
-                <ul className="space-y-2">
+                <ul className="space-y-3">
                   {job.requirements.map((req: string, index: number) => (
                     <li key={index} className="flex items-start">
-                      <span className="text-blue-600 mr-2">•</span>
-                      <span className="text-gray-700">{req}</span>
+                      <span className="text-purple-600 mr-3 mt-1 font-bold">•</span>
+                      <span className="text-gray-700 leading-relaxed">{req}</span>
                     </li>
                   ))}
                 </ul>
@@ -249,16 +261,16 @@ export default function JobDetail({ user }: JobDetailProps) {
 
           {/* Benefits */}
           {job.benefits && job.benefits.length > 0 && (
-            <Card>
+            <Card className="border-0 shadow-lg cb-shadow-glow bg-white/95 backdrop-blur-md">
               <CardHeader>
-                <CardTitle>Benefits</CardTitle>
+                <CardTitle className="text-xl text-gray-900">Benefits & Perks</CardTitle>
               </CardHeader>
               <CardContent>
-                <ul className="space-y-2">
+                <ul className="space-y-3">
                   {job.benefits.map((benefit: string, index: number) => (
                     <li key={index} className="flex items-start">
-                      <span className="text-green-600 mr-2">✓</span>
-                      <span className="text-gray-700">{benefit}</span>
+                      <span className="text-green-600 mr-3 mt-1 font-bold">✓</span>
+                      <span className="text-gray-700 leading-relaxed">{benefit}</span>
                     </li>
                   ))}
                 </ul>

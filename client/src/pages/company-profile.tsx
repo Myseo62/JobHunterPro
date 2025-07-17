@@ -83,27 +83,27 @@ export default function CompanyProfile({ user }: CompanyProfileProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-purple-50">
       {/* Company Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex items-start space-x-6">
-            <img
-              src={company.logo || "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=120&h=120&fit=crop"}
-              alt={`${company.name} logo`}
-              className="w-24 h-24 rounded-lg object-cover"
-            />
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="flex items-start space-x-8">
+            <div className="w-32 h-32 bg-gradient-to-br from-purple-500 to-green-500 rounded-3xl flex items-center justify-center">
+              <span className="text-white font-bold text-4xl">
+                {company.name.charAt(0)}
+              </span>
+            </div>
             <div className="flex-1">
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">{company.name}</h1>
-              <p className="text-lg text-gray-600 mb-4">{company.industry}</p>
+              <h1 className="text-4xl font-bold text-gray-900 mb-3">{company.name}</h1>
+              <p className="text-xl text-gray-600 mb-6">{company.industry}</p>
               
-              <div className="flex items-center space-x-6 text-sm text-gray-600 mb-4">
-                <span className="flex items-center">
-                  <MapPin className="h-4 w-4 mr-1" />
+              <div className="flex flex-wrap items-center gap-6 text-sm text-gray-600 mb-6">
+                <span className="flex items-center bg-gray-100 px-4 py-2 rounded-full">
+                  <MapPin className="h-4 w-4 mr-2" />
                   {company.location}
                 </span>
-                <span className="flex items-center">
-                  <Users className="h-4 w-4 mr-1" />
+                <span className="flex items-center bg-blue-100 text-blue-800 px-4 py-2 rounded-full">
+                  <Users className="h-4 w-4 mr-2" />
                   {company.employeeCount} employees
                 </span>
                 {company.website && (
@@ -111,27 +111,38 @@ export default function CompanyProfile({ user }: CompanyProfileProps) {
                     href={company.website}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center text-blue-600 hover:text-blue-800"
+                    className="flex items-center bg-purple-100 text-purple-800 px-4 py-2 rounded-full hover:bg-purple-200 transition-colors"
                   >
-                    <Globe className="h-4 w-4 mr-1" />
-                    Website
+                    <Globe className="h-4 w-4 mr-2" />
+                    Visit Website
                   </a>
                 )}
               </div>
 
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-1">
+              <div className="flex items-center space-x-6 mb-6">
+                <div className="flex items-center space-x-2">
                   <div className="flex">
                     {renderStars(company.rating || "0")}
                   </div>
-                  <span className="text-sm text-gray-600 ml-2">
+                  <span className="text-lg font-medium text-gray-700 ml-2">
                     {company.rating || "N/A"}
                   </span>
                 </div>
-                <span className="text-sm text-gray-600">
+                <span className="text-gray-600">
                   {company.reviewCount?.toLocaleString() || "0"} reviews
                 </span>
-                <Badge variant="outline">{company.companyType}</Badge>
+                <Badge className="cb-gradient-primary border-0 text-white">
+                  {company.companyType}
+                </Badge>
+              </div>
+              
+              <div className="flex items-center space-x-4">
+                <Button className="cb-gradient-primary border-0 hover:shadow-lg transition-all duration-300">
+                  Follow Company
+                </Button>
+                <Button variant="outline" className="border-purple-200 text-purple-600 hover:bg-purple-50">
+                  View Reviews
+                </Button>
               </div>
             </div>
           </div>
@@ -172,7 +183,7 @@ export default function CompanyProfile({ user }: CompanyProfileProps) {
             </Card>
 
             {/* Rating & Reviews */}
-            <Card>
+            <Card className="border-0 shadow-lg cb-shadow-glow bg-white/95 backdrop-blur-md">
               <CardHeader>
                 <CardTitle>Rating & Reviews</CardTitle>
               </CardHeader>
