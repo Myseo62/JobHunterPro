@@ -72,11 +72,13 @@ export default function Login({ onLogin }: LoginProps) {
           <h2 className="text-3xl font-bold text-gray-900">Welcome back</h2>
           <p className="mt-2 text-sm text-gray-600">
             Don't have an account?{" "}
-            <Link href="/register">
-              <span className="font-medium text-purple-600 hover:text-purple-700 cursor-pointer transition-colors">
-                Sign up for free
-              </span>
-            </Link>
+            <button
+              type="button"
+              onClick={() => setLocation("/register")}
+              className="font-medium text-purple-600 hover:text-purple-700 cursor-pointer transition-colors underline bg-transparent border-none p-0"
+            >
+              Sign up for free
+            </button>
           </p>
         </div>
 
@@ -161,13 +163,21 @@ export default function Login({ onLogin }: LoginProps) {
         <div className="text-center">
           <p className="text-sm text-gray-600">
             By signing in, you agree to our{" "}
-            <span className="text-purple-600 hover:text-purple-700 cursor-pointer transition-colors">
+            <button
+              type="button"
+              onClick={() => setLocation("/terms")}
+              className="text-purple-600 hover:text-purple-700 cursor-pointer transition-colors underline bg-transparent border-none p-0 font-inherit"
+            >
               Terms of Service
-            </span>{" "}
+            </button>{" "}
             and{" "}
-            <span className="text-purple-600 hover:text-purple-700 cursor-pointer transition-colors">
+            <button
+              type="button"
+              onClick={() => setLocation("/privacy")}
+              className="text-purple-600 hover:text-purple-700 cursor-pointer transition-colors underline bg-transparent border-none p-0 font-inherit"
+            >
               Privacy Policy
-            </span>
+            </button>
           </p>
         </div>
       </div>
