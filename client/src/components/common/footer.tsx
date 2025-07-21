@@ -1,6 +1,7 @@
-import { Link } from "wouter";
+import { useLocation } from "wouter";
 
 export default function Footer() {
+  const [, setLocation] = useLocation();
   return (
     <footer className="bg-gray-900 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -30,24 +31,36 @@ export default function Footer() {
             <h3 className="font-semibold mb-4">Job Seekers</h3>
             <ul className="space-y-2 text-sm text-gray-300">
               <li>
-                <Link href="/jobs">
-                  <span className="hover:text-white cursor-pointer">Search Jobs</span>
-                </Link>
+                <button 
+                  onClick={() => setLocation("/jobs")}
+                  className="hover:text-white cursor-pointer"
+                >
+                  Search Jobs
+                </button>
               </li>
               <li>
-                <Link href="/companies">
-                  <span className="hover:text-white cursor-pointer">Browse Companies</span>
-                </Link>
+                <button 
+                  onClick={() => setLocation("/companies")}
+                  className="hover:text-white cursor-pointer"
+                >
+                  Browse Companies
+                </button>
               </li>
               <li>
-                <Link href="/resume">
-                  <span className="hover:text-white cursor-pointer">Create Resume</span>
-                </Link>
+                <button 
+                  onClick={() => setLocation("/services")}
+                  className="hover:text-white cursor-pointer"
+                >
+                  Services
+                </button>
               </li>
               <li>
-                <Link href="/job-alerts">
-                  <span className="hover:text-white cursor-pointer">Job Alerts</span>
-                </Link>
+                <button 
+                  onClick={() => setLocation("/resources")}
+                  className="hover:text-white cursor-pointer"
+                >
+                  Resources
+                </button>
               </li>
             </ul>
           </div>
@@ -56,50 +69,74 @@ export default function Footer() {
             <h3 className="font-semibold mb-4">Employers</h3>
             <ul className="space-y-2 text-sm text-gray-300">
               <li>
-                <Link href="/employer/post-job">
-                  <span className="hover:text-white cursor-pointer">Post Jobs</span>
-                </Link>
+                <button 
+                  onClick={() => setLocation("/employer/post-job")}
+                  className="hover:text-white cursor-pointer"
+                >
+                  Post Jobs
+                </button>
               </li>
               <li>
-                <Link href="/employer/search-resume">
-                  <span className="hover:text-white cursor-pointer">Search Resume</span>
-                </Link>
+                <button 
+                  onClick={() => setLocation("/employer/search-resume")}
+                  className="hover:text-white cursor-pointer"
+                >
+                  Search Resume
+                </button>
               </li>
               <li>
-                <Link href="/employer/login">
-                  <span className="hover:text-white cursor-pointer">Recruiter Login</span>
-                </Link>
+                <button 
+                  onClick={() => setLocation("/employer/login")}
+                  className="hover:text-white cursor-pointer"
+                >
+                  Recruiter Login
+                </button>
               </li>
               <li>
-                <Link href="/employer/pricing">
-                  <span className="hover:text-white cursor-pointer">Pricing</span>
-                </Link>
+                <button 
+                  onClick={() => setLocation("/employer/pricing")}
+                  className="hover:text-white cursor-pointer"
+                >
+                  Pricing
+                </button>
               </li>
             </ul>
           </div>
 
           <div>
-            <h3 className="font-semibold mb-4">Resources</h3>
+            <h3 className="font-semibold mb-4">Company</h3>
             <ul className="space-y-2 text-sm text-gray-300">
               <li>
-                <Link href="/career-advice">
-                  <span className="hover:text-white cursor-pointer">Career Advice</span>
-                </Link>
+                <button 
+                  onClick={() => setLocation("/about")}
+                  className="hover:text-white cursor-pointer"
+                >
+                  About Us
+                </button>
               </li>
               <li>
-                <Link href="/interview-tips">
-                  <span className="hover:text-white cursor-pointer">Interview Tips</span>
-                </Link>
+                <button 
+                  onClick={() => setLocation("/contact")}
+                  className="hover:text-white cursor-pointer"
+                >
+                  Contact Us
+                </button>
               </li>
               <li>
-                <Link href="/salary-calculator">
-                  <span className="hover:text-white cursor-pointer">Salary Calculator</span>
-                </Link>
+                <button 
+                  onClick={() => setLocation("/careers")}
+                  className="hover:text-white cursor-pointer"
+                >
+                  Careers
+                </button>
               </li>
               <li>
-                <Link href="/resume-builder">
-                  <span className="hover:text-white cursor-pointer">Resume Builder</span>
-                </Link>
+                <button 
+                  onClick={() => setLocation("/blog")}
+                  className="hover:text-white cursor-pointer"
+                >
+                  Blog
+                </button>
               </li>
             </ul>
           </div>
@@ -108,13 +145,19 @@ export default function Footer() {
         <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
           <p>
             &copy; 2025 Career-Bazaar. All rights reserved. |{" "}
-            <Link href="/privacy">
-              <span className="hover:text-white cursor-pointer">Privacy Policy</span>
-            </Link>{" "}
+            <button 
+              onClick={() => setLocation("/privacy")}
+              className="hover:text-white cursor-pointer"
+            >
+              Privacy Policy
+            </button>{" "}
             |{" "}
-            <Link href="/terms">
-              <span className="hover:text-white cursor-pointer">Terms of Service</span>
-            </Link>
+            <button 
+              onClick={() => setLocation("/terms")}
+              className="hover:text-white cursor-pointer"
+            >
+              Terms of Service
+            </button>
           </p>
         </div>
       </div>

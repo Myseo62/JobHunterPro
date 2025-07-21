@@ -18,6 +18,13 @@ import Profile from "@/pages/profile";
 import CompaniesDirectory from "@/pages/companies-directory";
 import Services from "@/pages/services";
 import Resources from "@/pages/resources";
+import Terms from "@/pages/terms";
+import Privacy from "@/pages/privacy";
+import PostJob from "@/pages/employer/post-job";
+import EmployerLogin from "@/pages/employer/login";
+import EmployerDashboard from "@/pages/employer/dashboard";
+import SearchResume from "@/pages/employer/search-resume";
+import EmployerPricing from "@/pages/employer/pricing";
 
 function Router() {
   const [user, setUser] = useState<any>(null);
@@ -83,6 +90,15 @@ function Router() {
           <Route path="/companies" component={() => <CompaniesDirectory user={user} />} />
           <Route path="/services" component={() => <Services user={user} />} />
           <Route path="/resources" component={() => <Resources user={user} />} />
+          <Route path="/terms" component={() => <Terms />} />
+          <Route path="/privacy" component={() => <Privacy />} />
+          
+          {/* Employer routes */}
+          <Route path="/employer/post-job" component={() => <PostJob user={user} />} />
+          <Route path="/employer/login" component={() => <EmployerLogin onLogin={handleLogin} />} />
+          <Route path="/employer/dashboard" component={() => <EmployerDashboard user={user} />} />
+          <Route path="/employer/search-resume" component={() => <SearchResume user={user} />} />
+          <Route path="/employer/pricing" component={() => <EmployerPricing />} />
           
           {/* Fallback to 404 */}
           <Route component={NotFound} />
