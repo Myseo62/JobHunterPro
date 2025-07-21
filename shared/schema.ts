@@ -71,6 +71,11 @@ export const jobCategories = pgTable("job_categories", {
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   profileCompleted: true,
+}).extend({
+  bio: z.string().optional(),
+  skills: z.array(z.string()).optional(),
+  experience: z.string().optional(),
+  expectedSalary: z.number().optional(),
 });
 
 export const insertCompanySchema = createInsertSchema(companies).omit({

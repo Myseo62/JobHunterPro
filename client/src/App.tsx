@@ -11,7 +11,7 @@ import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import Jobs from "@/pages/jobs";
 import JobDetail from "@/pages/job-detail";
-import CompanyProfile from "@/pages/company-profile";
+import CompanyProfilePage from "@/pages/company-profile";
 import Login from "@/pages/auth/login";
 import Register from "@/pages/auth/register";
 import Profile from "@/pages/profile";
@@ -26,6 +26,9 @@ import EmployerRegister from "@/pages/employer/register";
 import EmployerDashboard from "@/pages/employer/dashboard";
 import SearchResume from "@/pages/employer/search-resume";
 import EmployerPricing from "@/pages/employer/pricing";
+import CompanyDashboard from "@/pages/company/dashboard";
+import CompanyProfile from "@/pages/company/profile";
+import CompanySettings from "@/pages/company/settings";
 
 function Router() {
   const [user, setUser] = useState<any>(null);
@@ -62,7 +65,7 @@ function Router() {
           <Route path="/" component={() => <Home user={user} />} />
           <Route path="/jobs" component={() => <Jobs user={user} />} />
           <Route path="/jobs/:id" component={() => <JobDetail user={user} />} />
-          <Route path="/companies/:id" component={() => <CompanyProfile user={user} />} />
+          <Route path="/companies/:id" component={() => <CompanyProfilePage user={user} />} />
           
           {/* Auth routes */}
           <Route path="/login">
@@ -101,6 +104,11 @@ function Router() {
           <Route path="/employer/dashboard" component={() => <EmployerDashboard user={user} />} />
           <Route path="/employer/search-resume" component={() => <SearchResume user={user} />} />
           <Route path="/employer/pricing" component={() => <EmployerPricing />} />
+
+          {/* Company management routes */}
+          <Route path="/company/dashboard" component={() => <CompanyDashboard user={user} />} />
+          <Route path="/company/profile/:id?" component={() => <CompanyProfile />} />
+          <Route path="/company/settings" component={() => <CompanySettings user={user} />} />
           
           {/* Fallback to 404 */}
           <Route component={NotFound} />
