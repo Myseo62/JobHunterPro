@@ -123,7 +123,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         companies = companies.filter(company => 
           company.name.toLowerCase().includes(search.toLowerCase()) ||
           company.description?.toLowerCase().includes(search.toLowerCase()) ||
-          company.location.toLowerCase().includes(search.toLowerCase())
+          company.location?.toLowerCase().includes(search.toLowerCase())
         );
       }
       
