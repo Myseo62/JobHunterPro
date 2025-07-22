@@ -10,6 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Eye, EyeOff } from "lucide-react";
+import { SocialLoginButtons } from "@/components/auth/social-login-buttons";
 
 const registerSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -250,6 +251,8 @@ export default function Register({ onLogin }: RegisterProps) {
                 </Button>
               </form>
             </Form>
+            
+            <SocialLoginButtons isLoading={isLoading} />
           </CardContent>
         </Card>
 

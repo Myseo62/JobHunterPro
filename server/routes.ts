@@ -3,8 +3,71 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertUserSchema, loginSchema, insertJobSchema, insertApplicationSchema, jobSearchSchema } from "@shared/schema";
 import { z } from "zod";
+import session from "express-session";
+import passport from "passport";
+import { setupSocialAuth } from "./auth/social-auth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Set up session middleware
+  app.use(session({
+    secret: process.env.SESSION_SECRET || 'career-bazaar-secret-key',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: false } // Set to true in production with HTTPS
+  }));
+
+  // Initialize passport
+  app.use(passport.initialize());
+  app.use(passport.session());
+  
+  // Set up social authentication strategies
+  setupSocialAuth();
+  // Google OAuth routes
+  app.get('/api/auth/google',
+    passport.authenticate('google', { scope: ['profile', 'email'] })
+  );
+
+  app.get('/api/auth/google/callback',
+    passport.authenticate('google', { failureRedirect: '/auth/login' }),
+    (req, res) => {
+      // Successful authentication, redirect to home
+      res.redirect('/');
+    }
+  );
+
+  // LinkedIn OAuth routes
+  app.get('/api/auth/linkedin',
+    passport.authenticate('linkedin', { scope: ['r_emailaddress', 'r_liteprofile'] })
+  );
+
+  app.get('/api/auth/linkedin/callback',
+    passport.authenticate('linkedin', { failureRedirect: '/auth/login' }),
+    (req, res) => {
+      // Successful authentication, redirect to home
+      res.redirect('/');
+    }
+  );
+
+  // Logout route
+  app.post('/api/auth/logout', (req, res) => {
+    req.logout((err) => {
+      if (err) {
+        return res.status(500).json({ message: 'Logout failed' });
+      }
+      res.json({ message: 'Logged out successfully' });
+    });
+  });
+
+  // Get current user
+  app.get('/api/auth/user', (req, res) => {
+    if (req.isAuthenticated()) {
+      const { password, ...userResponse } = req.user as any;
+      res.json(userResponse);
+    } else {
+      res.status(401).json({ message: 'Not authenticated' });
+    }
+  });
+
   // Authentication routes
   app.post("/api/auth/register", async (req, res) => {
     try {

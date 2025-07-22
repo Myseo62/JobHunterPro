@@ -11,6 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Eye, EyeOff } from "lucide-react";
+import { SocialLoginButtons } from "@/components/auth/social-login-buttons";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email"),
@@ -157,6 +158,8 @@ export default function Login({ onLogin }: LoginProps) {
                 </Button>
               </form>
             </Form>
+            
+            <SocialLoginButtons isLoading={isLoading} />
           </CardContent>
         </Card>
 
