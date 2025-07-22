@@ -56,6 +56,39 @@ export class MemStorage implements IStorage {
   }
 
   private initializeData() {
+    // Initialize with test users for easy login
+    const testUsers: InsertUser[] = [
+      {
+        username: "candidate",
+        email: "candidate@test.com",
+        password: "password123", // In real app, this would be hashed
+        fullName: "Test Candidate",
+        userType: "candidate",
+        skills: ["React", "JavaScript", "Node.js"],
+        experience: "3 years",
+        location: "Mumbai",
+        expectedSalary: "12 LPA"
+      },
+      {
+        username: "employer",
+        email: "employer@test.com", 
+        password: "password123", // In real app, this would be hashed
+        fullName: "Test Employer",
+        userType: "employer",
+        companyName: "Test Company Ltd"
+      }
+    ];
+
+    testUsers.forEach(user => {
+      const newUser: User = {
+        id: this.currentId.users++,
+        ...user,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      this.users.set(newUser.id, newUser);
+    });
+
     // Initialize with sample companies
     const sampleCompanies: InsertCompany[] = [
       {

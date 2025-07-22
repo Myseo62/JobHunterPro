@@ -49,6 +49,7 @@ import FAQ from "@/pages/faq";
 import Help from "@/pages/help";
 import BlogIndex from "@/pages/blog/index";
 import BlogPost from "@/pages/blog/post";
+import TestingGuide from "@/pages/testing-guide";
 
 function Router() {
   const [user, setUser] = useState<any>(null);
@@ -149,6 +150,7 @@ function Router() {
           <Route path="/help" component={() => <Help />} />
           <Route path="/blog" component={() => <BlogIndex />} />
           <Route path="/blog/:id" component={() => <BlogPost />} />
+          <Route path="/testing-guide" component={() => <TestingGuide />} />
           
           {/* Fallback to 404 */}
           <Route component={NotFound} />
