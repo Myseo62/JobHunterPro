@@ -30,6 +30,26 @@ import CompanyDashboard from "@/pages/company/dashboard";
 import CompanyProfile from "@/pages/company/profile";
 import CompanySettings from "@/pages/company/settings";
 
+// Additional candidate pages
+import JobAlerts from "@/pages/job-alerts";
+import SavedJobs from "@/pages/saved-jobs";
+import Applications from "@/pages/applications";
+import AccountSettings from "@/pages/account-settings";
+
+// Additional employer pages
+import EmployerApplications from "@/pages/employer/applications";
+import CandidateSearch from "@/pages/employer/candidates";
+import EmployerMessages from "@/pages/employer/messages";
+import ManageJobs from "@/pages/employer/manage-jobs";
+
+// General pages
+import Contact from "@/pages/contact";
+import About from "@/pages/about";
+import FAQ from "@/pages/faq";
+import Help from "@/pages/help";
+import BlogIndex from "@/pages/blog/index";
+import BlogPost from "@/pages/blog/post";
+
 function Router() {
   const [user, setUser] = useState<any>(null);
 
@@ -109,6 +129,26 @@ function Router() {
           <Route path="/company/dashboard" component={() => <CompanyDashboard user={user} />} />
           <Route path="/company/profile/:id?" component={() => <CompanyProfile />} />
           <Route path="/company/settings" component={() => <CompanySettings user={user} />} />
+
+          {/* Additional candidate pages */}
+          <Route path="/job-alerts" component={() => <JobAlerts user={user} />} />
+          <Route path="/saved-jobs" component={() => <SavedJobs user={user} />} />
+          <Route path="/applications" component={() => <Applications user={user} />} />
+          <Route path="/account-settings" component={() => <AccountSettings user={user} />} />
+
+          {/* Additional employer pages */}
+          <Route path="/employer/applications" component={() => <EmployerApplications user={user} />} />
+          <Route path="/employer/candidates" component={() => <CandidateSearch user={user} />} />
+          <Route path="/employer/messages" component={() => <EmployerMessages user={user} />} />
+          <Route path="/employer/manage-jobs" component={() => <ManageJobs user={user} />} />
+
+          {/* General pages */}
+          <Route path="/contact" component={() => <Contact />} />
+          <Route path="/about" component={() => <About />} />
+          <Route path="/faq" component={() => <FAQ />} />
+          <Route path="/help" component={() => <Help />} />
+          <Route path="/blog" component={() => <BlogIndex />} />
+          <Route path="/blog/:id" component={() => <BlogPost />} />
           
           {/* Fallback to 404 */}
           <Route component={NotFound} />
