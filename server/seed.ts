@@ -1,19 +1,12 @@
-import { db } from './db';
-import { users, companies, jobs, applications, jobCategories } from '@shared/schema';
+import { db } from "./db";
+import { companies, jobs, jobCategories } from "@shared/schema";
 
 async function seed() {
+  console.log("Seeding database...");
+
   try {
-    console.log('🌱 Seeding database...');
-
-    // Clear existing data (be careful with this in production!)
-    await db.delete(applications);
-    await db.delete(jobs);
-    await db.delete(jobCategories);
-    await db.delete(companies);
-    await db.delete(users);
-
     // Insert sample companies
-    const insertedCompanies = await db.insert(companies).values([
+    const companyData = [
       {
         name: "Tata Consultancy Services",
         description: "Leading IT services company providing technology solutions",
@@ -85,37 +78,27 @@ async function seed() {
         rating: "4.4",
         reviewCount: 6000,
         companyType: "MNC"
-      },
-      {
-        name: "Accenture",
-        description: "Global consulting and technology services",
-        industry: "Consulting",
-        website: "https://accenture.com",
-        location: "Bangalore",
-        logo: "https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?w=64&h=64&fit=crop",
-        employeeCount: "200,000+",
-        rating: "4.1",
-        reviewCount: 22000,
-        companyType: "MNC"
       }
-    ]).returning();
+    ];
 
-    console.log(`✅ Inserted ${insertedCompanies.length} companies`);
+    const insertedCompanies = await db.insert(companies).values(companyData).returning();
+    console.log(`Inserted ${insertedCompanies.length} companies`);
 
     // Insert job categories
-    const insertedCategories = await db.insert(jobCategories).values([
+    const categoryData = [
       { name: "Software & IT", slug: "software-it", description: "Technology and software development roles" },
       { name: "Banking & Finance", slug: "banking-finance", description: "Financial services and banking roles" },
       { name: "Marketing", slug: "marketing", description: "Marketing and digital marketing roles" },
       { name: "Data Science", slug: "data-science", description: "Data analysis and machine learning roles" },
       { name: "Engineering", slug: "engineering", description: "Engineering and technical roles" },
       { name: "HR", slug: "hr", description: "Human resources and talent management roles" }
-    ]).returning();
+    ];
 
-    console.log(`✅ Inserted ${insertedCategories.length} job categories`);
+    const insertedCategories = await db.insert(jobCategories).values(categoryData).returning();
+    console.log(`Inserted ${insertedCategories.length} job categories`);
 
-    // Insert sample jobs
-    const insertedJobs = await db.insert(jobs).values([
+    // Insert sample jobs using the inserted company IDs
+    const jobData = [
       {
         title: "Senior Software Engineer",
         description: "Looking for experienced software engineers to work on cutting-edge technology projects. Strong background in Java, Spring Boot, and microservices required.",
@@ -200,26 +183,29 @@ async function seed() {
         benefits: ["Stock options", "Health insurance", "Remote work options", "Professional development"],
         isActive: true
       }
-    ]).returning();
+    ];
 
-    console.log(`✅ Inserted ${insertedJobs.length} jobs`);
+    const insertedJobs = await db.insert(jobs).values(jobData).returning();
+    console.log(`Inserted ${insertedJobs.length} jobs`);
 
-    console.log('🎉 Database seeding completed successfully!');
+    console.log("Database seeding completed successfully!");
   } catch (error) {
-    console.error('❌ Error seeding database:', error);
+    console.error("Error seeding database:", error);
     throw error;
   }
 }
 
 // Run seeding if this file is executed directly
-seed()
-  .then(() => {
-    console.log('✅ Seeding completed');
-    process.exit(0);
-  })
-  .catch((error) => {
-    console.error('❌ Seeding failed:', error);
-    process.exit(1);
-  });
+if (import.meta.url === `file://${process.argv[1]}`) {
+  seed()
+    .then(() => {
+      console.log("Seeding finished");
+      process.exit(0);
+    })
+    .catch((error) => {
+      console.error("Seeding failed:", error);
+      process.exit(1);
+    });
+}
 
 export { seed };

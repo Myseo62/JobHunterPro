@@ -104,17 +104,11 @@ export default function Header({ user, onLogout }: HeaderProps) {
               </>
             )}
 
-            <div className="hidden lg:flex items-center gap-4 text-sm text-gray-600 border-l pl-4 ml-4">
+            <div className="hidden lg:flex items-center text-sm text-gray-600 border-l pl-4 ml-4">
               <div className="flex flex-col">
                 <span className="text-xs text-gray-500">For employers</span>
                 <Link href="/employer/post-job">
                   <span className="text-purple-600 hover:text-purple-700 font-medium cursor-pointer transition-colors">Post a job</span>
-                </Link>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-xs text-gray-500">Testing</span>
-                <Link href="/testing-guide">
-                  <span className="text-green-600 hover:text-green-700 font-medium cursor-pointer transition-colors">Test Accounts</span>
                 </Link>
               </div>
             </div>
