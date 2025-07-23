@@ -1228,12 +1228,10 @@ export default function Profile() {
     { id: "profile", label: "Profile", icon: User, component: ProfileTab },
     { id: "resume", label: "My Resume", icon: FileText, component: ResumeTab },
     { id: "applications", label: "My Applied", icon: Briefcase, component: ApplicationsTab },
-    { id: "saved", label: "Saved Jobs", icon: Heart, component: SavedJobsTab },
     { id: "following", label: "Following Employers", icon: Heart, component: FollowingTab },
-    { id: "alerts", label: "Job Alerts", icon: Bell, component: JobAlertsTab },
+    { id: "alerts", label: "Alerts Jobs", icon: Bell, component: JobAlertsTab },
     { id: "messages", label: "Messages", icon: MessageCircle, component: MessagesTab },
     { id: "meetings", label: "Meetings", icon: Calendar, component: MeetingsTab },
-    { id: "settings", label: "Account Settings", icon: Settings, component: AccountSettingsTab },
     { id: "password", label: "Change Password", icon: Settings, component: ChangePasswordTab },
   ];
 
@@ -1243,42 +1241,52 @@ export default function Profile() {
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar */}
           <div className="lg:w-80">
-            <Card className="cb-glass-card sticky top-8">
-              <CardHeader className="text-center">
-                <div className="w-20 h-20 bg-gradient-to-r from-purple-600 to-green-600 rounded-full mx-auto mb-4 flex items-center justify-center">
-                  <span className="text-2xl font-bold text-white">
+            <Card className="bg-white shadow-sm border border-gray-200 sticky top-8">
+              <CardHeader className="text-center pb-4">
+                <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full mx-auto mb-3 flex items-center justify-center">
+                  <span className="text-xl font-bold text-white">
                     {user?.firstName?.[0]}{user?.lastName?.[0]}
                   </span>
                 </div>
-                <CardTitle className="text-xl">{user?.firstName} {user?.lastName}</CardTitle>
-                <p className="text-gray-600">{user?.email}</p>
+                <CardTitle className="text-lg font-semibold text-gray-800">{user?.firstName} {user?.lastName}</CardTitle>
+                <p className="text-sm text-gray-500">{user?.email}</p>
               </CardHeader>
-              <CardContent className="p-0">
-                <nav className="space-y-1">
+              <CardContent className="p-4">
+                <nav className="space-y-2">
                   {tabItems.map((item) => {
                     const Icon = item.icon;
                     return (
                       <button
                         key={item.id}
                         onClick={() => handleTabChange(item.id)}
-                        className={`w-full flex items-center gap-3 px-6 py-3 text-left hover:bg-purple-50 transition-colors ${
+                        className={`w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg transition-all duration-200 ${
                           activeTab === item.id 
-                            ? 'bg-purple-100 text-purple-700 border-r-2 border-purple-600' 
-                            : 'text-gray-700'
+                            ? 'bg-blue-100 text-blue-700 shadow-sm' 
+                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800'
                         }`}
                       >
-                        <Icon className="h-5 w-5" />
-                        {item.label}
+                        <div className={`p-1.5 rounded ${
+                          activeTab === item.id 
+                            ? 'bg-blue-200' 
+                            : 'bg-gray-100'
+                        }`}>
+                          <Icon className="h-4 w-4" />
+                        </div>
+                        <span className="text-sm font-medium">{item.label}</span>
                       </button>
                     );
                   })}
-                  <button
-                    onClick={logout}
-                    className="w-full flex items-center gap-3 px-6 py-3 text-left text-red-600 hover:bg-red-50 transition-colors"
-                  >
-                    <LogOut className="h-5 w-5" />
-                    Logout
-                  </button>
+                  <div className="pt-2 mt-4 border-t border-gray-200">
+                    <button
+                      onClick={logout}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg text-gray-600 hover:bg-red-50 hover:text-red-600 transition-all duration-200"
+                    >
+                      <div className="p-1.5 rounded bg-gray-100">
+                        <LogOut className="h-4 w-4" />
+                      </div>
+                      <span className="text-sm font-medium">Logout</span>
+                    </button>
+                  </div>
                 </nav>
               </CardContent>
             </Card>
