@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -57,15 +58,27 @@ export default function Profile() {
     }
 
     const handleHashChange = () => {
-      setActiveTab(getTabFromUrl());
+      const newTab = getTabFromUrl();
+      setActiveTab(newTab);
     };
     
-    // Set initial tab from URL
-    setActiveTab(getTabFromUrl());
+    // Set initial tab from URL hash
+    const initialTab = getTabFromUrl();
+    setActiveTab(initialTab);
     
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, [user, isLoading]);
+
+  // Additional effect to handle direct navigation
+  useEffect(() => {
+    if (user) {
+      const currentTab = getTabFromUrl();
+      if (currentTab !== activeTab) {
+        setActiveTab(currentTab);
+      }
+    }
+  }, [location, user]);
 
   const { data: applications } = useQuery({
     queryKey: ["/api/applications", user?.id],

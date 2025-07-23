@@ -39,15 +39,19 @@ export default function Header({ user, onLogout }: HeaderProps) {
   };
 
   const candidateMenuItems = [
-    { label: "Dashboard", href: "/profile#dashboard", icon: User },
-    { label: "My Resume", href: "/profile#resume", icon: FileText },
-    { label: "My Applications", href: "/profile#applications", icon: Briefcase },
-    { label: "Saved Jobs", href: "/profile#saved", icon: Heart },
-    { label: "Job Alerts", href: "/profile#alerts", icon: Bell },
-    { label: "Messages", href: "/profile#messages", icon: MessageCircle },
-    { label: "Meetings", href: "/profile#meetings", icon: Calendar },
-    { label: "Account Settings", href: "/profile#settings", icon: Settings },
+    { label: "Dashboard", tab: "dashboard", icon: User },
+    { label: "My Resume", tab: "resume", icon: FileText },
+    { label: "My Applications", tab: "applications", icon: Briefcase },
+    { label: "Saved Jobs", tab: "saved", icon: Heart },
+    { label: "Job Alerts", tab: "alerts", icon: Bell },
+    { label: "Messages", tab: "messages", icon: MessageCircle },
+    { label: "Meetings", tab: "meetings", icon: Calendar },
+    { label: "Account Settings", tab: "settings", icon: Settings },
   ];
+
+  const handleMenuItemClick = (tab: string) => {
+    window.location.href = `/profile#${tab}`;
+  };
 
   return (
     <header className="bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100 sticky top-0 z-50">
@@ -111,11 +115,13 @@ export default function Header({ user, onLogout }: HeaderProps) {
                     {candidateMenuItems.map((item) => {
                       const Icon = item.icon;
                       return (
-                        <DropdownMenuItem key={item.label} className="cursor-pointer">
-                          <Link href={item.href} className="flex items-center w-full">
-                            <Icon className="mr-2 h-4 w-4" />
-                            <span>{item.label}</span>
-                          </Link>
+                        <DropdownMenuItem 
+                          key={item.label} 
+                          className="cursor-pointer"
+                          onClick={() => handleMenuItemClick(item.tab)}
+                        >
+                          <Icon className="mr-2 h-4 w-4" />
+                          <span>{item.label}</span>
                         </DropdownMenuItem>
                       );
                     })}
