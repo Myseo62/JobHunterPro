@@ -2,8 +2,16 @@ import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Menu, X, User, LogOut, Sparkles } from "lucide-react";
+import { Menu, X, User, LogOut, Sparkles, ChevronDown, Briefcase, FileText, Heart, Bell, MessageCircle, Calendar, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface HeaderProps {
   user?: any;
@@ -29,6 +37,17 @@ export default function Header({ user, onLogout }: HeaderProps) {
       description: "You have been logged out of your account.",
     });
   };
+
+  const candidateMenuItems = [
+    { label: "Dashboard", href: "/profile#dashboard", icon: User },
+    { label: "My Resume", href: "/profile#resume", icon: FileText },
+    { label: "My Applications", href: "/profile#applications", icon: Briefcase },
+    { label: "Saved Jobs", href: "/profile#saved", icon: Heart },
+    { label: "Job Alerts", href: "/profile#alerts", icon: Bell },
+    { label: "Messages", href: "/profile#messages", icon: MessageCircle },
+    { label: "Meetings", href: "/profile#meetings", icon: Calendar },
+    { label: "Account Settings", href: "/profile#settings", icon: Settings },
+  ];
 
   return (
     <header className="bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100 sticky top-0 z-50">
@@ -71,23 +90,45 @@ export default function Header({ user, onLogout }: HeaderProps) {
           <div className="flex items-center space-x-3">
             {user ? (
               <div className="flex items-center space-x-3">
-                <Link href="/profile">
-                  <Button variant="ghost" size="sm" className="flex items-center space-x-2 hover:bg-purple-50 hover:text-purple-600 transition-colors">
-                    <User className="h-4 w-4" />
-                    <span className="hidden sm:inline font-medium">
-                      {user.firstName} {user.lastName}
-                    </span>
-                  </Button>
-                </Link>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleLogout}
-                  className="flex items-center space-x-2 text-red-600 hover:text-red-700"
-                >
-                  <LogOut className="h-4 w-4" />
-                  <span className="hidden sm:inline">Logout</span>
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="flex items-center space-x-2 hover:bg-purple-50 hover:text-purple-600 transition-colors">
+                      <User className="h-4 w-4" />
+                      <span className="hidden sm:inline font-medium">
+                        {user.firstName} {user.lastName}
+                      </span>
+                      <ChevronDown className="h-3 w-3" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56" align="end">
+                    <DropdownMenuLabel className="font-medium">
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium">{user.firstName} {user.lastName}</p>
+                        <p className="text-xs text-gray-500">{user.email}</p>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {candidateMenuItems.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <Link key={item.label} href={item.href}>
+                          <DropdownMenuItem className="cursor-pointer">
+                            <Icon className="mr-2 h-4 w-4" />
+                            <span>{item.label}</span>
+                          </DropdownMenuItem>
+                        </Link>
+                      );
+                    })}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                      className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50"
+                      onClick={handleLogout}
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Logout</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             ) : (
               <>

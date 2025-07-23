@@ -32,12 +32,38 @@ import { useQuery } from "@tanstack/react-query";
 
 export default function Profile() {
   const { user, logout, isLoading } = useAuth();
-  const [activeTab, setActiveTab] = useState("dashboard");
-  // Redirect to login if not authenticated
+  
+  // Extract tab from URL hash or default to dashboard
+  const getTabFromUrl = () => {
+    const hash = window.location.hash.replace('#', '');
+    const validTabs = ['dashboard', 'profile', 'resume', 'applications', 'saved', 'following', 'alerts', 'messages', 'meetings', 'settings', 'password'];
+    return validTabs.includes(hash) ? hash : 'dashboard';
+  };
+  
+  const [activeTab, setActiveTab] = useState(getTabFromUrl);
+
+  // Update URL hash when tab changes
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId);
+    window.history.pushState(null, '', `#${tabId}`);
+  };
+
+  // Listen for hash changes and redirect to login if not authenticated
   useEffect(() => {
     if (!isLoading && !user) {
       window.location.href = "/login";
+      return;
     }
+
+    const handleHashChange = () => {
+      setActiveTab(getTabFromUrl());
+    };
+    
+    // Set initial tab from URL
+    setActiveTab(getTabFromUrl());
+    
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
   }, [user, isLoading]);
 
   const { data: applications } = useQuery({
@@ -678,7 +704,7 @@ export default function Profile() {
                     return (
                       <button
                         key={item.id}
-                        onClick={() => setActiveTab(item.id)}
+                        onClick={() => handleTabChange(item.id)}
                         className={`w-full flex items-center gap-3 px-6 py-3 text-left hover:bg-purple-50 transition-colors ${
                           activeTab === item.id 
                             ? 'bg-purple-100 text-purple-700 border-r-2 border-purple-600' 
