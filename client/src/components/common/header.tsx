@@ -111,12 +111,12 @@ export default function Header({ user, onLogout }: HeaderProps) {
                     {candidateMenuItems.map((item) => {
                       const Icon = item.icon;
                       return (
-                        <Link key={item.label} href={item.href}>
-                          <DropdownMenuItem className="cursor-pointer">
+                        <DropdownMenuItem key={item.label} className="cursor-pointer">
+                          <Link href={item.href} className="flex items-center w-full">
                             <Icon className="mr-2 h-4 w-4" />
                             <span>{item.label}</span>
-                          </DropdownMenuItem>
-                        </Link>
+                          </Link>
+                        </DropdownMenuItem>
                       );
                     })}
                     <DropdownMenuSeparator />
