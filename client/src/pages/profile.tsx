@@ -24,7 +24,9 @@ import {
   Edit,
   Trash2,
   Search,
-  Filter
+  Filter,
+  Plus,
+  X
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
@@ -396,16 +398,261 @@ export default function Profile() {
     </Card>
   );
 
+  const SavedJobsTab = () => (
+    <Card className="cb-glass-card">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Heart className="h-5 w-5 text-green-600" />
+          Saved Jobs
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          {Array.isArray(savedJobs) && savedJobs.map((job: any) => (
+            <div key={job.id} className="p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <h3 className="font-semibold text-gray-900">{job.title}</h3>
+                  <div className="flex items-center gap-4 text-sm text-gray-600 mt-2">
+                    <span className="flex items-center gap-1">
+                      <Building className="h-4 w-4" />
+                      {job.company?.name}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <MapPin className="h-4 w-4" />
+                      {job.location}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm">View Job</Button>
+                  <Button variant="outline" size="sm">
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ))}
+          {(!Array.isArray(savedJobs) || savedJobs.length === 0) && (
+            <div className="text-center py-8">
+              <Heart className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600">No saved jobs yet</p>
+              <Button className="cb-gradient-primary mt-4" onClick={() => window.location.href = '/jobs'}>
+                Browse Jobs
+              </Button>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  const JobAlertsTab = () => (
+    <Card className="cb-glass-card">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Bell className="h-5 w-5 text-orange-600" />
+          Job Alerts
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div className="p-4 bg-blue-50 rounded-lg">
+            <h3 className="font-semibold text-blue-900 mb-2">Create Job Alert</h3>
+            <p className="text-sm text-blue-700 mb-4">Get notified when new jobs match your criteria</p>
+            <Button className="cb-gradient-primary">Create Alert</Button>
+          </div>
+          
+          {Array.isArray(jobAlerts) && jobAlerts.map((alert: any) => (
+            <div key={alert.id} className="p-4 border border-gray-200 rounded-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-medium text-gray-900">{alert.title}</h4>
+                  <p className="text-sm text-gray-600">{alert.keywords} • {alert.location}</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm">Edit</Button>
+                  <Button variant="outline" size="sm">Delete</Button>
+                </div>
+              </div>
+            </div>
+          ))}
+          
+          {(!Array.isArray(jobAlerts) || jobAlerts.length === 0) && (
+            <div className="text-center py-8">
+              <Bell className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600">No job alerts set up</p>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  const MessagesTab = () => (
+    <Card className="cb-glass-card">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <MessageCircle className="h-5 w-5 text-blue-600" />
+          Messages
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div className="text-center py-8">
+            <MessageCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-600">No messages yet</p>
+            <p className="text-sm text-gray-500 mt-2">Messages from employers will appear here</p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  const MeetingsTab = () => (
+    <Card className="cb-glass-card">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Calendar className="h-5 w-5 text-purple-600" />
+          Meetings & Interviews
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div className="text-center py-8">
+            <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-600">No scheduled meetings</p>
+            <p className="text-sm text-gray-500 mt-2">Interview invitations will appear here</p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  const ChangePasswordTab = () => (
+    <Card className="cb-glass-card">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Settings className="h-5 w-5 text-gray-600" />
+          Change Password
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div className="p-4 bg-yellow-50 rounded-lg">
+            <h3 className="font-semibold text-yellow-900 mb-2">Social Login Account</h3>
+            <p className="text-sm text-yellow-700">
+              You're logged in via social authentication. Password changes are managed through your social provider (Google/LinkedIn).
+            </p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  const FollowingTab = () => (
+    <Card className="cb-glass-card">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Heart className="h-5 w-5 text-red-600" />
+          Following Employers
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div className="text-center py-8">
+            <Heart className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-600">Not following any employers yet</p>
+            <Button className="cb-gradient-primary mt-4" onClick={() => window.location.href = '/companies'}>
+              Explore Companies
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  const AccountSettingsTab = () => (
+    <Card className="cb-glass-card">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Settings className="h-5 w-5 text-gray-600" />
+          Account Settings
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-6">
+          {/* Privacy Settings */}
+          <div className="p-4 border border-gray-200 rounded-lg">
+            <h3 className="font-semibold text-gray-900 mb-3">Privacy Settings</h3>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium text-gray-700">Profile Visibility</p>
+                  <p className="text-sm text-gray-600">Make your profile visible to employers</p>
+                </div>
+                <Button variant="outline" size="sm">Public</Button>
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium text-gray-700">Contact Visibility</p>
+                  <p className="text-sm text-gray-600">Show contact information to employers</p>
+                </div>
+                <Button variant="outline" size="sm">Enabled</Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Notification Settings */}
+          <div className="p-4 border border-gray-200 rounded-lg">
+            <h3 className="font-semibold text-gray-900 mb-3">Notification Preferences</h3>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium text-gray-700">Email Notifications</p>
+                  <p className="text-sm text-gray-600">Receive job alerts and updates via email</p>
+                </div>
+                <Button variant="outline" size="sm">On</Button>
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium text-gray-700">SMS Notifications</p>
+                  <p className="text-sm text-gray-600">Receive urgent updates via SMS</p>
+                </div>
+                <Button variant="outline" size="sm">Off</Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Account Actions */}
+          <div className="p-4 border border-red-200 rounded-lg bg-red-50">
+            <h3 className="font-semibold text-red-900 mb-3">Danger Zone</h3>
+            <div className="space-y-3">
+              <Button variant="destructive" size="sm">
+                Deactivate Account
+              </Button>
+              <p className="text-sm text-red-600">
+                This action will temporarily disable your account. You can reactivate it anytime.
+              </p>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
   const tabItems = [
     { id: "dashboard", label: "User Dashboard", icon: User, component: DashboardOverview },
     { id: "profile", label: "Profile", icon: User, component: ProfileTab },
     { id: "resume", label: "My Resume", icon: FileText, component: ResumeTab },
     { id: "applications", label: "My Applied", icon: Briefcase, component: ApplicationsTab },
-    { id: "following", label: "Following Employers", icon: Heart, component: () => <div>Following tab coming soon...</div> },
-    { id: "alerts", label: "Alerts Jobs", icon: Bell, component: () => <div>Job alerts coming soon...</div> },
-    { id: "messages", label: "Messages", icon: MessageCircle, component: () => <div>Messages coming soon...</div> },
-    { id: "meetings", label: "Meetings", icon: Calendar, component: () => <div>Meetings coming soon...</div> },
-    { id: "password", label: "Change Password", icon: Settings, component: () => <div>Change password coming soon...</div> },
+    { id: "saved", label: "Saved Jobs", icon: Heart, component: SavedJobsTab },
+    { id: "following", label: "Following Employers", icon: Heart, component: FollowingTab },
+    { id: "alerts", label: "Job Alerts", icon: Bell, component: JobAlertsTab },
+    { id: "messages", label: "Messages", icon: MessageCircle, component: MessagesTab },
+    { id: "meetings", label: "Meetings", icon: Calendar, component: MeetingsTab },
+    { id: "settings", label: "Account Settings", icon: Settings, component: AccountSettingsTab },
+    { id: "password", label: "Change Password", icon: Settings, component: ChangePasswordTab },
   ];
 
   return (
@@ -462,7 +709,10 @@ export default function Profile() {
                 {tabItems.find(item => item.id === activeTab)?.label}
               </h1>
               <p className="text-gray-600">
-                Welcome back, {user?.firstName}! Here's your dashboard overview.
+                {activeTab === 'dashboard' 
+                  ? `Welcome back, ${user?.firstName}! Here's your dashboard overview.`
+                  : `Manage your ${tabItems.find(item => item.id === activeTab)?.label.toLowerCase()} and preferences.`
+                }
               </p>
             </div>
 
