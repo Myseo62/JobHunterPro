@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
 import { 
   User, 
   FileText, 
@@ -424,136 +425,678 @@ export default function Profile() {
     </Card>
   );
 
-  const SavedJobsTab = () => (
-    <Card className="cb-glass-card">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Heart className="h-5 w-5 text-green-600" />
-          Saved Jobs
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
+  const SavedJobsTab = () => {
+    const [searchTerm, setSearchTerm] = useState("");
+    const [filterType, setFilterType] = useState("all");
+
+    const mockSavedJobs = [
+      {
+        id: 1,
+        title: "Senior React Developer",
+        company: { name: "TechCorp India", logo: "" },
+        location: "Mumbai, Maharashtra",
+        salary: "₹15-25 LPA",
+        type: "Full-time",
+        savedAt: "2024-01-15",
+        status: "active"
+      },
+      {
+        id: 2,
+        title: "Product Manager",
+        company: { name: "StartupXYZ", logo: "" },
+        location: "Bangalore, Karnataka",
+        salary: "₹20-30 LPA",
+        type: "Full-time",
+        savedAt: "2024-01-12",
+        status: "applied"
+      }
+    ];
+
+    const filteredJobs = mockSavedJobs.filter(job => {
+      const matchesSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           job.company.name.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesFilter = filterType === "all" || job.status === filterType;
+      return matchesSearch && matchesFilter;
+    });
+
+    return (
+      <div className="space-y-6">
+        {/* Search and Filter */}
+        <Card className="cb-glass-card">
+          <CardContent className="p-6">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Search saved jobs..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant={filterType === "all" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setFilterType("all")}
+                >
+                  All ({mockSavedJobs.length})
+                </Button>
+                <Button
+                  variant={filterType === "active" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setFilterType("active")}
+                >
+                  Active
+                </Button>
+                <Button
+                  variant={filterType === "applied" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setFilterType("applied")}
+                >
+                  Applied
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Saved Jobs List */}
         <div className="space-y-4">
-          {Array.isArray(savedJobs) && savedJobs.map((job: any) => (
-            <div key={job.id} className="p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <h3 className="font-semibold text-gray-900">{job.title}</h3>
-                  <div className="flex items-center gap-4 text-sm text-gray-600 mt-2">
-                    <span className="flex items-center gap-1">
-                      <Building className="h-4 w-4" />
-                      {job.company?.name}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <MapPin className="h-4 w-4" />
-                      {job.location}
-                    </span>
+          {filteredJobs.map((job) => (
+            <Card key={job.id} className="cb-glass-card hover:shadow-lg transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-green-600 rounded-lg flex items-center justify-center">
+                        <Building className="h-6 w-6 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-lg text-gray-900 mb-1">{job.title}</h3>
+                        <p className="text-gray-600 mb-2">{job.company.name}</p>
+                        <div className="flex items-center gap-4 text-sm text-gray-500">
+                          <span className="flex items-center gap-1">
+                            <MapPin className="h-4 w-4" />
+                            {job.location}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Badge variant="secondary">{job.type}</Badge>
+                          </span>
+                          <span>{job.salary}</span>
+                        </div>
+                        <p className="text-xs text-gray-400 mt-2">
+                          Saved on {new Date(job.savedAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <Button size="sm" className="cb-gradient-primary">
+                      <Eye className="h-4 w-4 mr-2" />
+                      View Job
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      {job.status === "applied" ? "Applied" : "Apply Now"}
+                    </Button>
+                    <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+                      <Heart className="h-4 w-4 mr-2" />
+                      Unsave
+                    </Button>
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm">View Job</Button>
-                  <Button variant="outline" size="sm">
-                    <Trash2 className="h-4 w-4" />
+              </CardContent>
+            </Card>
+          ))}
+
+          {filteredJobs.length === 0 && (
+            <Card className="cb-glass-card">
+              <CardContent className="p-12 text-center">
+                <Heart className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">No saved jobs found</h3>
+                <p className="text-gray-600 mb-6">
+                  {searchTerm ? "Try adjusting your search terms" : "Start saving jobs you're interested in"}
+                </p>
+                <Button className="cb-gradient-primary" onClick={() => window.location.href = '/jobs'}>
+                  Browse Jobs
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const JobAlertsTab = () => {
+    const [isCreating, setIsCreating] = useState(false);
+    const [newAlert, setNewAlert] = useState({
+      title: "",
+      keywords: "",
+      location: "",
+      salary: "",
+      experience: "",
+      frequency: "daily"
+    });
+
+    const mockAlerts = [
+      {
+        id: 1,
+        title: "React Developer Jobs",
+        keywords: "React, JavaScript, Frontend",
+        location: "Mumbai, Delhi, Bangalore",
+        salary: "₹10-20 LPA",
+        experience: "3-5 years",
+        frequency: "daily",
+        active: true,
+        createdAt: "2024-01-10",
+        lastTriggered: "2024-01-20"
+      },
+      {
+        id: 2,
+        title: "Product Manager Opportunities",
+        keywords: "Product Manager, Strategy, Analytics",
+        location: "Any",
+        salary: "₹15+ LPA",
+        experience: "5+ years",
+        frequency: "weekly",
+        active: false,
+        createdAt: "2024-01-05",
+        lastTriggered: "2024-01-15"
+      }
+    ];
+
+    const handleCreateAlert = () => {
+      setIsCreating(false);
+      setNewAlert({
+        title: "",
+        keywords: "",
+        location: "",
+        salary: "",
+        experience: "",
+        frequency: "daily"
+      });
+    };
+
+    return (
+      <div className="space-y-6">
+        {/* Create New Alert */}
+        <Card className="cb-glass-card">
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Bell className="h-5 w-5 text-orange-600" />
+                Job Alerts
+              </div>
+              <Button 
+                onClick={() => setIsCreating(!isCreating)}
+                className="cb-gradient-primary"
+                size="sm"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Create Alert
+              </Button>
+            </CardTitle>
+          </CardHeader>
+          {isCreating && (
+            <CardContent>
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-2 block">Alert Title</label>
+                    <Input
+                      placeholder="e.g., Senior Developer Jobs"
+                      value={newAlert.title}
+                      onChange={(e) => setNewAlert({...newAlert, title: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-2 block">Keywords</label>
+                    <Input
+                      placeholder="e.g., React, Node.js, JavaScript"
+                      value={newAlert.keywords}
+                      onChange={(e) => setNewAlert({...newAlert, keywords: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-2 block">Location</label>
+                    <Input
+                      placeholder="e.g., Mumbai, Delhi, Remote"
+                      value={newAlert.location}
+                      onChange={(e) => setNewAlert({...newAlert, location: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-2 block">Salary Range</label>
+                    <Input
+                      placeholder="e.g., ₹10-20 LPA"
+                      value={newAlert.salary}
+                      onChange={(e) => setNewAlert({...newAlert, salary: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-2 block">Experience</label>
+                    <Input
+                      placeholder="e.g., 3-5 years"
+                      value={newAlert.experience}
+                      onChange={(e) => setNewAlert({...newAlert, experience: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-2 block">Frequency</label>
+                    <select 
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                      value={newAlert.frequency}
+                      onChange={(e) => setNewAlert({...newAlert, frequency: e.target.value})}
+                    >
+                      <option value="daily">Daily</option>
+                      <option value="weekly">Weekly</option>
+                      <option value="monthly">Monthly</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="flex gap-2 pt-4">
+                  <Button onClick={handleCreateAlert} className="cb-gradient-primary">
+                    Create Alert
+                  </Button>
+                  <Button variant="outline" onClick={() => setIsCreating(false)}>
+                    Cancel
                   </Button>
                 </div>
               </div>
-            </div>
+            </CardContent>
+          )}
+        </Card>
+
+        {/* Existing Alerts */}
+        <div className="space-y-4">
+          {mockAlerts.map((alert) => (
+            <Card key={alert.id} className="cb-glass-card">
+              <CardContent className="p-6">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-3">
+                      <h3 className="font-semibold text-lg text-gray-900">{alert.title}</h3>
+                      <Badge variant={alert.active ? "default" : "secondary"}>
+                        {alert.active ? "Active" : "Paused"}
+                      </Badge>
+                    </div>
+                    <div className="space-y-2 text-sm text-gray-600">
+                      <p><strong>Keywords:</strong> {alert.keywords}</p>
+                      <p><strong>Location:</strong> {alert.location}</p>
+                      <p><strong>Salary:</strong> {alert.salary}</p>
+                      <p><strong>Experience:</strong> {alert.experience}</p>
+                      <p><strong>Frequency:</strong> {alert.frequency}</p>
+                    </div>
+                    <div className="flex items-center gap-4 mt-4 text-xs text-gray-500">
+                      <span>Created: {new Date(alert.createdAt).toLocaleDateString()}</span>
+                      <span>Last triggered: {new Date(alert.lastTriggered).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <Button size="sm" variant="outline">
+                      <Edit className="h-4 w-4 mr-2" />
+                      Edit
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      className={alert.active ? "text-orange-600" : "text-green-600"}
+                    >
+                      {alert.active ? "Pause" : "Activate"}
+                    </Button>
+                    <Button size="sm" variant="outline" className="text-red-600">
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           ))}
-          {(!Array.isArray(savedJobs) || savedJobs.length === 0) && (
-            <div className="text-center py-8">
-              <Heart className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">No saved jobs yet</p>
-              <Button className="cb-gradient-primary mt-4" onClick={() => window.location.href = '/jobs'}>
-                Browse Jobs
-              </Button>
-            </div>
+
+          {mockAlerts.length === 0 && (
+            <Card className="cb-glass-card">
+              <CardContent className="p-12 text-center">
+                <Bell className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">No job alerts yet</h3>
+                <p className="text-gray-600 mb-6">Create your first job alert to get notified about relevant opportunities</p>
+                <Button onClick={() => setIsCreating(true)} className="cb-gradient-primary">
+                  Create Your First Alert
+                </Button>
+              </CardContent>
+            </Card>
           )}
         </div>
-      </CardContent>
-    </Card>
-  );
+      </div>
+    );
+  };
 
-  const JobAlertsTab = () => (
-    <Card className="cb-glass-card">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Bell className="h-5 w-5 text-orange-600" />
-          Job Alerts
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          <div className="p-4 bg-blue-50 rounded-lg">
-            <h3 className="font-semibold text-blue-900 mb-2">Create Job Alert</h3>
-            <p className="text-sm text-blue-700 mb-4">Get notified when new jobs match your criteria</p>
-            <Button className="cb-gradient-primary">Create Alert</Button>
-          </div>
-          
-          {Array.isArray(jobAlerts) && jobAlerts.map((alert: any) => (
-            <div key={alert.id} className="p-4 border border-gray-200 rounded-lg">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-medium text-gray-900">{alert.title}</h4>
-                  <p className="text-sm text-gray-600">{alert.keywords} • {alert.location}</p>
+  const MessagesTab = () => {
+    const [selectedConversation, setSelectedConversation] = useState<number | null>(null);
+    const [newMessage, setNewMessage] = useState("");
+
+    const mockConversations = [
+      {
+        id: 1,
+        company: "TechCorp India",
+        companyLogo: "",
+        jobTitle: "Senior React Developer",
+        lastMessage: "Thank you for your application. We'd like to schedule an interview.",
+        timestamp: "2024-01-20T10:30:00Z",
+        unread: true,
+        messages: [
+          {
+            id: 1,
+            sender: "HR Team",
+            message: "Thank you for applying to the Senior React Developer position. We're impressed with your profile!",
+            timestamp: "2024-01-19T14:00:00Z",
+            isEmployer: true
+          },
+          {
+            id: 2,
+            sender: "You",
+            message: "Thank you for considering my application. I'm very excited about this opportunity.",
+            timestamp: "2024-01-19T16:30:00Z",
+            isEmployer: false
+          },
+          {
+            id: 3,
+            sender: "HR Team",
+            message: "Great! We'd like to schedule an interview for next week. Are you available on Tuesday or Wednesday?",
+            timestamp: "2024-01-20T10:30:00Z",
+            isEmployer: true
+          }
+        ]
+      },
+      {
+        id: 2,
+        company: "StartupXYZ",
+        companyLogo: "",
+        jobTitle: "Product Manager",
+        lastMessage: "We've received your application and will review it shortly.",
+        timestamp: "2024-01-18T09:15:00Z",
+        unread: false,
+        messages: [
+          {
+            id: 1,
+            sender: "Hiring Manager",
+            message: "Hello! We've received your application for the Product Manager role. We'll review it and get back to you within a week.",
+            timestamp: "2024-01-18T09:15:00Z",
+            isEmployer: true
+          }
+        ]
+      }
+    ];
+
+    const handleSendMessage = () => {
+      if (newMessage.trim() && selectedConversation) {
+        setNewMessage("");
+      }
+    };
+
+    return (
+      <div className="space-y-6">
+        <Card className="cb-glass-card">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MessageCircle className="h-5 w-5 text-blue-600" />
+              Messages
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="flex h-96">
+              {/* Conversations List */}
+              <div className="w-1/3 border-r border-gray-200">
+                <div className="p-4 border-b border-gray-200">
+                  <h3 className="font-medium text-gray-900">Conversations</h3>
                 </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm">Edit</Button>
-                  <Button variant="outline" size="sm">Delete</Button>
+                <div className="overflow-y-auto h-full">
+                  {mockConversations.map((conversation) => (
+                    <div
+                      key={conversation.id}
+                      onClick={() => setSelectedConversation(conversation.id)}
+                      className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 ${
+                        selectedConversation === conversation.id ? 'bg-purple-50 border-l-4 border-l-purple-600' : ''
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 bg-gradient-to-r from-purple-600 to-green-600 rounded-full flex items-center justify-center">
+                          <Building className="h-5 w-5 text-white" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between mb-1">
+                            <h4 className="font-medium text-sm text-gray-900 truncate">{conversation.company}</h4>
+                            {conversation.unread && (
+                              <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                            )}
+                          </div>
+                          <p className="text-xs text-gray-600 mb-1">{conversation.jobTitle}</p>
+                          <p className="text-xs text-gray-500 truncate">{conversation.lastMessage}</p>
+                          <p className="text-xs text-gray-400 mt-1">
+                            {new Date(conversation.timestamp).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
-            </div>
-          ))}
-          
-          {(!Array.isArray(jobAlerts) || jobAlerts.length === 0) && (
-            <div className="text-center py-8">
-              <Bell className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">No job alerts set up</p>
-            </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
 
-  const MessagesTab = () => (
-    <Card className="cb-glass-card">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <MessageCircle className="h-5 w-5 text-blue-600" />
-          Messages
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          <div className="text-center py-8">
-            <MessageCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600">No messages yet</p>
-            <p className="text-sm text-gray-500 mt-2">Messages from employers will appear here</p>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
+              {/* Message View */}
+              <div className="flex-1 flex flex-col">
+                {selectedConversation ? (
+                  <>
+                    {/* Message Header */}
+                    <div className="p-4 border-b border-gray-200">
+                      {(() => {
+                        const conversation = mockConversations.find(c => c.id === selectedConversation);
+                        return conversation ? (
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-gradient-to-r from-purple-600 to-green-600 rounded-full flex items-center justify-center">
+                              <Building className="h-5 w-5 text-white" />
+                            </div>
+                            <div>
+                              <h3 className="font-medium text-gray-900">{conversation.company}</h3>
+                              <p className="text-sm text-gray-600">{conversation.jobTitle}</p>
+                            </div>
+                          </div>
+                        ) : null;
+                      })()}
+                    </div>
 
-  const MeetingsTab = () => (
-    <Card className="cb-glass-card">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Calendar className="h-5 w-5 text-purple-600" />
-          Meetings & Interviews
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          <div className="text-center py-8">
-            <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600">No scheduled meetings</p>
-            <p className="text-sm text-gray-500 mt-2">Interview invitations will appear here</p>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
+                    {/* Messages */}
+                    <div className="flex-1 p-4 overflow-y-auto">
+                      <div className="space-y-4">
+                        {(() => {
+                          const conversation = mockConversations.find(c => c.id === selectedConversation);
+                          return conversation?.messages.map((message) => (
+                            <div
+                              key={message.id}
+                              className={`flex ${message.isEmployer ? 'justify-start' : 'justify-end'}`}
+                            >
+                              <div
+                                className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                                  message.isEmployer
+                                    ? 'bg-gray-100 text-gray-900'
+                                    : 'bg-purple-600 text-white'
+                                }`}
+                              >
+                                <p className="text-sm">{message.message}</p>
+                                <p className={`text-xs mt-1 ${
+                                  message.isEmployer ? 'text-gray-500' : 'text-purple-200'
+                                }`}>
+                                  {new Date(message.timestamp).toLocaleTimeString()}
+                                </p>
+                              </div>
+                            </div>
+                          ));
+                        })()}
+                      </div>
+                    </div>
+
+                    {/* Message Input */}
+                    <div className="p-4 border-t border-gray-200">
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Type your message..."
+                          value={newMessage}
+                          onChange={(e) => setNewMessage(e.target.value)}
+                          onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                          className="flex-1"
+                        />
+                        <Button onClick={handleSendMessage} size="sm" className="cb-gradient-primary">
+                          Send
+                        </Button>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex-1 flex items-center justify-center">
+                    <div className="text-center">
+                      <MessageCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-600">Select a conversation to start messaging</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {mockConversations.length === 0 && (
+          <Card className="cb-glass-card">
+            <CardContent className="p-12 text-center">
+              <MessageCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No messages yet</h3>
+              <p className="text-gray-600 mb-6">Messages from employers will appear here when you apply for jobs</p>
+              <Button className="cb-gradient-primary" onClick={() => window.location.href = '/jobs'}>
+                Browse Jobs & Apply
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    );
+  };
+
+  const MeetingsTab = () => {
+    const [selectedView, setSelectedView] = useState("upcoming");
+
+    const mockMeetings = [
+      {
+        id: 1,
+        title: "Technical Interview",
+        company: "TechCorp India",
+        jobTitle: "Senior React Developer",
+        type: "Video Call",
+        date: "2024-01-25",
+        time: "02:00 PM",
+        duration: "60 mins",
+        status: "scheduled",
+        interviewer: "John Smith, Tech Lead",
+        notes: "Technical round focusing on React, Node.js, and system design"
+      },
+      {
+        id: 2,
+        title: "HR Round",
+        company: "StartupXYZ",
+        jobTitle: "Product Manager",
+        type: "Phone Call",
+        date: "2024-01-22",
+        time: "11:00 AM",
+        duration: "30 mins",
+        status: "completed",
+        interviewer: "Sarah Johnson, HR Manager",
+        notes: "Initial screening call completed successfully"
+      }
+    ];
+
+    const filteredMeetings = mockMeetings.filter(meeting => {
+      if (selectedView === "upcoming") return meeting.status === "scheduled";
+      if (selectedView === "past") return meeting.status === "completed";
+      return true;
+    });
+
+    return (
+      <div className="space-y-6">
+        <Card className="cb-glass-card">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-purple-600" />
+              Meetings & Interviews
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-2 mb-6">
+              <Button
+                variant={selectedView === "upcoming" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedView("upcoming")}
+              >
+                Upcoming
+              </Button>
+              <Button
+                variant={selectedView === "past" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedView("past")}
+              >
+                Past
+              </Button>
+              <Button
+                variant={selectedView === "all" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedView("all")}
+              >
+                All
+              </Button>
+            </div>
+
+            <div className="space-y-4">
+              {filteredMeetings.map((meeting) => (
+                <div key={meeting.id} className="p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-900 mb-1">{meeting.title}</h3>
+                      <p className="text-gray-600 mb-2">{meeting.company} • {meeting.jobTitle}</p>
+                      <div className="flex items-center gap-4 text-sm text-gray-500 mb-2">
+                        <span>{new Date(meeting.date).toLocaleDateString()}</span>
+                        <span>{meeting.time}</span>
+                        <span>{meeting.duration}</span>
+                        <Badge variant="secondary">{meeting.type}</Badge>
+                      </div>
+                      <p className="text-sm text-gray-600">{meeting.interviewer}</p>
+                      <p className="text-sm text-gray-500 mt-1">{meeting.notes}</p>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      {meeting.status === "scheduled" && (
+                        <Button size="sm" className="cb-gradient-primary">
+                          Join Meeting
+                        </Button>
+                      )}
+                      <Button variant="outline" size="sm">
+                        View Details
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {filteredMeetings.length === 0 && (
+                <div className="text-center py-8">
+                  <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-600">No meetings scheduled</p>
+                  <p className="text-sm text-gray-500 mt-2">Interview invitations will appear here</p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  };
 
   const ChangePasswordTab = () => (
     <Card className="cb-glass-card">
