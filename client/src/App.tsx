@@ -107,11 +107,7 @@ function Router() {
           </Route>
           
           {/* Protected routes */}
-          <Route path="/profile">
-            <AuthGuard user={user} requireAuth={true}>
-              <Profile user={user} onUpdateUser={handleLogin} />
-            </AuthGuard>
-          </Route>
+          <Route path="/profile" component={Profile} />
           
           {/* Additional routes */}
           <Route path="/companies" component={() => <CompaniesDirectory user={user} />} />

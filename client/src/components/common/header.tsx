@@ -71,12 +71,6 @@ export default function Header({ user, onLogout }: HeaderProps) {
           <div className="flex items-center space-x-3">
             {user ? (
               <div className="flex items-center space-x-3">
-                <Link href="/candidate-dashboard">
-                  <Button variant="ghost" size="sm" className="flex items-center space-x-2 hover:bg-purple-50 hover:text-purple-600 transition-colors">
-                    <User className="h-4 w-4" />
-                    <span className="hidden sm:inline">Dashboard</span>
-                  </Button>
-                </Link>
                 <Link href="/profile">
                   <Button variant="ghost" size="sm" className="flex items-center space-x-2 hover:bg-purple-50 hover:text-purple-600 transition-colors">
                     <User className="h-4 w-4" />

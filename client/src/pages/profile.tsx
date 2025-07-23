@@ -1,439 +1,472 @@
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { 
+  User, 
+  FileText, 
+  Briefcase, 
+  Heart, 
+  Bell, 
+  MessageCircle, 
+  Calendar,
+  Settings,
+  LogOut,
+  MapPin,
+  Mail,
+  Phone,
+  Clock,
+  Building,
+  Eye,
+  Download,
+  Edit,
+  Trash2,
+  Search,
+  Filter
+} from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { User, Mail, Phone, MapPin, Briefcase, IndianRupee, Upload, Plus, X } from "lucide-react";
 
-const profileSchema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  email: z.string().email("Please enter a valid email"),
-  phone: z.string().optional(),
-  location: z.string().optional(),
-  experience: z.number().min(0).optional(),
-  currentSalary: z.string().optional(),
-  expectedSalary: z.string().optional(),
-  skills: z.array(z.string()).optional(),
-});
+export default function Profile() {
+  const { user, logout, isLoading } = useAuth();
+  const [activeTab, setActiveTab] = useState("dashboard");
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!isLoading && !user) {
+      window.location.href = "/login";
+    }
+  }, [user, isLoading]);
 
-type ProfileFormData = z.infer<typeof profileSchema>;
-
-interface ProfileProps {
-  user: any;
-  onUpdateUser: (user: any) => void;
-}
-
-export default function Profile({ user, onUpdateUser }: ProfileProps) {
-  const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
-  const [newSkill, setNewSkill] = useState("");
-  const [skills, setSkills] = useState<string[]>(user?.skills || []);
-
-  const { data: userApplications, isLoading: applicationsLoading } = useQuery({
-    queryKey: ["/api/applications/user", user?.id],
-    enabled: !!user,
+  const { data: applications } = useQuery({
+    queryKey: ["/api/applications", user?.id],
+    enabled: !!user?.id,
   });
 
-  const form = useForm<ProfileFormData>({
-    resolver: zodResolver(profileSchema),
-    defaultValues: {
-      firstName: user?.firstName || "",
-      lastName: user?.lastName || "",
-      email: user?.email || "",
-      phone: user?.phone || "",
-      location: user?.location || "",
-      experience: user?.experience || 0,
-      currentSalary: user?.currentSalary || "",
-      expectedSalary: user?.expectedSalary || "",
-      skills: user?.skills || [],
-    },
+  const { data: savedJobs } = useQuery({
+    queryKey: ["/api/jobs/saved", user?.id],
+    enabled: !!user?.id,
   });
 
-  const onSubmit = async (data: ProfileFormData) => {
-    setIsLoading(true);
-    try {
-      const updateData = { ...data, skills };
-      const response = await apiRequest("PUT", `/api/users/${user.id}`, updateData);
-      const updatedUser = await response.json();
-      
-      onUpdateUser(updatedUser);
-      toast({
-        title: "Profile updated",
-        description: "Your profile has been updated successfully.",
-      });
-    } catch (error) {
-      toast({
-        title: "Update failed",
-        description: "There was an error updating your profile. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+  const { data: jobAlerts } = useQuery({
+    queryKey: ["/api/job-alerts", user?.id],
+    enabled: !!user?.id,
+  });
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
+
+  const dashboardStats = {
+    totalApplications: Array.isArray(applications) ? applications.length : 0,
+    savedJobs: Array.isArray(savedJobs) ? savedJobs.length : 0,
+    profileViews: 127,
+    jobAlerts: Array.isArray(jobAlerts) ? jobAlerts.length : 0,
   };
 
-  const addSkill = () => {
-    if (newSkill.trim() && !skills.includes(newSkill.trim())) {
-      setSkills([...skills, newSkill.trim()]);
-      setNewSkill("");
-    }
-  };
+  const DashboardOverview = () => (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="cb-glass-card">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Applications</p>
+                <p className="text-2xl font-bold text-gray-900">{dashboardStats.totalApplications}</p>
+              </div>
+              <Briefcase className="h-8 w-8 text-purple-600" />
+            </div>
+          </CardContent>
+        </Card>
 
-  const removeSkill = (skillToRemove: string) => {
-    setSkills(skills.filter(skill => skill !== skillToRemove));
-  };
+        <Card className="cb-glass-card">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Saved Jobs</p>
+                <p className="text-2xl font-bold text-gray-900">{dashboardStats.savedJobs}</p>
+              </div>
+              <Heart className="h-8 w-8 text-green-600" />
+            </div>
+          </CardContent>
+        </Card>
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      addSkill();
-    }
-  };
+        <Card className="cb-glass-card">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Profile Views</p>
+                <p className="text-2xl font-bold text-gray-900">{dashboardStats.profileViews}</p>
+              </div>
+              <Eye className="h-8 w-8 text-blue-600" />
+            </div>
+          </CardContent>
+        </Card>
 
-  const getApplicationStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "applied":
-        return "bg-blue-100 text-blue-800";
-      case "reviewed":
-        return "bg-yellow-100 text-yellow-800";
-      case "shortlisted":
-        return "bg-green-100 text-green-800";
-      case "rejected":
-        return "bg-red-100 text-red-800";
-      case "hired":
-        return "bg-purple-100 text-purple-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
+        <Card className="cb-glass-card">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Job Alerts</p>
+                <p className="text-2xl font-bold text-gray-900">{dashboardStats.jobAlerts}</p>
+              </div>
+              <Bell className="h-8 w-8 text-orange-600" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-purple-50 py-8">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8 text-center">
-          <div className="w-24 h-24 bg-gradient-to-br from-purple-500 to-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-white font-bold text-2xl">
-              {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
-            </span>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="cb-glass-card">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-purple-600" />
+              Recent Applications
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {Array.isArray(applications) && applications.slice(0, 3).map((app: any) => (
+                <div key={app.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div>
+                    <p className="font-medium text-gray-900">{app.job?.title}</p>
+                    <p className="text-sm text-gray-600">{app.job?.company?.name}</p>
+                  </div>
+                  <Badge 
+                    variant={app.status === 'pending' ? 'secondary' : 
+                            app.status === 'accepted' ? 'default' : 'destructive'}
+                  >
+                    {app.status}
+                  </Badge>
+                </div>
+              ))}
+              {(!Array.isArray(applications) || applications.length === 0) && (
+                <p className="text-gray-500 text-center py-4">No applications yet</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="cb-glass-card">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Heart className="h-5 w-5 text-green-600" />
+              Recently Saved Jobs
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {Array.isArray(savedJobs) && savedJobs.slice(0, 3).map((job: any) => (
+                <div key={job.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div>
+                    <p className="font-medium text-gray-900">{job.title}</p>
+                    <p className="text-sm text-gray-600">{job.company?.name}</p>
+                  </div>
+                  <Button variant="outline" size="sm">View</Button>
+                </div>
+              ))}
+              {(!Array.isArray(savedJobs) || savedJobs.length === 0) && (
+                <p className="text-gray-500 text-center py-4">No saved jobs yet</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+
+  const ProfileTab = () => (
+    <Card className="cb-glass-card">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <User className="h-5 w-5 text-purple-600" />
+          Personal Information
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+            <p className="p-3 bg-gray-50 rounded-lg">{user?.firstName || 'Not provided'}</p>
           </div>
-          <h1 className="text-4xl font-bold text-gray-900">Welcome, {user?.firstName}</h1>
-          <p className="text-xl text-gray-600 mt-2">Manage your profile and track your career journey</p>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+            <p className="p-3 bg-gray-50 rounded-lg">{user?.lastName || 'Not provided'}</p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+            <p className="p-3 bg-gray-50 rounded-lg flex items-center gap-2">
+              <Mail className="h-4 w-4 text-gray-500" />
+              {user?.email}
+            </p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+            <p className="p-3 bg-gray-50 rounded-lg flex items-center gap-2">
+              <Phone className="h-4 w-4 text-gray-500" />
+              {user?.phone || 'Not provided'}
+            </p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+            <p className="p-3 bg-gray-50 rounded-lg flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-gray-500" />
+              {user?.location || 'Not provided'}
+            </p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Experience</label>
+            <p className="p-3 bg-gray-50 rounded-lg">
+              {user?.experience ? `${user.experience} years` : 'Not provided'}
+            </p>
+          </div>
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Skills</label>
+          <div className="flex flex-wrap gap-2">
+            {user?.skills?.map((skill: string, index: number) => (
+              <Badge key={index} variant="secondary">{skill}</Badge>
+            )) || <p className="text-gray-500">No skills added</p>}
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Profile Form */}
-          <div className="lg:col-span-2">
-            <Card className="border-0 shadow-lg cb-shadow-glow bg-white/95 backdrop-blur-md">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2 text-xl text-gray-900">
-                  <User className="h-6 w-6" />
-                  <span>Personal Information</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-8">
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="firstName"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>First Name</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Enter first name" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+        <div className="flex gap-3">
+          <Button className="cb-gradient-primary">
+            <Edit className="h-4 w-4 mr-2" />
+            Edit Profile
+          </Button>
+          <Button variant="outline">
+            <Eye className="h-4 w-4 mr-2" />
+            Preview Profile
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
 
-                      <FormField
-                        control={form.control}
-                        name="lastName"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Last Name</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Enter last name" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+  const ResumeTab = () => (
+    <Card className="cb-glass-card">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <FileText className="h-5 w-5 text-purple-600" />
+          Resume Management
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {user?.resumeUrl ? (
+          <div className="p-6 border-2 border-dashed border-gray-200 rounded-lg bg-gray-50">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <FileText className="h-8 w-8 text-purple-600" />
+                <div>
+                  <p className="font-medium text-gray-900">Current Resume</p>
+                  <p className="text-sm text-gray-600">PDF • Uploaded on Jan 15, 2025</p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm">
+                  <Eye className="h-4 w-4 mr-2" />
+                  Preview
+                </Button>
+                <Button variant="outline" size="sm">
+                  <Download className="h-4 w-4 mr-2" />
+                  Download
+                </Button>
+                <Button variant="outline" size="sm">
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </Button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="p-8 border-2 border-dashed border-gray-200 rounded-lg text-center">
+            <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-600 mb-4">No resume uploaded yet</p>
+            <Button className="cb-gradient-primary">
+              Upload Resume
+            </Button>
+          </div>
+        )}
 
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="email"
-                              placeholder="Enter email address"
-                              {...field}
-                              disabled
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+        <div className="space-y-4">
+          <h3 className="font-semibold text-gray-900">Resume Tips</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="p-4 bg-purple-50 rounded-lg">
+              <h4 className="font-medium text-purple-900 mb-2">Keep it Updated</h4>
+              <p className="text-sm text-purple-700">Update your resume regularly with new skills and experiences.</p>
+            </div>
+            <div className="p-4 bg-green-50 rounded-lg">
+              <h4 className="font-medium text-green-900 mb-2">Use Keywords</h4>
+              <p className="text-sm text-green-700">Include industry-specific keywords to pass ATS filters.</p>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="phone"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Phone Number</FormLabel>
-                            <FormControl>
-                              <Input
-                                type="tel"
-                                placeholder="Enter phone number"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="location"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Location</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Enter your location" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <FormField
-                      control={form.control}
-                      name="experience"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Years of Experience</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              min="0"
-                              placeholder="Enter years of experience"
-                              {...field}
-                              onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="currentSalary"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Current Salary (₹ per annum)</FormLabel>
-                            <FormControl>
-                              <Input
-                                type="number"
-                                placeholder="Enter current salary"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="expectedSalary"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Expected Salary (₹ per annum)</FormLabel>
-                            <FormControl>
-                              <Input
-                                type="number"
-                                placeholder="Enter expected salary"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    {/* Skills Section */}
-                    <div>
-                      <FormLabel>Skills</FormLabel>
-                      <div className="mt-2 space-y-4">
-                        <div className="flex flex-wrap gap-2">
-                          {skills.map((skill, index) => (
-                            <Badge key={index} variant="secondary" className="flex items-center space-x-1">
-                              <span>{skill}</span>
-                              <button
-                                type="button"
-                                onClick={() => removeSkill(skill)}
-                                className="ml-1 text-red-500 hover:text-red-700"
-                              >
-                                <X className="h-3 w-3" />
-                              </button>
-                            </Badge>
-                          ))}
-                        </div>
-                        <div className="flex space-x-2">
-                          <Input
-                            placeholder="Add a skill"
-                            value={newSkill}
-                            onChange={(e) => setNewSkill(e.target.value)}
-                            onKeyPress={handleKeyPress}
-                          />
-                          <Button type="button" onClick={addSkill} variant="outline">
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-
-                    <Button
-                      type="submit"
-                      className="w-full h-12 cb-gradient-primary hover:shadow-lg transition-all duration-300 border-0 font-semibold"
-                      disabled={isLoading}
+  const ApplicationsTab = () => (
+    <Card className="cb-glass-card">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Briefcase className="h-5 w-5 text-purple-600" />
+            My Applications
+          </CardTitle>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm">
+              <Filter className="h-4 w-4 mr-2" />
+              Filter
+            </Button>
+            <Button variant="outline" size="sm">
+              <Search className="h-4 w-4 mr-2" />
+              Search
+            </Button>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          {Array.isArray(applications) && applications.map((app: any) => (
+            <div key={app.id} className="p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2">
+                    <h3 className="font-semibold text-gray-900">{app.job?.title}</h3>
+                    <Badge 
+                      variant={app.status === 'pending' ? 'secondary' : 
+                              app.status === 'accepted' ? 'default' : 'destructive'}
                     >
-                      {isLoading ? "Updating..." : "Update Profile"}
-                    </Button>
-                  </form>
-                </Form>
-              </CardContent>
-            </Card>
-
-            {/* Resume Section */}
-            <Card className="mt-6 border-0 shadow-lg cb-shadow-glow bg-white/95 backdrop-blur-md">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2 text-xl text-gray-900">
-                  <Upload className="h-6 w-6" />
-                  <span>Resume</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-8">
-                <div className="border-2 border-dashed border-purple-300 rounded-xl p-8 text-center hover:border-purple-400 transition-colors">
-                  <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-green-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <Upload className="h-8 w-8 text-white" />
+                      {app.status}
+                    </Badge>
                   </div>
-                  <p className="text-gray-700 mb-2 font-medium">Upload your resume</p>
-                  <p className="text-sm text-gray-500 mb-6">
-                    Supported formats: PDF, DOC, DOCX (Max 5MB)
-                  </p>
-                  <Button className="cb-gradient-primary border-0 hover:shadow-lg transition-all duration-300">
-                    Choose File
+                  <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
+                    <span className="flex items-center gap-1">
+                      <Building className="h-4 w-4" />
+                      {app.job?.company?.name}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <MapPin className="h-4 w-4" />
+                      {app.job?.location}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Clock className="h-4 w-4" />
+                      Applied {new Date(app.appliedAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                  {app.coverLetter && (
+                    <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded-lg">
+                      {app.coverLetter.substring(0, 100)}...
+                    </p>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm">View Details</Button>
+                  <Button variant="outline" size="sm">
+                    <MessageCircle className="h-4 w-4" />
                   </Button>
                 </div>
+              </div>
+            </div>
+          ))}
+          {(!Array.isArray(applications) || applications.length === 0) && (
+            <div className="text-center py-8">
+              <Briefcase className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600">No applications yet</p>
+              <Button className="cb-gradient-primary mt-4" onClick={() => window.location.href = '/jobs'}>
+                Browse Jobs
+              </Button>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  const tabItems = [
+    { id: "dashboard", label: "User Dashboard", icon: User, component: DashboardOverview },
+    { id: "profile", label: "Profile", icon: User, component: ProfileTab },
+    { id: "resume", label: "My Resume", icon: FileText, component: ResumeTab },
+    { id: "applications", label: "My Applied", icon: Briefcase, component: ApplicationsTab },
+    { id: "following", label: "Following Employers", icon: Heart, component: () => <div>Following tab coming soon...</div> },
+    { id: "alerts", label: "Alerts Jobs", icon: Bell, component: () => <div>Job alerts coming soon...</div> },
+    { id: "messages", label: "Messages", icon: MessageCircle, component: () => <div>Messages coming soon...</div> },
+    { id: "meetings", label: "Meetings", icon: Calendar, component: () => <div>Meetings coming soon...</div> },
+    { id: "password", label: "Change Password", icon: Settings, component: () => <div>Change password coming soon...</div> },
+  ];
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-purple-50">
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Sidebar */}
+          <div className="lg:w-80">
+            <Card className="cb-glass-card sticky top-8">
+              <CardHeader className="text-center">
+                <div className="w-20 h-20 bg-gradient-to-r from-purple-600 to-green-600 rounded-full mx-auto mb-4 flex items-center justify-center">
+                  <span className="text-2xl font-bold text-white">
+                    {user?.firstName?.[0]}{user?.lastName?.[0]}
+                  </span>
+                </div>
+                <CardTitle className="text-xl">{user?.firstName} {user?.lastName}</CardTitle>
+                <p className="text-gray-600">{user?.email}</p>
+              </CardHeader>
+              <CardContent className="p-0">
+                <nav className="space-y-1">
+                  {tabItems.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => setActiveTab(item.id)}
+                        className={`w-full flex items-center gap-3 px-6 py-3 text-left hover:bg-purple-50 transition-colors ${
+                          activeTab === item.id 
+                            ? 'bg-purple-100 text-purple-700 border-r-2 border-purple-600' 
+                            : 'text-gray-700'
+                        }`}
+                      >
+                        <Icon className="h-5 w-5" />
+                        {item.label}
+                      </button>
+                    );
+                  })}
+                  <button
+                    onClick={logout}
+                    className="w-full flex items-center gap-3 px-6 py-3 text-left text-red-600 hover:bg-red-50 transition-colors"
+                  >
+                    <LogOut className="h-5 w-5" />
+                    Logout
+                  </button>
+                </nav>
               </CardContent>
             </Card>
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Profile Summary */}
-            <Card className="border-0 shadow-lg cb-shadow-glow bg-white/95 backdrop-blur-md">
-              <CardHeader>
-                <CardTitle className="text-xl text-gray-900">Profile Summary</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4 p-6">
-                <div className="flex items-center space-x-2 text-sm">
-                  <Mail className="h-4 w-4 text-gray-400" />
-                  <span>{user?.email}</span>
-                </div>
-                {user?.phone && (
-                  <div className="flex items-center space-x-2 text-sm">
-                    <Phone className="h-4 w-4 text-gray-400" />
-                    <span>{user.phone}</span>
-                  </div>
-                )}
-                {user?.location && (
-                  <div className="flex items-center space-x-2 text-sm">
-                    <MapPin className="h-4 w-4 text-gray-400" />
-                    <span>{user.location}</span>
-                  </div>
-                )}
-                {user?.experience !== undefined && (
-                  <div className="flex items-center space-x-2 text-sm">
-                    <Briefcase className="h-4 w-4 text-gray-400" />
-                    <span>{user.experience} years experience</span>
-                  </div>
-                )}
-                {user?.expectedSalary && (
-                  <div className="flex items-center space-x-2 text-sm">
-                    <IndianRupee className="h-4 w-4 text-gray-400" />
-                    <span>₹{parseInt(user.expectedSalary).toLocaleString()} expected</span>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+          {/* Main Content */}
+          <div className="flex-1">
+            <div className="mb-6">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                {tabItems.find(item => item.id === activeTab)?.label}
+              </h1>
+              <p className="text-gray-600">
+                Welcome back, {user?.firstName}! Here's your dashboard overview.
+              </p>
+            </div>
 
-            {/* Recent Applications */}
-            <Card className="border-0 shadow-lg cb-shadow-glow bg-white/95 backdrop-blur-md">
-              <CardHeader>
-                <CardTitle className="text-xl text-gray-900">Recent Applications</CardTitle>
-              </CardHeader>
-              <CardContent className="p-6">
-                {applicationsLoading ? (
-                  <div className="space-y-3">
-                    {[...Array(3)].map((_, i) => (
-                      <div key={i} className="animate-pulse">
-                        <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                        <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                      </div>
-                    ))}
-                  </div>
-                ) : userApplications?.length === 0 ? (
-                  <p className="text-gray-500 text-sm">No applications yet</p>
-                ) : (
-                  <div className="space-y-3">
-                    {userApplications?.slice(0, 5).map((application: any) => (
-                      <div key={application.id} className="pb-3 border-b border-gray-100 last:border-b-0">
-                        <div className="flex justify-between items-start mb-1">
-                          <h4 className="font-medium text-sm text-gray-900 truncate">
-                            {application.job.title}
-                          </h4>
-                          <Badge
-                            className={`text-xs ${getApplicationStatusColor(application.status)}`}
-                          >
-                            {application.status}
-                          </Badge>
-                        </div>
-                        <p className="text-xs text-gray-600">{application.job.company.name}</p>
-                        <p className="text-xs text-gray-500">
-                          Applied {new Date(application.appliedAt).toLocaleDateString()}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            {tabItems.find(item => item.id === activeTab)?.component()}
           </div>
         </div>
       </div>
