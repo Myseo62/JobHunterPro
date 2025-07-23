@@ -35,6 +35,8 @@ import JobAlerts from "@/pages/job-alerts";
 import SavedJobs from "@/pages/saved-jobs";
 import Applications from "@/pages/applications";
 import AccountSettings from "@/pages/account-settings";
+import CandidateDashboard from "@/pages/candidate-dashboard";
+import { AuthProvider } from "@/hooks/useAuth";
 
 // Additional employer pages
 import EmployerApplications from "@/pages/employer/applications";
@@ -132,6 +134,11 @@ function Router() {
           <Route path="/company/settings" component={() => <CompanySettings user={user} />} />
 
           {/* Additional candidate pages */}
+          <Route path="/candidate-dashboard">
+            <AuthGuard user={user} requireAuth={true}>
+              <CandidateDashboard />
+            </AuthGuard>
+          </Route>
           <Route path="/job-alerts" component={() => <JobAlerts user={user} />} />
           <Route path="/saved-jobs" component={() => <SavedJobs user={user} />} />
           <Route path="/applications" component={() => <Applications user={user} />} />
@@ -165,10 +172,12 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Router />
-      </TooltipProvider>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Router />
+        </TooltipProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
