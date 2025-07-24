@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -32,8 +31,7 @@ import {
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
-export default function Profile() {
-  const { user, logout, isLoading } = useAuth();
+export default function Profile({ user }: { user: any }) {
   
   // Extract tab from URL hash or default to dashboard
   const getTabFromUrl = () => {
@@ -52,7 +50,7 @@ export default function Profile() {
 
   // Listen for hash changes and redirect to login if not authenticated
   useEffect(() => {
-    if (!isLoading && !user) {
+    if (!user) {
       window.location.href = "/login";
       return;
     }
@@ -68,7 +66,7 @@ export default function Profile() {
     
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
-  }, [user, isLoading]);
+  }, [user]);
 
   // Additional effect to handle direct navigation
   useEffect(() => {
@@ -78,7 +76,7 @@ export default function Profile() {
         setActiveTab(currentTab);
       }
     }
-  }, [location, user]);
+  }, [user]);
 
   const { data: applications } = useQuery({
     queryKey: ["/api/applications", user?.id],
@@ -95,16 +93,7 @@ export default function Profile() {
     enabled: !!user?.id,
   });
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-purple-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading your profile...</p>
-        </div>
-      </div>
-    );
-  }
+
 
   if (!user) {
     return null;

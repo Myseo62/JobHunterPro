@@ -108,7 +108,7 @@ function Router() {
           </Route>
           
           {/* Protected routes */}
-          <Route path="/profile" component={Profile} />
+          <Route path="/profile" component={() => <Profile user={user} />} />
           
           {/* Additional routes */}
           <Route path="/companies" component={() => <CompaniesDirectory user={user} />} />
