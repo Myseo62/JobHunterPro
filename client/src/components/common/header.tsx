@@ -2,16 +2,8 @@ import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Menu, X, LogOut, Sparkles, User, Briefcase, FileText, Users, Heart, Settings } from "lucide-react";
+import { Menu, X, LogOut, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 
 interface HeaderProps {
@@ -39,15 +31,7 @@ export default function Header({ user, onLogout }: HeaderProps) {
     });
   };
 
-  const candidateMenuItems = [
-    { label: "Profile", href: "/profile", icon: User },
-    { label: "User Dashboard", href: "/profile#dashboard", icon: Settings },
-    { label: "My Jobs", href: "/applications", icon: Briefcase },
-    { label: "Submit Job", href: "/employer/post-job", icon: FileText },
-    { label: "Other Jobs", href: "/jobs", icon: Briefcase },
-    { label: "Candidates", href: "/companies", icon: Users },
-    { label: "Shortlist Candidates", href: "/saved-jobs", icon: Heart },
-  ];
+
 
 
 
@@ -92,57 +76,11 @@ export default function Header({ user, onLogout }: HeaderProps) {
           <div className="flex items-center space-x-3">
             {user ? (
               <div className="flex items-center space-x-4">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <div className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 rounded-lg p-2 transition-colors">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-600 to-green-600 flex items-center justify-center">
-                        <span className="text-sm font-medium text-white">
-                          {user.firstName?.[0]}{user.lastName?.[0]}
-                        </span>
-                      </div>
-                      <div className="hidden sm:block">
-                        <p className="text-sm font-medium text-gray-900">{user.firstName || 'felixemployee2'}</p>
-                        <Button 
-                          variant="default" 
-                          size="sm" 
-                          className="mt-1 h-6 text-xs bg-blue-600 hover:bg-blue-700"
-                        >
-                          View Profile
-                        </Button>
-                      </div>
-                    </div>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56 mt-2" align="end" sideOffset={5}>
-                    <DropdownMenuLabel className="font-normal">
-                      <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">{user.firstName || 'felixemployee2'}</p>
-                        <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
-                      </div>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    {candidateMenuItems.map((item) => {
-                      const Icon = item.icon;
-                      return (
-                        <DropdownMenuItem 
-                          key={item.label} 
-                          className="cursor-pointer focus:bg-blue-50"
-                          onClick={() => window.location.href = item.href}
-                        >
-                          <Icon className="mr-2 h-4 w-4" />
-                          <span>{item.label}</span>
-                        </DropdownMenuItem>
-                      );
-                    })}
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem 
-                      className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50"
-                      onClick={handleLogout}
-                    >
-                      <LogOut className="mr-2 h-4 w-4" />
-                      <span>Logout</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <span className="text-sm text-gray-700 hidden sm:inline">Welcome, {user.firstName}!</span>
+                <Button onClick={handleLogout} variant="outline" size="sm" className="font-medium">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Logout
+                </Button>
               </div>
             ) : (
               <>
