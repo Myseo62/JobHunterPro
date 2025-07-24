@@ -36,6 +36,7 @@ import SavedJobs from "@/pages/saved-jobs";
 import Applications from "@/pages/applications";
 import AccountSettings from "@/pages/account-settings";
 import CandidateDashboard from "@/pages/candidate-dashboard";
+import FollowingCompanies from "@/pages/following-companies";
 import { AuthProvider } from "@/hooks/useAuth";
 
 // Additional employer pages
@@ -139,6 +140,7 @@ function Router() {
           <Route path="/saved-jobs" component={() => <SavedJobs user={user} />} />
           <Route path="/applications" component={() => <Applications user={user} />} />
           <Route path="/account-settings" component={() => <AccountSettings user={user} />} />
+          <Route path="/following-companies" component={() => <FollowingCompanies user={user} />} />
 
           {/* Additional employer pages */}
           <Route path="/employer/applications" component={() => <EmployerApplications user={user} />} />
