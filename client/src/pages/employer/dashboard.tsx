@@ -1,288 +1,384 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { 
+  Building2, 
+  Users, 
+  Briefcase, 
+  Search, 
+  Settings, 
+  CreditCard,
+  Plus,
+  Download,
+  Eye,
+  UserPlus,
+  Crown,
+  Activity,
+  TrendingUp
+} from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { Briefcase, Users, Eye, TrendingUp, Plus, MapPin, IndianRupee, Clock } from "lucide-react";
-import { useLocation } from "wouter";
+import { useToast } from "@/hooks/use-toast";
 
-interface EmployerDashboardProps {
-  user: any;
+interface User {
+  id: number;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: string;
 }
 
-export default function EmployerDashboard({ user }: EmployerDashboardProps) {
-  const [, setLocation] = useLocation();
+interface Company {
+  id: number;
+  name: string;
+  subscriptionPlan: string;
+  monthlySearchLimit: number;
+  monthlyDownloadLimit: number;
+  searchesUsed: number;
+  downloadsUsed: number;
+}
 
-  // Mock data for employer dashboard - in a real app, this would come from API
-  const stats = {
-    activeJobs: 5,
-    totalApplications: 124,
-    viewsThisMonth: 2847,
-    hireRate: 15
+interface Stats {
+  activeJobs: number;
+  totalApplications: number;
+}
+
+export default function EmployerDashboard() {
+  const [user, setUser] = useState<User | null>(null);
+  const [activeTab, setActiveTab] = useState("overview");
+  const { toast } = useToast();
+
+  useEffect(() => {
+    // Check if user is logged in and is an employer
+    const userData = localStorage.getItem("user");
+    if (userData) {
+      const parsedUser = JSON.parse(userData);
+      if (!parsedUser.role.startsWith('employer_')) {
+        toast({
+          title: "Access Denied",
+          description: "This area is for employers only.",
+          variant: "destructive",
+        });
+        window.location.href = "/";
+        return;
+      }
+      setUser(parsedUser);
+    } else {
+      window.location.href = "/auth/employer-login";
+    }
+  }, [toast]);
+
+  const { data: companyData } = useQuery<Company>({
+    queryKey: ["/api/employer/company"],
+    enabled: !!user,
+  });
+
+  const { data: stats } = useQuery<Stats>({
+    queryKey: ["/api/employer/stats"],
+    enabled: !!user,
+  });
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    window.location.href = "/";
   };
 
-  const recentJobs = [
-    {
-      id: 1,
-      title: "Senior Software Engineer",
-      applications: 23,
-      views: 156,
-      status: "Active",
-      postedAt: "2 days ago"
-    },
-    {
-      id: 2,
-      title: "Product Manager",
-      applications: 31,
-      views: 234,
-      status: "Active",
-      postedAt: "5 days ago"
-    },
-    {
-      id: 3,
-      title: "UI/UX Designer",
-      applications: 18,
-      views: 189,
-      status: "Paused",
-      postedAt: "1 week ago"
-    }
-  ];
-
-  const recentApplications = [
-    {
-      id: 1,
-      candidateName: "Rahul Sharma",
-      jobTitle: "Senior Software Engineer",
-      appliedAt: "2 hours ago",
-      experience: "5 years",
-      status: "New"
-    },
-    {
-      id: 2,
-      candidateName: "Priya Patel",
-      jobTitle: "Product Manager",
-      appliedAt: "4 hours ago",
-      experience: "7 years",
-      status: "Reviewed"
-    },
-    {
-      id: 3,
-      candidateName: "Amit Kumar",
-      jobTitle: "UI/UX Designer",
-      appliedAt: "1 day ago",
-      experience: "3 years",
-      status: "Shortlisted"
-    }
-  ];
+  if (!user) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" aria-label="Loading"/>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-purple-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Employer Dashboard</h1>
-            <p className="text-gray-600">Welcome back! Here's what's happening with your job postings.</p>
-          </div>
-          <Button 
-            onClick={() => setLocation("/employer/post-job")}
-            className="bg-gradient-to-r from-purple-600 to-green-600 hover:from-purple-700 hover:to-green-700"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Post New Job
-          </Button>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="border-0 shadow-lg bg-white/95 backdrop-blur-md">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Active Jobs</p>
-                  <p className="text-3xl font-bold text-gray-900">{stats.activeJobs}</p>
-                </div>
-                <div className="bg-blue-100 p-3 rounded-lg">
-                  <Briefcase className="h-6 w-6 text-blue-600" />
-                </div>
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-green-50">
+      {/* Header */}
+      <header className="bg-white/80 backdrop-blur-sm border-b border-white/50 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-r from-purple-600 to-green-600 rounded-lg flex items-center justify-center">
+                <Building2 className="h-6 w-6 text-white" />
               </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-0 shadow-lg bg-white/95 backdrop-blur-md">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Total Applications</p>
-                  <p className="text-3xl font-bold text-gray-900">{stats.totalApplications}</p>
-                </div>
-                <div className="bg-green-100 p-3 rounded-lg">
-                  <Users className="h-6 w-6 text-green-600" />
-                </div>
+              <div>
+                <h1 className="text-xl font-bold text-gray-900">Employer Dashboard</h1>
+                <p className="text-sm text-gray-600">Career-Bazaar</p>
               </div>
-            </CardContent>
-          </Card>
+            </div>
 
-          <Card className="border-0 shadow-lg bg-white/95 backdrop-blur-md">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Views This Month</p>
-                  <p className="text-3xl font-bold text-gray-900">{stats.viewsThisMonth.toLocaleString()}</p>
+            <div className="flex items-center gap-4">
+              {companyData && (
+                <div className="flex items-center gap-2">
+                  <Badge variant={companyData?.subscriptionPlan === 'free' ? 'secondary' : 'default'}>
+                    <Crown className="h-3 w-3 mr-1" />
+                    {companyData?.subscriptionPlan?.charAt(0).toUpperCase() + companyData?.subscriptionPlan?.slice(1)} Plan
+                  </Badge>
                 </div>
-                <div className="bg-purple-100 p-3 rounded-lg">
-                  <Eye className="h-6 w-6 text-purple-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-0 shadow-lg bg-white/95 backdrop-blur-md">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Hire Rate</p>
-                  <p className="text-3xl font-bold text-gray-900">{stats.hireRate}%</p>
-                </div>
-                <div className="bg-orange-100 p-3 rounded-lg">
-                  <TrendingUp className="h-6 w-6 text-orange-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Recent Jobs */}
-          <Card className="border-0 shadow-lg bg-white/95 backdrop-blur-md">
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <span>Recent Job Postings</span>
-                <Button variant="outline" size="sm" onClick={() => setLocation("/employer/jobs")}>
-                  View All
-                </Button>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {recentJobs.map((job) => (
-                  <div key={job.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900">{job.title}</h3>
-                      <div className="flex items-center space-x-4 mt-2 text-sm text-gray-600">
-                        <span className="flex items-center">
-                          <Users className="h-4 w-4 mr-1" />
-                          {job.applications} applications
-                        </span>
-                        <span className="flex items-center">
-                          <Eye className="h-4 w-4 mr-1" />
-                          {job.views} views
-                        </span>
-                        <span className="flex items-center">
-                          <Clock className="h-4 w-4 mr-1" />
-                          {job.postedAt}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Badge variant={job.status === 'Active' ? 'default' : 'secondary'}>
-                        {job.status}
-                      </Badge>
-                      <Button variant="outline" size="sm">
-                        View
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Recent Applications */}
-          <Card className="border-0 shadow-lg bg-white/95 backdrop-blur-md">
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <span>Recent Applications</span>
-                <Button variant="outline" size="sm" onClick={() => setLocation("/employer/applications")}>
-                  View All
-                </Button>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {recentApplications.map((application) => (
-                  <div key={application.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                    <div className="flex items-start space-x-3">
-                      <div className="w-10 h-10 bg-gradient-to-r from-purple-600 to-green-600 rounded-full flex items-center justify-center text-white font-semibold">
-                        {application.candidateName.charAt(0)}
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-gray-900">{application.candidateName}</h3>
-                        <p className="text-sm text-gray-600">{application.jobTitle}</p>
-                        <div className="flex items-center space-x-3 mt-1 text-xs text-gray-500">
-                          <span>{application.experience} experience</span>
-                          <span>•</span>
-                          <span>{application.appliedAt}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Badge 
-                        variant={
-                          application.status === 'New' ? 'default' : 
-                          application.status === 'Reviewed' ? 'secondary' : 
-                          'outline'
-                        }
-                      >
-                        {application.status}
-                      </Badge>
-                      <Button variant="outline" size="sm">
-                        Review
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Quick Actions */}
-        <Card className="border-0 shadow-lg bg-white/95 backdrop-blur-md mt-8">
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Button 
-                variant="outline" 
-                className="h-20 flex flex-col items-center space-y-2"
-                onClick={() => setLocation("/employer/post-job")}
-              >
-                <Plus className="h-6 w-6" />
-                <span>Post New Job</span>
-              </Button>
+              )}
               
-              <Button 
-                variant="outline" 
-                className="h-20 flex flex-col items-center space-y-2"
-                onClick={() => setLocation("/employer/search-resume")}
-              >
-                <Users className="h-6 w-6" />
-                <span>Search Resumes</span>
-              </Button>
-              
-              <Button 
-                variant="outline" 
-                className="h-20 flex flex-col items-center space-y-2"
-                onClick={() => setLocation("/employer/analytics")}
-              >
-                <TrendingUp className="h-6 w-6" />
-                <span>View Analytics</span>
+              <div className="flex items-center gap-3">
+                <Avatar>
+                  <AvatarFallback className="bg-purple-100 text-purple-600">
+                    {user.firstName[0]}{user.lastName[0]}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="text-sm">
+                  <p className="font-medium text-gray-900">{user.firstName} {user.lastName}</p>
+                  <p className="text-gray-600">{user.role.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</p>
+                </div>
+              </div>
+
+              <Button variant="outline" onClick={handleLogout}>
+                Logout
               </Button>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-6">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="jobs">Jobs</TabsTrigger>
+            <TabsTrigger value="candidates">Candidates</TabsTrigger>
+            <TabsTrigger value="team">Team</TabsTrigger>
+            <TabsTrigger value="subscription">Subscription</TabsTrigger>
+            <TabsTrigger value="settings">Settings</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview" className="space-y-6">
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <Card className="bg-white/80 backdrop-blur-sm border border-white/50">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Active Jobs</CardTitle>
+                  <Briefcase className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats?.activeJobs || 0}</div>
+                  <p className="text-xs text-muted-foreground">+2 from last month</p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-white/80 backdrop-blur-sm border border-white/50">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Applications</CardTitle>
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats?.totalApplications || 0}</div>
+                  <p className="text-xs text-muted-foreground">+12% from last month</p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-white/80 backdrop-blur-sm border border-white/50">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Searches Used</CardTitle>
+                  <Search className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {companyData?.searchesUsed || 0}/{companyData?.monthlySearchLimit || 10}
+                  </div>
+                  <p className="text-xs text-muted-foreground">This month</p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-white/80 backdrop-blur-sm border border-white/50">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Downloads Used</CardTitle>
+                  <Download className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {companyData?.downloadsUsed || 0}/{companyData?.monthlyDownloadLimit || 5}
+                  </div>
+                  <p className="text-xs text-muted-foreground">This month</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Quick Actions */}
+            <Card className="bg-white/80 backdrop-blur-sm border border-white/50">
+              <CardHeader>
+                <CardTitle>Quick Actions</CardTitle>
+                <CardDescription>Common tasks to get you started</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <Button className="h-20 flex flex-col gap-2" variant="outline">
+                    <Plus className="h-5 w-5" />
+                    Post New Job
+                  </Button>
+                  <Button className="h-20 flex flex-col gap-2" variant="outline">
+                    <Search className="h-5 w-5" />
+                    Search Candidates
+                  </Button>
+                  <Button className="h-20 flex flex-col gap-2" variant="outline">
+                    <UserPlus className="h-5 w-5" />
+                    Invite HR Member
+                  </Button>
+                  <Button className="h-20 flex flex-col gap-2" variant="outline">
+                    <TrendingUp className="h-5 w-5" />
+                    View Analytics
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="jobs">
+            <Card className="bg-white/80 backdrop-blur-sm border border-white/50">
+              <CardHeader>
+                <CardTitle>Job Management</CardTitle>
+                <CardDescription>Manage your job postings and applications</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-12">
+                  <Briefcase className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Job Management</h3>
+                  <p className="text-gray-600 mb-6">Coming soon! Manage all your job postings and track applications here.</p>
+                  <Button>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Post New Job
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="candidates">
+            <Card className="bg-white/80 backdrop-blur-sm border border-white/50">
+              <CardHeader>
+                <CardTitle>Candidate Search</CardTitle>
+                <CardDescription>
+                  Search and download candidate profiles based on your subscription plan
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-12">
+                  <Search className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Candidate Search</h3>
+                  <p className="text-gray-600 mb-6">
+                    Find the perfect candidates for your job openings. 
+                    You have {companyData?.monthlySearchLimit - companyData?.searchesUsed || 0} searches remaining this month.
+                  </p>
+                  <div className="flex justify-center gap-4">
+                    <Button>
+                      <Search className="h-4 w-4 mr-2" />
+                      Search Candidates
+                    </Button>
+                    <Button variant="outline">
+                      <Eye className="h-4 w-4 mr-2" />
+                      View Search History
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="team">
+            <Card className="bg-white/80 backdrop-blur-sm border border-white/50">
+              <CardHeader>
+                <CardTitle>Team Management</CardTitle>
+                <CardDescription>Manage HR employees and their permissions</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-12">
+                  <Users className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Team Management</h3>
+                  <p className="text-gray-600 mb-6">Invite HR members and assign role-based permissions for job posting and candidate search.</p>
+                  <Button>
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Invite HR Member
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="subscription">
+            <Card className="bg-white/80 backdrop-blur-sm border border-white/50">
+              <CardHeader>
+                <CardTitle>Subscription Management</CardTitle>
+                <CardDescription>Manage your subscription plan and usage limits</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  {/* Current Plan */}
+                  <div className="flex items-center justify-between p-6 bg-gradient-to-r from-purple-50 to-green-50 rounded-lg">
+                    <div>
+                      <h3 className="text-lg font-semibold">Current Plan: {companyData?.subscriptionPlan?.charAt(0).toUpperCase() + companyData?.subscriptionPlan?.slice(1) || 'Free'}</h3>
+                      <p className="text-gray-600">
+                        {companyData?.monthlySearchLimit || 10} searches & {companyData?.monthlyDownloadLimit || 5} downloads per month
+                      </p>
+                    </div>
+                    <Button>
+                      <CreditCard className="h-4 w-4 mr-2" />
+                      Upgrade Plan
+                    </Button>
+                  </div>
+
+                  {/* Usage Statistics */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-3">
+                      <div className="flex justify-between text-sm">
+                        <span>Candidate Searches</span>
+                        <span>{companyData?.searchesUsed || 0}/{companyData?.monthlySearchLimit || 10}</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-gradient-to-r from-purple-600 to-green-600 h-2 rounded-full" 
+                          style={{ width: `${((companyData?.searchesUsed || 0) / (companyData?.monthlySearchLimit || 10)) * 100}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <div className="flex justify-between text-sm">
+                        <span>Profile Downloads</span>
+                        <span>{companyData?.downloadsUsed || 0}/{companyData?.monthlyDownloadLimit || 5}</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-gradient-to-r from-purple-600 to-green-600 h-2 rounded-full" 
+                          style={{ width: `${((companyData?.downloadsUsed || 0) / (companyData?.monthlyDownloadLimit || 5)) * 100}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="settings">
+            <Card className="bg-white/80 backdrop-blur-sm border border-white/50">
+              <CardHeader>
+                <CardTitle>Company Settings</CardTitle>
+                <CardDescription>Manage your company profile and preferences</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-12">
+                  <Settings className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Company Settings</h3>
+                  <p className="text-gray-600 mb-6">Update your company information, billing details, and notification preferences.</p>
+                  <Button variant="outline">
+                    <Settings className="h-4 w-4 mr-2" />
+                    Manage Settings
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </main>
     </div>
   );
 }

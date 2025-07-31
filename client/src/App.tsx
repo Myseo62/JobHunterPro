@@ -21,8 +21,8 @@ import Resources from "@/pages/resources";
 import Terms from "@/pages/terms";
 import Privacy from "@/pages/privacy";
 import PostJob from "@/pages/employer/post-job";
-import EmployerLogin from "@/pages/employer/login";
-import EmployerRegister from "@/pages/employer/register";
+import EmployerLogin from "@/pages/auth/employer-login";
+import EmployerRegister from "@/pages/auth/employer-register";
 import EmployerDashboard from "@/pages/employer/dashboard";
 import SearchResume from "@/pages/employer/search-resume";
 import EmployerPricing from "@/pages/employer/pricing";
@@ -119,9 +119,9 @@ function Router() {
           
           {/* Employer routes */}
           <Route path="/employer/post-job" component={() => <PostJob user={user} />} />
-          <Route path="/employer/login" component={() => <EmployerLogin onLogin={handleLogin} />} />
-          <Route path="/employer/register" component={() => <EmployerRegister onLogin={handleLogin} />} />
-          <Route path="/employer/dashboard" component={() => <EmployerDashboard user={user} />} />
+          <Route path="/auth/employer-login" component={EmployerLogin} />
+          <Route path="/auth/employer-register" component={EmployerRegister} />
+          <Route path="/employer/dashboard" component={EmployerDashboard} />
           <Route path="/employer/search-resume" component={() => <SearchResume user={user} />} />
           <Route path="/employer/pricing" component={() => <EmployerPricing />} />
 

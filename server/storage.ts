@@ -1,4 +1,4 @@
-import { users, companies, jobs, applications, jobCategories, type User, type InsertUser, type Company, type InsertCompany, type Job, type InsertJob, type Application, type InsertApplication, type JobCategory, type InsertJobCategory, type JobWithCompany, type ApplicationWithJobAndCompany, type JobSearchParams } from "@shared/schema";
+import { users, companies, jobs, applications, jobCategories, companyEmployees, type User, type InsertUser, type Company, type InsertCompany, type Job, type InsertJob, type Application, type InsertApplication, type JobCategory, type InsertJobCategory, type JobWithCompany, type ApplicationWithJobAndCompany, type JobSearchParams, type CompanyEmployee, type InsertCompanyEmployee } from "@shared/schema";
 
 export interface IStorage {
   // User operations
@@ -6,6 +6,14 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, user: Partial<InsertUser>): Promise<User | undefined>;
+  
+  // Company operations (for employers)
+  createCompany(company: InsertCompany): Promise<Company>;
+  getCompanyByEmployerId(userId: number): Promise<Company | undefined>;
+  createCompanyEmployee(employee: InsertCompanyEmployee): Promise<CompanyEmployee>;
+  
+  // Employer stats
+  getEmployerStats(companyId: number): Promise<{ activeJobs: number; totalApplications: number; }>;
   
   // Company operations
   getCompany(id: number): Promise<Company | undefined>;

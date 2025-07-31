@@ -2,11 +2,12 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { RewardService, REWARD_CATALOG } from "./reward-service";
-import { insertUserSchema, loginSchema, insertJobSchema, insertApplicationSchema, jobSearchSchema } from "@shared/schema";
+import { insertUserSchema, loginSchema, insertJobSchema, insertApplicationSchema, jobSearchSchema, employerRegistrationSchema } from "@shared/schema";
 import { z } from "zod";
 import session from "express-session";
 import passport from "passport";
 import { setupSocialAuth } from "./auth/social-auth";
+import bcrypt from "bcrypt";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up session middleware
@@ -69,6 +70,104 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Role-based authentication middleware
+  const requireRole = (allowedRoles: string[]) => {
+    return (req: any, res: any, next: any) => {
+      if (!req.session?.user && !req.isAuthenticated()) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      
+      const user = req.session?.user || req.user;
+      if (!allowedRoles.includes(user.role)) {
+        return res.status(403).json({ message: "Insufficient permissions" });
+      }
+      
+      req.user = user;
+      next();
+    };
+  };
+
+  const requireEmployer = requireRole(['employer_admin', 'employer_hr']);
+  const requireCandidate = requireRole(['candidate']);
+
+  // Employer authentication routes
+  app.post("/api/auth/employer-register", async (req, res) => {
+    try {
+      const data = employerRegistrationSchema.parse(req.body);
+      
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(data.email);
+      if (existingUser) {
+        return res.status(400).json({ message: "User already exists" });
+      }
+
+      // Hash password
+      const hashedPassword = await bcrypt.hash(data.password, 10);
+      
+      // Create company first
+      const company = await storage.createCompany({
+        name: data.companyName,
+        website: data.companyWebsite,
+        industry: data.industry,
+        employeeCount: data.companySize,
+        companyType: "Employer",
+      });
+
+      // Create user
+      const user = await storage.createUser({
+        email: data.email,
+        password: hashedPassword,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        role: "employer_admin",
+      });
+
+      // Store user in session
+      req.session.user = user;
+      
+      res.json({ 
+        message: "Employer account created successfully", 
+        user: { ...user, password: undefined },
+        company 
+      });
+    } catch (error: any) {
+      console.error("Employer registration error:", error);
+      res.status(400).json({ message: error.message || "Registration failed" });
+    }
+  });
+
+  app.post("/api/auth/employer-login", async (req, res) => {
+    try {
+      const { email, password } = loginSchema.parse(req.body);
+      
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      // Check if user is an employer
+      if (!user.role.startsWith('employer_')) {
+        return res.status(401).json({ message: "This login is for employers only" });
+      }
+
+      const isValid = await bcrypt.compare(password, user.password);
+      if (!isValid) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      // Store user in session
+      req.session.user = user;
+      
+      res.json({ 
+        message: "Login successful", 
+        user: { ...user, password: undefined } 
+      });
+    } catch (error: any) {
+      console.error("Employer login error:", error);
+      res.status(400).json({ message: error.message || "Login failed" });
+    }
+  });
+
   // Authentication routes
   app.post("/api/auth/register", async (req, res) => {
     try {
@@ -80,7 +179,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "User already exists" });
       }
       
-      const user = await storage.createUser(userData);
+      // Hash password for manual registration
+      const hashedPassword = await bcrypt.hash(userData.password, 10);
+      const user = await storage.createUser({
+        ...userData,
+        password: hashedPassword,
+        role: "candidate", // Default role for manual registration
+      });
+      
+      // Store user in session
+      req.session.user = user;
+      
       // Remove password from response
       const { password, ...userResponse } = user;
       res.json(userResponse);
@@ -94,9 +203,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { email, password } = loginSchema.parse(req.body);
       
       const user = await storage.getUserByEmail(email);
-      if (!user || user.password !== password) {
+      if (!user) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
+      
+      // Check if user is a candidate
+      if (user.role !== 'candidate') {
+        return res.status(401).json({ message: "This login is for candidates only. Please use employer login." });
+      }
+
+      const isValid = await bcrypt.compare(password, user.password);
+      if (!isValid) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+      
+      // Store user in session
+      req.session.user = user;
       
       // Remove password from response
       const { password: _, ...userResponse } = user;

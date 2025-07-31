@@ -157,18 +157,51 @@ export default function Header({ user, onLogout }: HeaderProps) {
                 </DropdownMenu>
               </div>
             ) : (
-              <>
-                <Link href="/login">
-                  <Button variant="ghost" size="sm" className="font-medium hover:bg-gray-50 transition-colors">
-                    Sign In
-                  </Button>
-                </Link>
-                <Link href="/register">
-                  <Button size="sm" className="font-medium cb-gradient-primary hover:shadow-lg transition-all duration-200 border-0">
-                    Sign Up
-                  </Button>
-                </Link>
-              </>
+              <div className="flex items-center gap-3">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="font-medium hover:bg-gray-50 transition-colors">
+                      Sign In <ChevronDown className="h-3 w-3 ml-1" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem asChild>
+                      <Link href="/login" className="w-full">
+                        <User className="h-4 w-4 mr-2" />
+                        Candidate Login
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/auth/employer-login" className="w-full">
+                        <Building2 className="h-4 w-4 mr-2" />
+                        Employer Login
+                      </Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button size="sm" className="font-medium cb-gradient-primary hover:shadow-lg transition-all duration-200 border-0">
+                      Sign Up <ChevronDown className="h-3 w-3 ml-1" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem asChild>
+                      <Link href="/register" className="w-full">
+                        <User className="h-4 w-4 mr-2" />
+                        Job Seeker
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/auth/employer-register" className="w-full">
+                        <Building2 className="h-4 w-4 mr-2" />
+                        Employer
+                      </Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             )}
 
             <div className="hidden lg:flex items-center text-sm text-gray-600 border-l pl-4 ml-4">

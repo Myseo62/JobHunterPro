@@ -17,6 +17,7 @@ export const users = pgTable("users", {
   resumeUrl: text("resume_url"),
   profileCompleted: boolean("profile_completed").default(false),
   rewardPoints: integer("reward_points").default(0),
+  role: text("role").notNull().default("candidate"), // candidate, employer_admin, employer_hr
 });
 
 export const companies = pgTable("companies", {
@@ -31,6 +32,25 @@ export const companies = pgTable("companies", {
   rating: decimal("rating"),
   reviewCount: integer("review_count").default(0),
   companyType: text("company_type"), // MNC, Startup, Product, etc.
+  subscriptionPlan: text("subscription_plan").default("free"), // free, basic, premium, enterprise
+  monthlySearchLimit: integer("monthly_search_limit").default(10),
+  monthlyDownloadLimit: integer("monthly_download_limit").default(5),
+  searchesUsed: integer("searches_used").default(0),
+  downloadsUsed: integer("downloads_used").default(0),
+  subscriptionStartDate: timestamp("subscription_start_date"),
+  subscriptionEndDate: timestamp("subscription_end_date"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Company-User relationship for employers
+export const companyEmployees = pgTable("company_employees", {
+  id: serial("id").primaryKey(),
+  companyId: integer("company_id").references(() => companies.id).notNull(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  role: text("role").notNull(), // admin, hr, recruiter
+  permissions: text("permissions").array(), // post_jobs, search_candidates, manage_employees, etc.
+  isActive: boolean("is_active").default(true),
+  joinedAt: timestamp("joined_at").defaultNow(),
 });
 
 export const jobs = pgTable("jobs", {
@@ -89,6 +109,41 @@ export const rewardRedemptions = pgTable("reward_redemptions", {
   expiresAt: timestamp("expires_at"),
 });
 
+// Candidate search tracking for employers
+export const candidateSearches = pgTable("candidate_searches", {
+  id: serial("id").primaryKey(),
+  companyId: integer("company_id").references(() => companies.id).notNull(),
+  searcherId: integer("searcher_id").references(() => users.id).notNull(), // HR/Admin who performed search
+  searchQuery: text("search_query"),
+  filters: text("filters"), // JSON string of search filters
+  resultsCount: integer("results_count").default(0),
+  searchedAt: timestamp("searched_at").defaultNow(),
+});
+
+// Candidate profile downloads tracking
+export const candidateDownloads = pgTable("candidate_downloads", {
+  id: serial("id").primaryKey(),
+  companyId: integer("company_id").references(() => companies.id).notNull(),
+  downloaderId: integer("downloader_id").references(() => users.id).notNull(),
+  candidateId: integer("candidate_id").references(() => users.id).notNull(),
+  downloadType: text("download_type").notNull(), // resume, profile, contact_info
+  downloadedAt: timestamp("downloaded_at").defaultNow(),
+});
+
+// Company subscription plans
+export const subscriptionPlans = pgTable("subscription_plans", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(), // Free, Basic, Premium, Enterprise
+  price: decimal("price").notNull(),
+  currency: text("currency").default("USD"),
+  billingPeriod: text("billing_period").notNull(), // monthly, yearly
+  searchLimit: integer("search_limit").notNull(),
+  downloadLimit: integer("download_limit").notNull(),
+  jobPostingLimit: integer("job_posting_limit").notNull(),
+  features: text("features").array(), // advanced_analytics, priority_support, etc.
+  isActive: boolean("is_active").default(true),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -122,10 +177,22 @@ export const insertJobCategorySchema = createInsertSchema(jobCategories).omit({
   jobCount: true,
 });
 
-// Login schema
+// Login schemas
 export const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
+});
+
+export const employerRegistrationSchema = z.object({
+  firstName: z.string().min(2),
+  lastName: z.string().min(2),
+  email: z.string().email(),
+  password: z.string().min(6),
+  companyName: z.string().min(2),
+  companyWebsite: z.string().url().optional(),
+  companySize: z.string(),
+  industry: z.string(),
+  role: z.literal("employer_admin"),
 });
 
 // Search schema
@@ -166,3 +233,12 @@ export type RewardActivity = typeof rewardActivities.$inferSelect;
 export type InsertRewardActivity = typeof rewardActivities.$inferInsert;
 export type RewardRedemption = typeof rewardRedemptions.$inferSelect;
 export type InsertRewardRedemption = typeof rewardRedemptions.$inferInsert;
+export type CompanyEmployee = typeof companyEmployees.$inferSelect;
+export type InsertCompanyEmployee = typeof companyEmployees.$inferInsert;
+export type CandidateSearch = typeof candidateSearches.$inferSelect;
+export type InsertCandidateSearch = typeof candidateSearches.$inferInsert;
+export type CandidateDownload = typeof candidateDownloads.$inferSelect;
+export type InsertCandidateDownload = typeof candidateDownloads.$inferInsert;
+export type SubscriptionPlan = typeof subscriptionPlans.$inferSelect;
+export type InsertSubscriptionPlan = typeof subscriptionPlans.$inferInsert;
+export type EmployerRegistrationData = z.infer<typeof employerRegistrationSchema>;
