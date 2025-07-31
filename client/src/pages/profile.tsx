@@ -61,6 +61,22 @@ export default function Profile({ user }: { user: any }) {
     enabled: !!user?.id,
   });
 
+  // State for various tabs - moved to top level to avoid hooks order issues
+  const [savedJobsSearchTerm, setSavedJobsSearchTerm] = useState("");
+  const [savedJobsFilter, setSavedJobsFilter] = useState("all");
+  const [isCreatingAlert, setIsCreatingAlert] = useState(false);
+  const [newAlert, setNewAlert] = useState({
+    title: "",
+    keywords: "",
+    location: "",
+    salary: "",
+    experience: "",
+    frequency: "daily"
+  });
+  const [selectedConversation, setSelectedConversation] = useState<number | null>(null);
+  const [newMessage, setNewMessage] = useState("");
+  const [selectedMeetingView, setSelectedMeetingView] = useState("upcoming");
+
   // Update URL hash when tab changes
   const handleTabChange = (tabId: string) => {
     setActiveTab(tabId);
@@ -482,8 +498,6 @@ export default function Profile({ user }: { user: any }) {
   );
 
   const SavedJobsTab = () => {
-    const [searchTerm, setSearchTerm] = useState("");
-    const [filterType, setFilterType] = useState("all");
 
     const mockSavedJobs = [
       {
@@ -509,9 +523,9 @@ export default function Profile({ user }: { user: any }) {
     ];
 
     const filteredJobs = mockSavedJobs.filter(job => {
-      const matchesSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           job.company.name.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesFilter = filterType === "all" || job.status === filterType;
+      const matchesSearch = job.title.toLowerCase().includes(savedJobsSearchTerm.toLowerCase()) ||
+                           job.company.name.toLowerCase().includes(savedJobsSearchTerm.toLowerCase());
+      const matchesFilter = savedJobsFilter === "all" || job.status === savedJobsFilter;
       return matchesSearch && matchesFilter;
     });
 
@@ -526,31 +540,31 @@ export default function Profile({ user }: { user: any }) {
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input
                     placeholder="Search saved jobs..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    value={savedJobsSearchTerm}
+                    onChange={(e) => setSavedJobsSearchTerm(e.target.value)}
                     className="pl-10"
                   />
                 </div>
               </div>
               <div className="flex gap-2">
                 <Button
-                  variant={filterType === "all" ? "default" : "outline"}
+                  variant={savedJobsFilter === "all" ? "default" : "outline"}
                   size="sm"
-                  onClick={() => setFilterType("all")}
+                  onClick={() => setSavedJobsFilter("all")}
                 >
                   All ({mockSavedJobs.length})
                 </Button>
                 <Button
-                  variant={filterType === "active" ? "default" : "outline"}
+                  variant={savedJobsFilter === "active" ? "default" : "outline"}
                   size="sm"
-                  onClick={() => setFilterType("active")}
+                  onClick={() => setSavedJobsFilter("active")}
                 >
                   Active
                 </Button>
                 <Button
-                  variant={filterType === "applied" ? "default" : "outline"}
+                  variant={savedJobsFilter === "applied" ? "default" : "outline"}
                   size="sm"
-                  onClick={() => setFilterType("applied")}
+                  onClick={() => setSavedJobsFilter("applied")}
                 >
                   Applied
                 </Button>
@@ -613,7 +627,7 @@ export default function Profile({ user }: { user: any }) {
                 <Heart className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">No saved jobs found</h3>
                 <p className="text-gray-600 mb-6">
-                  {searchTerm ? "Try adjusting your search terms" : "Start saving jobs you're interested in"}
+                  {savedJobsSearchTerm ? "Try adjusting your search terms" : "Start saving jobs you're interested in"}
                 </p>
                 <Button className="cb-gradient-primary" onClick={() => window.location.href = '/jobs'}>
                   Browse Jobs
@@ -627,15 +641,6 @@ export default function Profile({ user }: { user: any }) {
   };
 
   const JobAlertsTab = () => {
-    const [isCreating, setIsCreating] = useState(false);
-    const [newAlert, setNewAlert] = useState({
-      title: "",
-      keywords: "",
-      location: "",
-      salary: "",
-      experience: "",
-      frequency: "daily"
-    });
 
     const mockAlerts = [
       {
@@ -665,7 +670,7 @@ export default function Profile({ user }: { user: any }) {
     ];
 
     const handleCreateAlert = () => {
-      setIsCreating(false);
+      setIsCreatingAlert(false);
       setNewAlert({
         title: "",
         keywords: "",
@@ -687,7 +692,7 @@ export default function Profile({ user }: { user: any }) {
                 Job Alerts
               </div>
               <Button 
-                onClick={() => setIsCreating(!isCreating)}
+                onClick={() => setIsCreatingAlert(!isCreatingAlert)}
                 className="cb-gradient-primary"
                 size="sm"
               >
@@ -696,7 +701,7 @@ export default function Profile({ user }: { user: any }) {
               </Button>
             </CardTitle>
           </CardHeader>
-          {isCreating && (
+          {isCreatingAlert && (
             <CardContent>
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -757,7 +762,7 @@ export default function Profile({ user }: { user: any }) {
                   <Button onClick={handleCreateAlert} className="cb-gradient-primary">
                     Create Alert
                   </Button>
-                  <Button variant="outline" onClick={() => setIsCreating(false)}>
+                  <Button variant="outline" onClick={() => setIsCreatingAlert(false)}>
                     Cancel
                   </Button>
                 </div>
@@ -819,7 +824,7 @@ export default function Profile({ user }: { user: any }) {
                 <Bell className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">No job alerts yet</h3>
                 <p className="text-gray-600 mb-6">Create your first job alert to get notified about relevant opportunities</p>
-                <Button onClick={() => setIsCreating(true)} className="cb-gradient-primary">
+                <Button onClick={() => setIsCreatingAlert(true)} className="cb-gradient-primary">
                   Create Your First Alert
                 </Button>
               </CardContent>
@@ -831,8 +836,6 @@ export default function Profile({ user }: { user: any }) {
   };
 
   const MessagesTab = () => {
-    const [selectedConversation, setSelectedConversation] = useState<number | null>(null);
-    const [newMessage, setNewMessage] = useState("");
 
     const mockConversations = [
       {
@@ -1039,7 +1042,6 @@ export default function Profile({ user }: { user: any }) {
   };
 
   const MeetingsTab = () => {
-    const [selectedView, setSelectedView] = useState("upcoming");
 
     const mockMeetings = [
       {
@@ -1071,8 +1073,8 @@ export default function Profile({ user }: { user: any }) {
     ];
 
     const filteredMeetings = mockMeetings.filter(meeting => {
-      if (selectedView === "upcoming") return meeting.status === "scheduled";
-      if (selectedView === "past") return meeting.status === "completed";
+      if (selectedMeetingView === "upcoming") return meeting.status === "scheduled";
+      if (selectedMeetingView === "past") return meeting.status === "completed";
       return true;
     });
 
@@ -1088,23 +1090,23 @@ export default function Profile({ user }: { user: any }) {
           <CardContent>
             <div className="flex gap-2 mb-6">
               <Button
-                variant={selectedView === "upcoming" ? "default" : "outline"}
+                variant={selectedMeetingView === "upcoming" ? "default" : "outline"}
                 size="sm"
-                onClick={() => setSelectedView("upcoming")}
+                onClick={() => setSelectedMeetingView("upcoming")}
               >
                 Upcoming
               </Button>
               <Button
-                variant={selectedView === "past" ? "default" : "outline"}
+                variant={selectedMeetingView === "past" ? "default" : "outline"}
                 size="sm"
-                onClick={() => setSelectedView("past")}
+                onClick={() => setSelectedMeetingView("past")}
               >
                 Past
               </Button>
               <Button
-                variant={selectedView === "all" ? "default" : "outline"}
+                variant={selectedMeetingView === "all" ? "default" : "outline"}
                 size="sm"
-                onClick={() => setSelectedView("all")}
+                onClick={() => setSelectedMeetingView("all")}
               >
                 All
               </Button>
