@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useLocation } from "wouter";
+import { Link, useLocation, useRouter } from "wouter";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Menu, X, LogOut, Sparkles, User, LayoutDashboard, MessageCircle, Heart, Building2, ChevronDown, Star } from "lucide-react";
@@ -21,7 +21,7 @@ interface HeaderProps {
 }
 
 export default function Header({ user, onLogout }: HeaderProps) {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { toast } = useToast();
 
@@ -51,9 +51,13 @@ export default function Header({ user, onLogout }: HeaderProps) {
   const handleMenuItemClick = (href: string) => {
     if (href.includes('#')) {
       const [path, hash] = href.split('#');
-      window.location.href = href;
+      setLocation(path);
+      // Set hash after navigation
+      setTimeout(() => {
+        window.location.hash = hash;
+      }, 100);
     } else {
-      window.location.href = href;
+      setLocation(href);
     }
   };
 
