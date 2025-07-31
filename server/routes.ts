@@ -461,6 +461,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Employer Authentication API (separate from regular users)
   const employerUsers: Array<{ id: number; email: string; password: string; firstName: string; lastName: string; companyName: string; }> = [];
 
+  // Middleware for employer endpoints
+  const requireEmployerAuth = (req: any, res: any, next: any) => {
+    if (!req.session?.employerId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    next();
+  };
+
   // Employer authentication endpoints
   app.post("/api/employer/register", async (req, res) => {
     try {
@@ -527,7 +535,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/employer/profile", requireEmployer, async (req: any, res) => {
+  app.get("/api/employer/profile", requireEmployerAuth, async (req: any, res) => {
     try {
       const employer = employerUsers.find(u => u.id === req.session.employerId);
       if (!employer) {
@@ -551,13 +559,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ message: "Logged out successfully" });
   });
 
-  // Middleware for employer endpoints
-  const requireEmployerAuth = (req: any, res: any, next: any) => {
-    if (!req.session?.employerId) {
-      return res.status(401).json({ message: "Employer authentication required" });
-    }
-    next();
-  };
+
 
   // Employer dashboard endpoints
   app.get("/api/employer/stats", requireEmployerAuth, async (req: any, res) => {
