@@ -45,6 +45,22 @@ export default function Profile({ user }: { user: any }) {
   
   const [activeTab, setActiveTab] = useState(getTabFromUrl);
 
+  // All hooks must be called before any early returns
+  const { data: applications } = useQuery({
+    queryKey: ["/api/applications", user?.id],
+    enabled: !!user?.id,
+  });
+
+  const { data: savedJobs } = useQuery({
+    queryKey: ["/api/jobs/saved", user?.id],
+    enabled: !!user?.id,
+  });
+
+  const { data: jobAlerts } = useQuery({
+    queryKey: ["/api/job-alerts", user?.id],
+    enabled: !!user?.id,
+  });
+
   // Update URL hash when tab changes
   const handleTabChange = (tabId: string) => {
     setActiveTab(tabId);
@@ -80,23 +96,6 @@ export default function Profile({ user }: { user: any }) {
       }
     }
   }, [user]);
-
-  const { data: applications } = useQuery({
-    queryKey: ["/api/applications", user?.id],
-    enabled: !!user?.id,
-  });
-
-  const { data: savedJobs } = useQuery({
-    queryKey: ["/api/jobs/saved", user?.id],
-    enabled: !!user?.id,
-  });
-
-  const { data: jobAlerts } = useQuery({
-    queryKey: ["/api/job-alerts", user?.id],
-    enabled: !!user?.id,
-  });
-
-
 
   if (!user) {
     return null;
