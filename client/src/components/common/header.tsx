@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useLocation, useRouter } from "wouter";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { useEmployerAuth } from "@/hooks/useEmployerAuth";
 import { Menu, X, LogOut, Sparkles, User, LayoutDashboard, MessageCircle, Heart, Building2, ChevronDown, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -24,6 +25,10 @@ export default function Header({ user, onLogout }: HeaderProps) {
   const [location, setLocation] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { toast } = useToast();
+  const { employer, isAuthenticated: isEmployerAuthenticated, logout: employerLogout } = useEmployerAuth();
+
+  // Check if we're on an employer page
+  const isEmployerPage = location.startsWith('/employer') || location.startsWith('/auth/employer');
 
   const navigation = [
     { label: "Find Jobs", href: "/jobs" },
@@ -104,9 +109,11 @@ export default function Header({ user, onLogout }: HeaderProps) {
 
           {/* Auth Section */}
           <div className="flex items-center space-x-3">
-            {user ? (
+            {user || isEmployerAuthenticated ? (
               <div className="flex items-center space-x-4">
-                <RewardPointsWidget user={user} compact={true} />
+                {/* Reward Points Widget - only for candidates */}
+                {user && <RewardPointsWidget user={user} compact={true} />}
+                
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button 
@@ -115,11 +122,14 @@ export default function Header({ user, onLogout }: HeaderProps) {
                     >
                       <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-600 to-green-600 flex items-center justify-center">
                         <span className="text-xs font-medium text-white">
-                          {user.firstName?.[0] || 'U'}{user.lastName?.[0] || ''}
+                          {isEmployerAuthenticated 
+                            ? (employer?.firstName?.[0] || 'E') + (employer?.lastName?.[0] || '')
+                            : (user?.firstName?.[0] || 'U') + (user?.lastName?.[0] || '')
+                          }
                         </span>
                       </div>
                       <span className="hidden sm:inline font-medium text-sm">
-                        {user.firstName || 'User'}
+                        {isEmployerAuthenticated ? employer?.firstName || 'Employer' : user?.firstName || 'User'}
                       </span>
                       <ChevronDown className="h-4 w-4" />
                     </Button>
@@ -127,28 +137,70 @@ export default function Header({ user, onLogout }: HeaderProps) {
                   <DropdownMenuContent className="w-56" align="end" sideOffset={5}>
                     <DropdownMenuLabel className="font-normal">
                       <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">{user.firstName} {user.lastName}</p>
-                        <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                        <p className="text-sm font-medium leading-none">
+                          {isEmployerAuthenticated 
+                            ? `${employer?.firstName} ${employer?.lastName}`
+                            : `${user?.firstName} ${user?.lastName}`
+                          }
+                        </p>
+                        <p className="text-xs leading-none text-muted-foreground">
+                          {isEmployerAuthenticated ? employer?.email : user?.email}
+                        </p>
+                        {isEmployerAuthenticated && (
+                          <p className="text-xs leading-none text-blue-600 font-medium">
+                            {employer?.companyName}
+                          </p>
+                        )}
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    {candidateMenuItems.map((item) => {
-                      const Icon = item.icon;
-                      return (
+                    
+                    {isEmployerAuthenticated ? (
+                      // Employer menu items
+                      <>
                         <DropdownMenuItem 
-                          key={item.label} 
                           className="cursor-pointer hover:bg-purple-50 focus:bg-purple-50"
-                          onClick={() => handleMenuItemClick(item.href)}
+                          onClick={() => handleMenuItemClick('/employer/dashboard')}
                         >
-                          <Icon className="mr-2 h-4 w-4" />
-                          <span>{item.label}</span>
+                          <LayoutDashboard className="mr-2 h-4 w-4" />
+                          <span>Dashboard</span>
                         </DropdownMenuItem>
-                      );
-                    })}
+                        <DropdownMenuItem 
+                          className="cursor-pointer hover:bg-purple-50 focus:bg-purple-50"
+                          onClick={() => handleMenuItemClick('/employer/jobs')}
+                        >
+                          <Building2 className="mr-2 h-4 w-4" />
+                          <span>Manage Jobs</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          className="cursor-pointer hover:bg-purple-50 focus:bg-purple-50"
+                          onClick={() => handleMenuItemClick('/employer/candidates')}
+                        >
+                          <User className="mr-2 h-4 w-4" />
+                          <span>Find Candidates</span>
+                        </DropdownMenuItem>
+                      </>
+                    ) : (
+                      // Candidate menu items
+                      candidateMenuItems.map((item) => {
+                        const Icon = item.icon;
+                        return (
+                          <DropdownMenuItem 
+                            key={item.label} 
+                            className="cursor-pointer hover:bg-purple-50 focus:bg-purple-50"
+                            onClick={() => handleMenuItemClick(item.href)}
+                          >
+                            <Icon className="mr-2 h-4 w-4" />
+                            <span>{item.label}</span>
+                          </DropdownMenuItem>
+                        );
+                      })
+                    )}
+                    
                     <DropdownMenuSeparator />
                     <DropdownMenuItem 
                       className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50"
-                      onClick={handleLogout}
+                      onClick={isEmployerAuthenticated ? () => employerLogout() : handleLogout}
                     >
                       <LogOut className="mr-2 h-4 w-4" />
                       <span>Logout</span>
