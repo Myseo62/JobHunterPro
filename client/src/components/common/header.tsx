@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Menu, X, LogOut, Sparkles, User, LayoutDashboard, MessageCircle, Heart, Building2, ChevronDown } from "lucide-react";
+import { Menu, X, LogOut, Sparkles, User, LayoutDashboard, MessageCircle, Heart, Building2, ChevronDown, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
@@ -12,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import RewardPointsWidget from "@/components/rewards/reward-points-widget";
 
 
 interface HeaderProps {
@@ -101,6 +102,7 @@ export default function Header({ user, onLogout }: HeaderProps) {
           <div className="flex items-center space-x-3">
             {user ? (
               <div className="flex items-center space-x-4">
+                <RewardPointsWidget user={user} compact={true} />
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button 

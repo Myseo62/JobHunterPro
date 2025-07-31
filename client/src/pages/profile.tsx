@@ -30,8 +30,11 @@ import {
   X
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import RewardPointsWidget from "@/components/rewards/reward-points-widget";
+import { useRewardTracking } from "@/hooks/useRewardTracking";
 
 export default function Profile({ user }: { user: any }) {
+  const { trackAndNotify } = useRewardTracking(user?.id);
   
   // Extract tab from URL hash or default to dashboard
   const getTabFromUrl = () => {
@@ -156,6 +159,58 @@ export default function Profile({ user }: { user: any }) {
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Reward Points Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-1">
+          <RewardPointsWidget user={user} />
+        </div>
+        <div className="lg:col-span-2">
+          <Card className="cb-glass-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="h-5 w-5 text-purple-600" />
+                Quick Actions
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <Button 
+                  variant="outline" 
+                  className="flex flex-col items-center p-4 h-auto hover:bg-purple-50"
+                  onClick={() => trackAndNotify('PROFILE_UPDATE')}
+                >
+                  <User className="h-6 w-6 mb-2" />
+                  <span className="text-sm">Update Profile</span>
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="flex flex-col items-center p-4 h-auto hover:bg-green-50"
+                  onClick={() => trackAndNotify('RESUME_UPLOAD')}
+                >
+                  <FileText className="h-6 w-6 mb-2" />
+                  <span className="text-sm">Upload Resume</span>
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="flex flex-col items-center p-4 h-auto hover:bg-blue-50"
+                  onClick={() => trackAndNotify('SKILL_ADD')}
+                >
+                  <Plus className="h-6 w-6 mb-2" />
+                  <span className="text-sm">Add Skills</span>
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="flex flex-col items-center p-4 h-auto hover:bg-orange-50"
+                >
+                  <Building className="h-6 w-6 mb-2" />
+                  <span className="text-sm">Find Jobs</span>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

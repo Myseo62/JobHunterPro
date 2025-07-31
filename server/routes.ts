@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { RewardService, REWARD_CATALOG } from "./reward-service";
 import { insertUserSchema, loginSchema, insertJobSchema, insertApplicationSchema, jobSearchSchema } from "@shared/schema";
 import { z } from "zod";
 import session from "express-session";
@@ -280,6 +281,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(categories);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch job categories" });
+    }
+  });
+
+  // Reward Points API Routes
+  app.get("/api/rewards/user/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const points = await RewardService.getUserPoints(userId);
+      const history = await RewardService.getUserRewardHistory(userId, 20);
+      const redemptions = await RewardService.getUserRedemptions(userId);
+      
+      res.json({
+        points,
+        history,
+        redemptions,
+        catalog: REWARD_CATALOG
+      });
+    } catch (error) {
+      console.error("Error fetching user rewards:", error);
+      res.status(500).json({ message: "Failed to fetch rewards" });
+    }
+  });
+
+  app.post("/api/rewards/redeem", async (req, res) => {
+    try {
+      const { userId, rewardType } = req.body;
+      const success = await RewardService.redeemReward(userId, rewardType);
+      res.json({ success });
+    } catch (error) {
+      console.error("Error redeeming reward:", error);
+      res.status(400).json({ message: error instanceof Error ? error.message : "Failed to redeem reward" });
+    }
+  });
+
+  app.get("/api/rewards/leaderboard", async (req, res) => {
+    try {
+      const leaderboard = await RewardService.getLeaderboard(10);
+      res.json(leaderboard);
+    } catch (error) {
+      console.error("Error fetching leaderboard:", error);
+      res.status(500).json({ message: "Failed to fetch leaderboard" });
+    }
+  });
+
+  app.post("/api/rewards/activity", async (req, res) => {
+    try {
+      const { userId, activityType, customPoints } = req.body;
+      await RewardService.awardPoints(userId, activityType, customPoints);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error awarding points:", error);
+      res.status(500).json({ message: "Failed to award points" });
     }
   });
 

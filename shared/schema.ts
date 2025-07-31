@@ -16,6 +16,7 @@ export const users = pgTable("users", {
   skills: text("skills").array(),
   resumeUrl: text("resume_url"),
   profileCompleted: boolean("profile_completed").default(false),
+  rewardPoints: integer("reward_points").default(0),
 });
 
 export const companies = pgTable("companies", {
@@ -65,6 +66,27 @@ export const jobCategories = pgTable("job_categories", {
   slug: text("slug").notNull().unique(),
   description: text("description"),
   jobCount: integer("job_count").default(0),
+});
+
+// Reward Points System
+export const rewardActivities = pgTable("reward_activities", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  activityType: text("activity_type").notNull(), // blog_read, blog_write, profile_complete, friend_refer, job_apply, etc.
+  points: integer("points").notNull(),
+  description: text("description").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const rewardRedemptions = pgTable("reward_redemptions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  rewardType: text("reward_type").notNull(), // premium_job_alerts, featured_profile, resume_boost, etc.
+  pointsCost: integer("points_cost").notNull(),
+  description: text("description").notNull(),
+  status: text("status").notNull().default("active"), // active, expired, used
+  redeemedAt: timestamp("redeemed_at").defaultNow(),
+  expiresAt: timestamp("expires_at"),
 });
 
 // Insert schemas
@@ -139,3 +161,8 @@ export type JobWithCompany = Job & {
 export type ApplicationWithJobAndCompany = Application & {
   job: JobWithCompany;
 };
+
+export type RewardActivity = typeof rewardActivities.$inferSelect;
+export type InsertRewardActivity = typeof rewardActivities.$inferInsert;
+export type RewardRedemption = typeof rewardRedemptions.$inferSelect;
+export type InsertRewardRedemption = typeof rewardRedemptions.$inferInsert;
