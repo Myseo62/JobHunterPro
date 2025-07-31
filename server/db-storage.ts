@@ -1,4 +1,4 @@
-import { users, companies, jobs, applications, jobCategories, type User, type InsertUser, type Company, type InsertCompany, type Job, type InsertJob, type Application, type InsertApplication, type JobCategory, type InsertJobCategory, type JobWithCompany, type ApplicationWithJobAndCompany, type JobSearchParams } from "@shared/schema";
+import { users, companies, jobs, applications, jobCategories, companyEmployees, type User, type InsertUser, type Company, type InsertCompany, type Job, type InsertJob, type Application, type InsertApplication, type JobCategory, type InsertJobCategory, type JobWithCompany, type ApplicationWithJobAndCompany, type JobSearchParams, type CompanyEmployee, type InsertCompanyEmployee } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, like, gte, lte, desc, sql, ilike, or } from "drizzle-orm";
 import type { IStorage } from "./storage";
@@ -310,5 +310,46 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     return category;
+  }
+
+  // Company operations (for employers)
+  async createCompanyEmployee(employee: InsertCompanyEmployee): Promise<CompanyEmployee> {
+    const [newEmployee] = await db
+      .insert(companyEmployees)
+      .values(employee)
+      .returning();
+    return newEmployee;
+  }
+
+  async getCompanyByEmployerId(userId: number): Promise<Company | undefined> {
+    // Get company through company_employees relationship
+    const result = await db
+      .select({ company: companies })
+      .from(companies)
+      .innerJoin(companyEmployees, eq(companies.id, companyEmployees.companyId))
+      .where(eq(companyEmployees.userId, userId))
+      .limit(1);
+    
+    return result[0]?.company;
+  }
+
+  async getEmployerStats(companyId: number): Promise<{ activeJobs: number; totalApplications: number; }> {
+    // Get active jobs count
+    const jobsResult = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(jobs)
+      .where(and(eq(jobs.companyId, companyId), eq(jobs.isActive, true)));
+    
+    // Get total applications count for company jobs
+    const applicationsResult = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(applications)
+      .innerJoin(jobs, eq(applications.jobId, jobs.id))
+      .where(eq(jobs.companyId, companyId));
+    
+    return {
+      activeJobs: jobsResult[0]?.count || 0,
+      totalApplications: applicationsResult[0]?.count || 0,
+    };
   }
 }

@@ -458,6 +458,154 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Employer Authentication API (separate from regular users)
+  const employerUsers: Array<{ id: number; email: string; password: string; firstName: string; lastName: string; companyName: string; }> = [];
+
+  // Employer authentication endpoints
+  app.post("/api/employer/register", async (req, res) => {
+    try {
+      const { email, password, firstName, lastName, companyName } = req.body;
+      
+      // Check if employer already exists
+      const existingEmployer = employerUsers.find(u => u.email === email);
+      if (existingEmployer) {
+        return res.status(400).json({ message: "Employer already exists" });
+      }
+      
+      // Hash password
+      const hashedPassword = await bcrypt.hash(password, 10);
+      
+      // Create employer user
+      const newEmployer = {
+        id: employerUsers.length + 1,
+        email,
+        password: hashedPassword,
+        firstName,
+        lastName,
+        companyName
+      };
+      
+      employerUsers.push(newEmployer);
+      
+      // Create session
+      req.session.employerId = newEmployer.id;
+      
+      res.json({ 
+        message: "Employer registered successfully",
+        employer: { id: newEmployer.id, email, firstName, lastName, companyName }
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Registration failed" });
+    }
+  });
+
+  app.post("/api/employer/login", async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      // Find employer
+      const employer = employerUsers.find(u => u.email === email);
+      if (!employer) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+      
+      // Verify password
+      const isValidPassword = await bcrypt.compare(password, employer.password);
+      if (!isValidPassword) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+      
+      // Create session
+      req.session.employerId = employer.id;
+      
+      res.json({ 
+        message: "Login successful",
+        employer: { id: employer.id, email: employer.email, firstName: employer.firstName, lastName: employer.lastName, companyName: employer.companyName }
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Login failed" });
+    }
+  });
+
+  app.get("/api/employer/profile", requireEmployer, async (req: any, res) => {
+    try {
+      const employer = employerUsers.find(u => u.id === req.session.employerId);
+      if (!employer) {
+        return res.status(404).json({ message: "Employer not found" });
+      }
+      
+      res.json({
+        id: employer.id,
+        email: employer.email,
+        firstName: employer.firstName,
+        lastName: employer.lastName,
+        companyName: employer.companyName
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch profile" });
+    }
+  });
+
+  app.post("/api/employer/logout", (req: any, res) => {
+    req.session.employerId = null;
+    res.json({ message: "Logged out successfully" });
+  });
+
+  // Middleware for employer endpoints
+  const requireEmployerAuth = (req: any, res: any, next: any) => {
+    if (!req.session?.employerId) {
+      return res.status(401).json({ message: "Employer authentication required" });
+    }
+    next();
+  };
+
+  // Employer dashboard endpoints
+  app.get("/api/employer/stats", requireEmployerAuth, async (req: any, res) => {
+    try {
+      const employer = employerUsers.find(u => u.id === req.session.employerId);
+      if (!employer) {
+        return res.status(404).json({ message: "Employer not found" });
+      }
+      
+      // Mock stats for demo (real app would query database)
+      const stats = {
+        activeJobs: 5,
+        totalApplications: 23,
+        monthlySearchLimit: 50,
+        searchesUsed: 12,
+        downloadLimit: 25,
+        downloadsUsed: 8
+      };
+      
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch stats" });
+    }
+  });
+
+  // Protected route: Only employers can post jobs
+  app.post("/api/employer/jobs", requireEmployerAuth, async (req: any, res) => {
+    try {
+      const employer = employerUsers.find(u => u.id === req.session.employerId);
+      if (!employer) {
+        return res.status(404).json({ message: "Employer not found" });
+      }
+      
+      const jobData = {
+        ...req.body,
+        companyId: 1, // For demo, use first company
+        isActive: true,
+        postedAt: new Date(),
+        applicationCount: 0
+      };
+      
+      const job = await storage.createJob(jobData);
+      res.json(job);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to create job" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
