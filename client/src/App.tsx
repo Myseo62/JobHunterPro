@@ -109,7 +109,7 @@ function Router() {
           <Route path="/privacy" component={() => <Privacy />} />
           
           {/* Employer routes */}
-          <Route path="/employer/post-job" component={() => <PostJob user={user} />} />
+          <Route path="/employer/post-job" component={() => <PostJob />} />
           <Route path="/auth/employer-login" component={EmployerLogin} />
           <Route path="/auth/employer-register" component={EmployerRegister} />
           <Route path="/employer/dashboard" component={EmployerDashboard} />

@@ -39,6 +39,7 @@ export default function Header({ user, onLogout }: HeaderProps) {
 
   const getEmployerNavigation = () => [
     { label: "Dashboard", href: "/employer/dashboard" },
+    { label: "Post Job", href: "/employer/post-job" },
     { label: "Company Profile", href: "/employer/company" },
   ];
 
@@ -199,6 +200,14 @@ export default function Header({ user, onLogout }: HeaderProps) {
                           <span>Dashboard</span>
                         </DropdownMenuItem>
                         
+                        <DropdownMenuItem 
+                          className="cursor-pointer hover:bg-purple-50 focus:bg-purple-50"
+                          onClick={() => handleMenuItemClick('/employer/post-job')}
+                        >
+                          <Star className="mr-2 h-4 w-4" />
+                          <span>Post Job</span>
+                        </DropdownMenuItem>
+                        
                         {employer?.role === 'hr' || employer?.role === 'employer_hr' ? (
                           // HR-specific menu items
                           <>
@@ -327,15 +336,15 @@ export default function Header({ user, onLogout }: HeaderProps) {
               </div>
             )}
 
-            {/* Temporarily removed Post a Job button */}
-            {/* <div className="hidden lg:flex items-center text-sm text-gray-600 border-l pl-4 ml-4">
+            {/* Post a Job button for non-authenticated users */}
+            <div className="hidden lg:flex items-center text-sm text-gray-600 border-l pl-4 ml-4">
               <div className="flex flex-col">
                 <span className="text-xs text-gray-500">For employers</span>
                 <Link href="/employer/post-job">
                   <span className="text-purple-600 hover:text-purple-700 font-medium cursor-pointer transition-colors">Post a job</span>
                 </Link>
               </div>
-            </div> */}
+            </div>
 
             {/* Mobile menu button */}
             <Button
