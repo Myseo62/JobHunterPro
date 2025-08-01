@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { RewardService, REWARD_CATALOG } from "./reward-service";
 import { rewardPointsService } from "./reward-points";
+import { jobMatchingService } from "./job-matching-service";
 import { insertUserSchema, loginSchema, insertJobSchema, insertApplicationSchema, jobSearchSchema, employerRegistrationSchema, insertBlogPostSchema, friendReferralSchema } from "@shared/schema";
 import { z } from "zod";
 import session from "express-session";
@@ -264,12 +265,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Job routes
+  // Job routes with intelligent search and recommendations
   app.get("/api/jobs", async (req, res) => {
     try {
-      const searchParams = jobSearchSchema.parse(req.query);
-      const jobs = await storage.getJobs(searchParams);
-      res.json(jobs);
+      const { search, userId } = req.query;
+      
+      if (search && typeof search === 'string') {
+        // Intelligent search with ranking
+        const userIdNum = userId ? parseInt(userId as string) : undefined;
+        const rankedJobs = await jobMatchingService.searchJobsWithRanking(search, userIdNum, req.query);
+        res.json(rankedJobs.map(match => ({
+          ...match.job,
+          matchScore: match.matchScore,
+          matchReasons: match.matchReasons
+        })));
+      } else {
+        // Default job listing
+        const searchParams = jobSearchSchema.parse(req.query);
+        const jobs = await storage.getJobs(searchParams);
+        res.json(jobs);
+      }
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch jobs" });
     }
@@ -285,6 +300,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(job);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch job" });
+    }
+  });
+
+  // Job recommendations for specific user
+  app.get("/api/jobs/recommendations/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const limit = parseInt(req.query.limit as string) || 10;
+      const recommendations = await jobMatchingService.getJobRecommendations(userId, limit);
+      res.json(recommendations);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch job recommendations" });
+    }
+  });
+
+  // Similar jobs for a specific job
+  app.get("/api/jobs/:id/similar", async (req, res) => {
+    try {
+      const jobId = parseInt(req.params.id);
+      const limit = parseInt(req.query.limit as string) || 5;
+      const similarJobs = await jobMatchingService.getSimilarJobs(jobId, limit);
+      res.json(similarJobs);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch similar jobs" });
     }
   });
 

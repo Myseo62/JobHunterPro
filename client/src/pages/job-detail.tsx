@@ -8,6 +8,7 @@ import { MapPin, Briefcase, IndianRupee, Clock, Users, Building, Star } from "lu
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Skeleton } from "@/components/ui/skeleton";
+import SimilarJobs from "@/components/jobs/similar-jobs";
 
 interface JobDetailProps {
   user?: any;
@@ -301,6 +302,13 @@ export default function JobDetail({ user }: JobDetailProps) {
               </div>
             </CardContent>
           </Card>
+
+          {/* Similar Jobs */}
+          <SimilarJobs 
+            jobId={parseInt(id!)} 
+            currentJobTitle={job.title}
+            limit={4}
+          />
         </div>
       </div>
     </div>

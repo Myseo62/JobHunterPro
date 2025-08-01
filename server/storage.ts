@@ -26,6 +26,7 @@ export interface IStorage {
   getJob(id: number): Promise<Job | undefined>;
   getJobWithCompany(id: number): Promise<JobWithCompany | undefined>;
   getJobs(params?: JobSearchParams): Promise<JobWithCompany[]>;
+  searchJobs(query: string, filters?: any): Promise<Job[]>;
   createJob(job: InsertJob): Promise<Job>;
   updateJob(id: number, job: Partial<InsertJob>): Promise<Job | undefined>;
   

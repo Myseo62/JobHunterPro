@@ -192,6 +192,22 @@ export class DatabaseStorage implements IStorage {
     return job || undefined;
   }
 
+  async searchJobs(query: string, filters?: any): Promise<Job[]> {
+    let queryBuilder = db.select().from(jobs);
+    
+    if (query) {
+      queryBuilder = queryBuilder.where(
+        or(
+          ilike(jobs.title, `%${query}%`),
+          ilike(jobs.description, `%${query}%`),
+          sql`${jobs.skills}::text ILIKE '%' || ${query} || '%'`
+        )
+      );
+    }
+    
+    return await queryBuilder.where(eq(jobs.isActive, true));
+  }
+
   // Application operations
   async getApplication(id: number): Promise<Application | undefined> {
     const [application] = await db.select().from(applications).where(eq(applications.id, id));
