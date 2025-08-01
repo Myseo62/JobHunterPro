@@ -57,6 +57,111 @@ export default function CandidateDashboard() {
     isCurrentJob: false,
     description: ""
   });
+  const [educationForm, setEducationForm] = useState({
+    degree: "",
+    institution: "",
+    fieldOfStudy: "",
+    startDate: "",
+    endDate: "",
+    grade: "",
+    description: ""
+  });
+  const [showAddEducation, setShowAddEducation] = useState(false);
+
+  // Helper functions for profile management
+  const addSkill = async () => {
+    if (newSkill.trim() && !userSkills.includes(newSkill.trim())) {
+      const updatedSkills = [...userSkills, newSkill.trim()];
+      setUserSkills(updatedSkills);
+      setNewSkill("");
+      
+      // Save to backend
+      if (user?.id) {
+        try {
+          await fetch(`/api/users/${user.id}/skills`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ skills: updatedSkills })
+          });
+        } catch (error) {
+          console.error('Failed to save skills:', error);
+        }
+      }
+    }
+  };
+
+  const removeSkill = async (skillToRemove: string) => {
+    const updatedSkills = userSkills.filter(skill => skill !== skillToRemove);
+    setUserSkills(updatedSkills);
+    
+    // Save to backend
+    if (user?.id) {
+      try {
+        await fetch(`/api/users/${user.id}/skills`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ skills: updatedSkills })
+        });
+      } catch (error) {
+        console.error('Failed to save skills:', error);
+      }
+    }
+  };
+
+  const addWorkExperience = async () => {
+    if (user?.id && experienceForm.jobTitle && experienceForm.companyName) {
+      try {
+        await fetch(`/api/users/${user.id}/experience`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(experienceForm)
+        });
+        
+        setShowAddExperience(false);
+        setExperienceForm({
+          jobTitle: "",
+          companyName: "",
+          startDate: "",
+          endDate: "",
+          isCurrentJob: false,
+          description: ""
+        });
+        
+        alert('Work experience added successfully!');
+      } catch (error) {
+        console.error('Failed to add work experience:', error);
+        alert('Failed to add work experience. Please try again.');
+      }
+    }
+  };
+
+  const addEducation = async () => {
+    if (user?.id && educationForm.degree && educationForm.institution) {
+      try {
+        await fetch(`/api/users/${user.id}/education`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(educationForm)
+        });
+        
+        setShowAddEducation(false);
+        setEducationForm({
+          degree: "",
+          institution: "",
+          fieldOfStudy: "",
+          startDate: "",
+          endDate: "",
+          grade: "",
+          description: ""
+        });
+        
+        alert('Education details added successfully!');
+      } catch (error) {
+        console.error('Failed to add education:', error);
+        alert('Failed to add education details. Please try again.');
+      }
+    }
+  };
 
   const { data: applications } = useQuery({
     queryKey: ["/api/applications", user?.id],
@@ -392,38 +497,70 @@ export default function CandidateDashboard() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Technical Skills</label>
                 <div className="flex flex-wrap gap-2 mb-3">
-                  {user?.skills?.map((skill: string, index: number) => (
+                  {userSkills.map((skill: string, index: number) => (
                     <Badge key={index} variant="secondary" className="flex items-center gap-1">
                       {skill}
-                      <button className="ml-1 text-red-500 hover:text-red-700">
+                      <button 
+                        onClick={() => removeSkill(skill)}
+                        className="ml-1 text-red-500 hover:text-red-700"
+                      >
                         <X className="h-3 w-3" />
                       </button>
                     </Badge>
-                  )) || <p className="text-gray-500">No skills added yet</p>}
+                  ))}
+                  {userSkills.length === 0 && <p className="text-gray-500">No skills added yet</p>}
                 </div>
                 <div className="flex gap-2">
                   <input 
                     type="text" 
+                    value={newSkill}
+                    onChange={(e) => setNewSkill(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && addSkill()}
                     placeholder="Add a skill and press Enter"
                     className="flex-1 p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   />
-                  <Button>Add Skill</Button>
+                  <Button onClick={addSkill}>Add Skill</Button>
                 </div>
               </div>
 
               <div>
                 <h4 className="font-semibold text-gray-900 mb-4">Skill Proficiency Levels</h4>
                 <div className="space-y-4">
-                  {user?.skills?.slice(0, 6).map((skill: string, index: number) => (
+                  {userSkills.slice(0, 8).map((skill: string, index: number) => (
                     <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                       <span className="font-medium">{skill}</span>
-                      <select className="p-2 border border-gray-200 rounded">
+                      <select className="p-2 border border-gray-200 rounded" defaultValue="intermediate">
                         <option value="beginner">Beginner</option>
                         <option value="intermediate">Intermediate</option>
                         <option value="advanced">Advanced</option>
                         <option value="expert">Expert</option>
                       </select>
                     </div>
+                  ))}
+                  {userSkills.length === 0 && (
+                    <p className="text-gray-500 text-center py-4">Add skills above to set proficiency levels</p>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-4">Suggested Skills</h4>
+                <div className="flex flex-wrap gap-2">
+                  {['React', 'Node.js', 'Python', 'JavaScript', 'TypeScript', 'SQL', 'MongoDB', 'AWS'].map((skill) => (
+                    <Button 
+                      key={skill} 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => {
+                        if (!userSkills.includes(skill)) {
+                          setUserSkills([...userSkills, skill]);
+                        }
+                      }}
+                      disabled={userSkills.includes(skill)}
+                    >
+                      <Plus className="h-3 w-3 mr-1" />
+                      {skill}
+                    </Button>
                   ))}
                 </div>
               </div>
@@ -445,89 +582,125 @@ export default function CandidateDashboard() {
                   <Briefcase className="h-5 w-5 text-purple-600" />
                   Work Experience
                 </CardTitle>
-                <Button size="sm" className="cb-gradient-primary">
+                <Button 
+                  size="sm" 
+                  className="cb-gradient-primary"
+                  onClick={() => setShowAddExperience(!showAddExperience)}
+                >
                   <Plus className="h-4 w-4 mr-2" />
                   Add Experience
                 </Button>
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Sample Experience Entry */}
-              <div className="border border-gray-200 rounded-lg p-4 space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Job Title</label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g., Senior Software Engineer"
-                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    />
+              {/* Add Experience Form */}
+              {showAddExperience && (
+                <div className="border border-green-200 rounded-lg p-4 space-y-4 bg-green-50">
+                  <h4 className="font-semibold text-green-800">Add New Work Experience</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Job Title</label>
+                      <input 
+                        type="text" 
+                        value={experienceForm.jobTitle}
+                        onChange={(e) => setExperienceForm({...experienceForm, jobTitle: e.target.value})}
+                        placeholder="e.g., Senior Software Engineer"
+                        className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Company Name</label>
+                      <input 
+                        type="text" 
+                        value={experienceForm.companyName}
+                        onChange={(e) => setExperienceForm({...experienceForm, companyName: e.target.value})}
+                        placeholder="e.g., Google"
+                        className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+                      <input 
+                        type="month" 
+                        value={experienceForm.startDate}
+                        onChange={(e) => setExperienceForm({...experienceForm, startDate: e.target.value})}
+                        className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+                      <input 
+                        type="month" 
+                        value={experienceForm.endDate}
+                        onChange={(e) => setExperienceForm({...experienceForm, endDate: e.target.value})}
+                        disabled={experienceForm.isCurrentJob}
+                        className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100"
+                      />
+                    </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Company Name</label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g., Microsoft"
-                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Employment Type</label>
-                    <select className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                      <option value="">Select Type</option>
-                      <option value="full-time">Full-time</option>
-                      <option value="part-time">Part-time</option>
-                      <option value="contract">Contract</option>
-                      <option value="internship">Internship</option>
-                      <option value="freelance">Freelance</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g., Bangalore, India"
-                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
-                    <input 
-                      type="date" 
-                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
-                    <input 
-                      type="date" 
-                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    />
-                    <label className="flex items-center gap-2 mt-2">
-                      <input type="checkbox" className="w-4 h-4 text-purple-600" />
-                      <span className="text-sm text-gray-700">Currently working here</span>
+                    <label className="flex items-center gap-2">
+                      <input 
+                        type="checkbox" 
+                        checked={experienceForm.isCurrentJob}
+                        onChange={(e) => setExperienceForm({...experienceForm, isCurrentJob: e.target.checked, endDate: e.target.checked ? '' : experienceForm.endDate})}
+                        className="w-4 h-4 text-purple-600" 
+                      />
+                      <span className="text-sm text-gray-700">I currently work here</span>
                     </label>
                   </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Job Description</label>
+                    <textarea 
+                      rows={4}
+                      value={experienceForm.description}
+                      onChange={(e) => setExperienceForm({...experienceForm, description: e.target.value})}
+                      placeholder="Describe your role, responsibilities, and key achievements..."
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button onClick={addWorkExperience} className="cb-gradient-primary">
+                      <Save className="h-4 w-4 mr-2" />
+                      Save Experience
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setShowAddExperience(false)}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Job Description</label>
-                  <textarea 
-                    rows={4}
-                    placeholder="Describe your responsibilities, achievements, and key projects..."
-                    className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  />
+              )}
+
+              {/* Sample Experience Entry */}
+              <div className="border border-gray-200 rounded-lg p-4 space-y-4">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h4 className="font-semibold text-gray-900">Senior Software Engineer</h4>
+                    <p className="text-purple-600 font-medium">Google</p>
+                    <p className="text-sm text-gray-600">Jan 2022 - Present · 2 years</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm">
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Key Technologies Used</label>
-                  <input 
-                    type="text" 
-                    placeholder="e.g., React, Node.js, Python, AWS"
-                    className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <Button className="cb-gradient-primary">Save Experience</Button>
-                  <Button variant="outline">Cancel</Button>
+                <p className="text-gray-700 text-sm">
+                  Led development of scalable web applications using React and Node.js. 
+                  Managed a team of 5 developers and improved system performance by 40%.
+                  Implemented CI/CD pipelines and automated testing frameworks.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="secondary">React</Badge>
+                  <Badge variant="secondary">Node.js</Badge>
+                  <Badge variant="secondary">Team Leadership</Badge>
+                  <Badge variant="secondary">CI/CD</Badge>
                 </div>
               </div>
             </CardContent>
@@ -541,93 +714,135 @@ export default function CandidateDashboard() {
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
                   <FileText className="h-5 w-5 text-purple-600" />
-                  Education
+                  Education Background
                 </CardTitle>
-                <Button size="sm" className="cb-gradient-primary">
+                <Button 
+                  size="sm" 
+                  className="cb-gradient-primary"
+                  onClick={() => setShowAddEducation(!showAddEducation)}
+                >
                   <Plus className="h-4 w-4 mr-2" />
                   Add Education
                 </Button>
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
+              {/* Add Education Form */}
+              {showAddEducation && (
+                <div className="border border-blue-200 rounded-lg p-4 space-y-4 bg-blue-50">
+                  <h4 className="font-semibold text-blue-800">Add Education Details</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Degree</label>
+                      <input 
+                        type="text" 
+                        value={educationForm.degree}
+                        onChange={(e) => setEducationForm({...educationForm, degree: e.target.value})}
+                        placeholder="e.g., Bachelor of Technology"
+                        className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Field of Study</label>
+                      <input 
+                        type="text" 
+                        value={educationForm.fieldOfStudy}
+                        onChange={(e) => setEducationForm({...educationForm, fieldOfStudy: e.target.value})}
+                        placeholder="e.g., Computer Science"
+                        className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Institution</label>
+                      <input 
+                        type="text" 
+                        value={educationForm.institution}
+                        onChange={(e) => setEducationForm({...educationForm, institution: e.target.value})}
+                        placeholder="e.g., Indian Institute of Technology"
+                        className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Grade/CGPA</label>
+                      <input 
+                        type="text" 
+                        value={educationForm.grade}
+                        onChange={(e) => setEducationForm({...educationForm, grade: e.target.value})}
+                        placeholder="e.g., 8.5 CGPA or First Class"
+                        className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+                      <input 
+                        type="month" 
+                        value={educationForm.startDate}
+                        onChange={(e) => setEducationForm({...educationForm, startDate: e.target.value})}
+                        className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+                      <input 
+                        type="month" 
+                        value={educationForm.endDate}
+                        onChange={(e) => setEducationForm({...educationForm, endDate: e.target.value})}
+                        className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Description (Optional)</label>
+                    <textarea 
+                      rows={3}
+                      value={educationForm.description}
+                      onChange={(e) => setEducationForm({...educationForm, description: e.target.value})}
+                      placeholder="Describe relevant coursework, projects, or achievements..."
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button onClick={addEducation} className="cb-gradient-primary">
+                      <Save className="h-4 w-4 mr-2" />
+                      Save Education
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setShowAddEducation(false)}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Sample Education Entry */}
               <div className="border border-gray-200 rounded-lg p-4 space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex items-start justify-between">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Degree</label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g., Bachelor of Technology"
-                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    />
+                    <h4 className="font-semibold text-gray-900">Bachelor of Technology</h4>
+                    <p className="text-purple-600 font-medium">Computer Science Engineering</p>
+                    <p className="text-gray-600 font-medium">Indian Institute of Technology, Delhi</p>
+                    <p className="text-sm text-gray-600">2018 - 2022 · CGPA: 8.7/10</p>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Field of Study</label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g., Computer Science"
-                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Institution</label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g., Indian Institute of Technology"
-                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g., Delhi, India"
-                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
-                    <input 
-                      type="date" 
-                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
-                    <input 
-                      type="date" 
-                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Grade/CGPA</label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g., 8.5/10 or First Class"
-                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Percentage</label>
-                    <input 
-                      type="number" 
-                      placeholder="e.g., 85"
-                      min="0" 
-                      max="100"
-                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    />
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm">
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                  <textarea 
-                    rows={3}
-                    placeholder="Relevant coursework, projects, achievements..."
-                    className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <Button className="cb-gradient-primary">Save Education</Button>
-                  <Button variant="outline">Cancel</Button>
+                <p className="text-gray-700 text-sm">
+                  Specialized in Artificial Intelligence and Machine Learning. Completed major projects 
+                  in deep learning and computer vision. Dean's List for academic excellence.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="secondary">Algorithms</Badge>
+                  <Badge variant="secondary">Data Structures</Badge>
+                  <Badge variant="secondary">Machine Learning</Badge>
+                  <Badge variant="secondary">Database Systems</Badge>
                 </div>
               </div>
             </CardContent>
@@ -812,8 +1027,22 @@ export default function CandidateDashboard() {
         if (response.ok) {
           const result = await response.json();
           setParseStatus('completed');
-          // Show success message
-          alert('Resume uploaded successfully! You can now manually update your profile with the information from your resume.');
+          
+          // Update user's resume URL in the database
+          if (user?.id) {
+            try {
+              await fetch(`/api/users/${user.id}/resume`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                  resumeUrl: result.fileInfo.filename,
+                  originalName: result.fileInfo.originalName 
+                })
+              });
+            } catch (error) {
+              console.error('Failed to update resume URL:', error);
+            }
+          }
         } else {
           setParseStatus('error');
         }

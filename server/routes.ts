@@ -923,6 +923,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update user resume URL
+  app.post('/api/users/:id/resume', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { resumeUrl, originalName } = req.body;
+      
+      // Mock update - in real app, save to database
+      res.json({ message: 'Resume URL updated successfully' });
+    } catch (error: any) {
+      console.error('Resume URL update error:', error);
+      res.status(500).json({ message: 'Failed to update resume URL: ' + error.message });
+    }
+  });
+
+  // Update user skills
+  app.post('/api/users/:id/skills', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { skills } = req.body;
+      
+      // Mock update - in real app, save to database
+      res.json({ message: 'Skills updated successfully', skills });
+    } catch (error: any) {
+      console.error('Skills update error:', error);
+      res.status(500).json({ message: 'Failed to update skills: ' + error.message });
+    }
+  });
+
+  // Add work experience
+  app.post('/api/users/:id/experience', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const experienceData = req.body;
+      
+      // Mock add - in real app, save to database
+      res.json({ message: 'Work experience added successfully', experience: experienceData });
+    } catch (error: any) {
+      console.error('Experience add error:', error);
+      res.status(500).json({ message: 'Failed to add work experience: ' + error.message });
+    }
+  });
+
+  // Add education
+  app.post('/api/users/:id/education', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const educationData = req.body;
+      
+      // Mock add - in real app, save to database
+      res.json({ message: 'Education details added successfully', education: educationData });
+    } catch (error: any) {
+      console.error('Education add error:', error);
+      res.status(500).json({ message: 'Failed to add education details: ' + error.message });
+    }
+  });
+
   // Update user profile with parsed resume data
   app.post('/api/users/:id/apply-resume-data', isAuthenticated, async (req, res) => {
     try {
