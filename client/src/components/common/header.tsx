@@ -30,12 +30,41 @@ export default function Header({ user, onLogout }: HeaderProps) {
   // Check if we're on an employer page
   const isEmployerPage = location.startsWith('/employer') || location.startsWith('/auth/employer');
 
-  const navigation = [
+  // Navigation based on user type
+  const getCandidateNavigation = () => [
     { label: "Find Jobs", href: "/jobs" },
     { label: "Companies", href: "/companies" },
     { label: "Career Guide", href: "/services" },
     { label: "Success Stories", href: "/resources" },
   ];
+
+  const getEmployerNavigation = () => [
+    { label: "Post Jobs", href: "/employer/jobs" },
+    { label: "Find Candidates", href: "/employer/candidates" },
+    { label: "Company Profile", href: "/employer/company" },
+    { label: "Analytics", href: "/employer/analytics" },
+  ];
+
+  const getHRNavigation = () => [
+    { label: "Manage Jobs", href: "/hr/jobs" },
+    { label: "Applications", href: "/hr/applications" },
+    { label: "Team", href: "/hr/team" },
+    { label: "Reports", href: "/hr/reports" },
+  ];
+
+  // Determine which navigation to show
+  const getNavigation = () => {
+    if (isEmployerAuthenticated) {
+      // Check if employer has HR role or is admin
+      if (employer?.role === 'hr' || employer?.role === 'employer_hr') {
+        return getHRNavigation();
+      }
+      return getEmployerNavigation();
+    }
+    return getCandidateNavigation();
+  };
+
+  const navigation = getNavigation();
 
   const handleLogout = () => {
     onLogout?.();
@@ -156,7 +185,7 @@ export default function Header({ user, onLogout }: HeaderProps) {
                     <DropdownMenuSeparator />
                     
                     {isEmployerAuthenticated ? (
-                      // Employer menu items
+                      // Employer/HR menu items based on role
                       <>
                         <DropdownMenuItem 
                           className="cursor-pointer hover:bg-purple-50 focus:bg-purple-50"
@@ -165,20 +194,58 @@ export default function Header({ user, onLogout }: HeaderProps) {
                           <LayoutDashboard className="mr-2 h-4 w-4" />
                           <span>Dashboard</span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          className="cursor-pointer hover:bg-purple-50 focus:bg-purple-50"
-                          onClick={() => handleMenuItemClick('/employer/jobs')}
-                        >
-                          <Building2 className="mr-2 h-4 w-4" />
-                          <span>Manage Jobs</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          className="cursor-pointer hover:bg-purple-50 focus:bg-purple-50"
-                          onClick={() => handleMenuItemClick('/employer/candidates')}
-                        >
-                          <User className="mr-2 h-4 w-4" />
-                          <span>Find Candidates</span>
-                        </DropdownMenuItem>
+                        
+                        {employer?.role === 'hr' || employer?.role === 'employer_hr' ? (
+                          // HR-specific menu items
+                          <>
+                            <DropdownMenuItem 
+                              className="cursor-pointer hover:bg-purple-50 focus:bg-purple-50"
+                              onClick={() => handleMenuItemClick('/hr/applications')}
+                            >
+                              <MessageCircle className="mr-2 h-4 w-4" />
+                              <span>Applications</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              className="cursor-pointer hover:bg-purple-50 focus:bg-purple-50"
+                              onClick={() => handleMenuItemClick('/hr/team')}
+                            >
+                              <User className="mr-2 h-4 w-4" />
+                              <span>Team Management</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              className="cursor-pointer hover:bg-purple-50 focus:bg-purple-50"
+                              onClick={() => handleMenuItemClick('/hr/reports')}
+                            >
+                              <Star className="mr-2 h-4 w-4" />
+                              <span>Reports</span>
+                            </DropdownMenuItem>
+                          </>
+                        ) : (
+                          // Employer admin menu items
+                          <>
+                            <DropdownMenuItem 
+                              className="cursor-pointer hover:bg-purple-50 focus:bg-purple-50"
+                              onClick={() => handleMenuItemClick('/employer/jobs')}
+                            >
+                              <Building2 className="mr-2 h-4 w-4" />
+                              <span>Manage Jobs</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              className="cursor-pointer hover:bg-purple-50 focus:bg-purple-50"
+                              onClick={() => handleMenuItemClick('/employer/candidates')}
+                            >
+                              <User className="mr-2 h-4 w-4" />
+                              <span>Find Candidates</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              className="cursor-pointer hover:bg-purple-50 focus:bg-purple-50"
+                              onClick={() => handleMenuItemClick('/employer/company')}
+                            >
+                              <Building2 className="mr-2 h-4 w-4" />
+                              <span>Company Profile</span>
+                            </DropdownMenuItem>
+                          </>
+                        )}
                       </>
                     ) : (
                       // Candidate menu items

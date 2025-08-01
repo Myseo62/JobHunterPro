@@ -459,7 +459,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Employer Authentication API (separate from regular users)
-  const employerUsers: Array<{ id: number; email: string; password: string; firstName: string; lastName: string; companyName: string; }> = [];
+  const employerUsers: Array<{ 
+    id: number; 
+    email: string; 
+    password: string; 
+    firstName: string; 
+    lastName: string; 
+    companyName: string; 
+    role: 'employer_admin' | 'employer_hr' | 'hr';
+  }> = [
+    // Pre-seeded test employers with different roles
+    // Login: admin@techcorp.com / admin123
+    {
+      id: 1,
+      email: "admin@techcorp.com",
+      password: "$2b$10$EIXvzQzpR1KsT9QqF5GHr.vFzLe4Q6GH3TXYG8g.CwYR0Qx2RhSYW",
+      firstName: "John",
+      lastName: "Admin",
+      companyName: "TechCorp Inc",
+      role: "employer_admin"
+    },
+    // Login: hr@techcorp.com / hr123
+    {
+      id: 2,
+      email: "hr@techcorp.com", 
+      password: "$2b$10$EIXvzQzpR1KsT9QqF5GHr.vFzLe4Q6GH3TXYG8g.CwYR0Qx2RhSYW",
+      firstName: "Jane",
+      lastName: "HR",
+      companyName: "TechCorp Inc",
+      role: "hr"
+    }
+  ];
 
   // Middleware for employer endpoints
   const requireEmployerAuth = (req: any, res: any, next: any) => {
@@ -472,7 +502,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Employer authentication endpoints (also create auth/ prefixed routes for consistency)
   app.post("/api/auth/employer-register", async (req, res) => {
     try {
-      const { email, password, firstName, lastName, companyName } = req.body;
+      const { email, password, firstName, lastName, companyName, role } = req.body;
       
       // Check if employer already exists
       const existingEmployer = employerUsers.find(u => u.email === email);
@@ -483,14 +513,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Hash password
       const hashedPassword = await bcrypt.hash(password, 10);
       
-      // Create employer user
+      // Create employer user with role (default to employer_admin)
       const newEmployer = {
         id: employerUsers.length + 1,
         email,
         password: hashedPassword,
         firstName,
         lastName,
-        companyName
+        companyName,
+        role: role || 'employer_admin' as const
       };
       
       employerUsers.push(newEmployer);
@@ -500,7 +531,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json({ 
         message: "Employer registered successfully",
-        employer: { id: newEmployer.id, email, firstName, lastName, companyName }
+        employer: { id: newEmployer.id, email, firstName, lastName, companyName, role: newEmployer.role }
       });
     } catch (error) {
       res.status(500).json({ message: "Registration failed" });
@@ -565,7 +596,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json({ 
         message: "Login successful",
-        employer: { id: employer.id, email: employer.email, firstName: employer.firstName, lastName: employer.lastName, companyName: employer.companyName }
+        employer: { id: employer.id, email: employer.email, firstName: employer.firstName, lastName: employer.lastName, companyName: employer.companyName, role: employer.role }
       });
     } catch (error) {
       res.status(500).json({ message: "Login failed" });
@@ -612,7 +643,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         email: employer.email,
         firstName: employer.firstName,
         lastName: employer.lastName,
-        companyName: employer.companyName
+        companyName: employer.companyName,
+        role: employer.role
       });
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch profile" });

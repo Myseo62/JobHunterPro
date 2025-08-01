@@ -7,6 +7,7 @@ interface Employer {
   firstName: string;
   lastName: string;
   companyName: string;
+  role?: 'employer_admin' | 'employer_hr' | 'hr';
 }
 
 export function useEmployerAuth() {
