@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useRewardTracking } from "@/hooks/useRewardTracking";
+import { useAuth } from "@/hooks/useAuth";
 import { 
   ArrowLeft, 
   Calendar, 
@@ -41,11 +42,8 @@ interface BlogPost {
   };
 }
 
-interface BlogDetailProps {
-  user?: any;
-}
-
-export default function BlogDetail({ user }: BlogDetailProps) {
+export default function BlogDetail() {
+  const { user } = useAuth();
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
   const queryClient = useQueryClient();

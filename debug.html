@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Test</title>
+</head>
+<body>
+    <h1>Debug Test Page</h1>
+    <p>This is a simple test to verify server is working</p>
+    <script>
+        console.log("Debug page loaded successfully");
+        
+        // Test fetch to API
+        fetch('/api/blogs')
+            .then(res => res.json())
+            .then(data => {
+                console.log('API test successful:', data);
+                document.body.innerHTML += '<p>API working: ' + data.length + ' blogs found</p>';
+            })
+            .catch(err => {
+                console.error('API test failed:', err);
+                document.body.innerHTML += '<p>API failed: ' + err.message + '</p>';
+            });
+    </script>
+</body>
+</html>

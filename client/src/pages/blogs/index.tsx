@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useAuth } from "@/hooks/useAuth";
 import { 
   PenTool, 
   Search, 
@@ -39,6 +40,7 @@ interface BlogPost {
 }
 
 export default function BlogsPage() {
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
 
@@ -96,12 +98,22 @@ export default function BlogsPage() {
                     </p>
                   </div>
                 </div>
-                <Link href="/blogs/write">
-                  <Button className="bg-gradient-to-r from-purple-600 to-green-600">
+                {user?.role === 'candidate' ? (
+                  <Link href="/blogs/write">
+                    <Button className="bg-gradient-to-r from-purple-600 to-green-600">
+                      <PenTool className="h-4 w-4 mr-2" />
+                      Write Blog
+                    </Button>
+                  </Link>
+                ) : (
+                  <Button 
+                    onClick={() => window.location.href = '/login'}
+                    className="bg-gradient-to-r from-purple-600 to-green-600"
+                  >
                     <PenTool className="h-4 w-4 mr-2" />
-                    Write Blog
+                    Login to Write
                   </Button>
-                </Link>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -176,12 +188,22 @@ export default function BlogsPage() {
                   : "Be the first to share your knowledge with the community"
                 }
               </p>
-              <Link href="/blogs/write">
-                <Button className="bg-gradient-to-r from-purple-600 to-green-600">
+              {user?.role === 'candidate' ? (
+                <Link href="/blogs/write">
+                  <Button className="bg-gradient-to-r from-purple-600 to-green-600">
+                    <PenTool className="h-4 w-4 mr-2" />
+                    Write First Blog
+                  </Button>
+                </Link>
+              ) : (
+                <Button 
+                  onClick={() => window.location.href = '/login'}
+                  className="bg-gradient-to-r from-purple-600 to-green-600"
+                >
                   <PenTool className="h-4 w-4 mr-2" />
-                  Write First Blog
+                  Login to Write
                 </Button>
-              </Link>
+              )}
             </CardContent>
           </Card>
         ) : (

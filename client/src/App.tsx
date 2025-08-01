@@ -37,7 +37,7 @@ import Applications from "@/pages/applications";
 import AccountSettings from "@/pages/account-settings";
 import CandidateDashboard from "@/pages/candidate-dashboard";
 import FollowingCompanies from "@/pages/following-companies";
-import { AuthProvider } from "@/hooks/useAuth";
+import { AuthProvider, useAuth } from "@/hooks/useAuth";
 
 // Additional employer pages
 import EmployerApplications from "@/pages/employer/applications";
@@ -54,27 +54,15 @@ import Help from "@/pages/help";
 
 
 function Router() {
-  const [user, setUser] = useState<any>(null);
-
-  // Load user from localStorage on app start
-  useEffect(() => {
-    const savedUser = localStorage.getItem("career_bazaar_user");
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (error) {
-        localStorage.removeItem("career_bazaar_user");
-      }
-    }
-  }, []);
+  const { user, login: authLogin, logout: authLogout } = useAuth();
 
   const handleLogin = (userData: any) => {
-    setUser(userData);
+    authLogin(userData);
     localStorage.setItem("career_bazaar_user", JSON.stringify(userData));
   };
 
   const handleLogout = () => {
-    setUser(null);
+    authLogout();
     localStorage.removeItem("career_bazaar_user");
   };
 
@@ -113,10 +101,7 @@ function Router() {
           <Route path="/companies" component={() => <CompaniesDirectory user={user} />} />
           <Route path="/blogs" component={lazy(() => import("@/pages/blogs"))} />
           <Route path="/blogs/write" component={lazy(() => import("@/pages/blogs/write-blog"))} />
-          <Route path="/blogs/:id" component={() => {
-            const BlogDetail = lazy(() => import("@/pages/blogs/blog-detail"));
-            return <BlogDetail user={user} />;
-          }} />
+          <Route path="/blogs/:id" component={lazy(() => import("@/pages/blogs/blog-detail"))} />
           <Route path="/services" component={() => <Services user={user} />} />
           <Route path="/resources" component={() => <Resources user={user} />} />
           <Route path="/terms" component={() => <Terms />} />
@@ -158,8 +143,7 @@ function Router() {
           <Route path="/about" component={() => <About />} />
           <Route path="/faq" component={() => <FAQ />} />
           <Route path="/help" component={() => <Help />} />
-          <Route path="/blog" component={lazy(() => import("@/pages/blog/index"))} />
-          <Route path="/blog/:id" component={lazy(() => import("@/pages/blog/post"))} />
+
 
           
           {/* Fallback to 404 */}
