@@ -25,8 +25,11 @@ import {
   Edit,
   Trash2,
   Search,
-  Filter
+  Filter,
+  Sparkles,
+  Target
 } from "lucide-react";
+import JobRecommendations from "@/components/jobs/job-recommendations";
 import { useQuery } from "@tanstack/react-query";
 
 export default function CandidateDashboard() {
@@ -591,8 +594,89 @@ export default function CandidateDashboard() {
     </Card>
   );
 
+  // AI Recommendations Tab Component
+  const RecommendationsTab = () => (
+    <div className="space-y-6">
+      <Card className="cb-glass-card">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Sparkles className="h-6 w-6 text-purple-600" />
+            AI-Powered Job Recommendations
+          </CardTitle>
+          <p className="text-gray-600">
+            Personalized job matches based on your skills, experience, and preferences
+          </p>
+        </CardHeader>
+        <CardContent>
+          <JobRecommendations 
+            title="Your Best Matches"
+            subtitle="Jobs tailored specifically for your profile"
+            limit={12}
+            showMatchDetails={true}
+          />
+        </CardContent>
+      </Card>
+
+      <Card className="cb-glass-card">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Target className="h-6 w-6 text-green-600" />
+            How AI Recommendations Work
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <h4 className="font-semibold text-gray-900">Matching Factors:</h4>
+              <ul className="space-y-2 text-gray-700">
+                <li className="flex items-center gap-2">
+                  <span className="w-2 h-2 bg-purple-500 rounded-full"></span>
+                  Skills alignment (40% weight)
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                  Experience level match (25% weight)
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                  Salary expectations (20% weight)
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
+                  Location preference (15% weight)
+                </li>
+              </ul>
+            </div>
+            <div className="space-y-4">
+              <h4 className="font-semibold text-gray-900">Match Quality:</h4>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-4 h-4 bg-green-500 rounded-full"></div>
+                  <span className="text-sm">90-100%: Excellent match</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-4 h-4 bg-blue-500 rounded-full"></div>
+                  <span className="text-sm">70-89%: Good match</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-4 h-4 bg-orange-500 rounded-full"></div>
+                  <span className="text-sm">50-69%: Fair match</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-4 h-4 bg-gray-400 rounded-full"></div>
+                  <span className="text-sm">30-49%: Basic match</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
   const tabItems = [
     { id: "dashboard", label: "User Dashboard", icon: User, component: DashboardOverview },
+    { id: "recommendations", label: "AI Recommendations", icon: Sparkles, component: RecommendationsTab },
     { id: "profile", label: "Profile", icon: User, component: ProfileTab },
     { id: "resume", label: "My Resume", icon: FileText, component: ResumeTab },
     { id: "applications", label: "My Applied", icon: Briefcase, component: ApplicationsTab },
