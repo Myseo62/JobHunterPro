@@ -209,6 +209,10 @@ export const insertJobSchema = createInsertSchema(jobs).omit({
   id: true,
   postedAt: true,
   applicationCount: true,
+}).extend({
+  skills: z.array(z.string()).optional(),
+  requirements: z.array(z.string()).optional(),
+  benefits: z.array(z.string()).optional(),
 });
 
 export const insertApplicationSchema = createInsertSchema(applications).omit({

@@ -64,10 +64,18 @@ export default function PostJob() {
   const mutation = useMutation({
     mutationFn: async (data: JobFormData) => {
       const response = await apiRequest("POST", "/api/jobs", {
-        ...data,
-        skills,
-        salaryMin: data.salaryMin ? parseInt(data.salaryMin) : null,
-        salaryMax: data.salaryMax ? parseInt(data.salaryMax) : null,
+        title: data.title,
+        description: data.description,
+        companyId: 1, // Default company for now
+        location: data.location,
+        experience: data.experienceLevel,
+        salaryMin: data.salaryMin ? data.salaryMin : null,
+        salaryMax: data.salaryMax ? data.salaryMax : null,
+        jobType: data.jobType,
+        skills: skills, // Array of strings
+        requirements: [data.requirements], // Convert to array
+        benefits: data.benefits ? [data.benefits] : [], // Convert to array
+        isActive: true,
       });
       return response;
     },
