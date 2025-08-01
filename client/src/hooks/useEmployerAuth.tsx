@@ -14,9 +14,33 @@ export function useEmployerAuth() {
   const [, navigate] = useLocation();
   const queryClient = useQueryClient();
 
+  // Check localStorage for employer data first (hybrid approach)
+  const getEmployerFromStorage = (): Employer | null => {
+    try {
+      const userData = localStorage.getItem("user");
+      if (userData) {
+        const parsed = JSON.parse(userData);
+        // Check if it's employer data (has companyName or employer role)
+        if (parsed.companyName || (parsed.role && parsed.role.includes('employer'))) {
+          return parsed;
+        }
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  };
+
   const { data: employer, isLoading, error } = useQuery({
     queryKey: ["/api/employer/profile"],
     queryFn: async () => {
+      // First try localStorage
+      const localEmployer = getEmployerFromStorage();
+      if (localEmployer) {
+        return localEmployer;
+      }
+
+      // Fallback to session-based auth
       const response = await fetch("/api/employer/profile", {
         credentials: "include",
       });
@@ -91,6 +115,10 @@ export function useEmployerAuth() {
 
   const logoutMutation = useMutation({
     mutationFn: async () => {
+      // Clear localStorage first
+      localStorage.removeItem("user");
+      
+      // Then call server logout
       const response = await fetch("/api/auth/employer-logout", {
         method: "POST",
         credentials: "include",
@@ -104,7 +132,7 @@ export function useEmployerAuth() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/employer/profile"] });
-      navigate("/auth/employer-login");
+      navigate("/");
     },
   });
 

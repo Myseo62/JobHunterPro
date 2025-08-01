@@ -33,8 +33,12 @@ export default function EmployerLogin() {
         title: "Login Successful",
         description: "Welcome back to your employer dashboard!",
       });
-      // Store user data and redirect to employer dashboard
-      localStorage.setItem("user", JSON.stringify(data.user));
+      // Store employer data and redirect to employer dashboard
+      const employerData = {
+        ...data.employer,
+        role: data.employer.role || 'employer_admin'
+      };
+      localStorage.setItem("user", JSON.stringify(employerData));
       window.location.href = "/employer/dashboard";
     },
     onError: (error: any) => {
