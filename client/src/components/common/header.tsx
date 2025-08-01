@@ -195,11 +195,17 @@ export default function Header({ user, onLogout }: HeaderProps) {
                       // Employer/HR menu items based on role
                       <>
                         <DropdownMenuItem 
-                          className="cursor-pointer hover:bg-purple-50 focus:bg-purple-50"
-                          onClick={() => handleMenuItemClick('/employer/dashboard')}
+                          className="cursor-pointer hover:bg-purple-50 focus:bg-purple-50 opacity-50"
+                          onClick={() => {
+                            toast({
+                              title: "Dashboard Temporarily Unavailable",
+                              description: "The employer dashboard is currently under maintenance.",
+                              variant: "destructive",
+                            });
+                          }}
                         >
                           <LayoutDashboard className="mr-2 h-4 w-4" />
-                          <span>Dashboard</span>
+                          <span>Dashboard (Maintenance)</span>
                         </DropdownMenuItem>
                         
                         {employer?.role === 'hr' || employer?.role === 'employer_hr' ? (

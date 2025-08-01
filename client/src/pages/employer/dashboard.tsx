@@ -51,6 +51,17 @@ export default function EmployerDashboard() {
   const { toast } = useToast();
 
   useEffect(() => {
+    // TEMPORARILY DISABLED: Employer dashboard is under maintenance
+    toast({
+      title: "Dashboard Temporarily Unavailable",
+      description: "The employer dashboard is currently under maintenance. Please check back later.",
+      variant: "destructive",
+    });
+    window.location.href = "/";
+    return;
+
+    // Original code commented out for temporary disable
+    /*
     // Check if user is logged in and is an employer
     const userData = localStorage.getItem("user");
     if (userData) {
@@ -68,6 +79,7 @@ export default function EmployerDashboard() {
     } else {
       window.location.href = "/auth/employer-login";
     }
+    */
   }, [toast]);
 
   const { data: companyData } = useQuery<Company>({
