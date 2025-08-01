@@ -13,7 +13,7 @@ export function useEmployerAuth() {
   const [, navigate] = useLocation();
   const queryClient = useQueryClient();
 
-  const { data: employer, isLoading } = useQuery({
+  const { data: employer, isLoading, error } = useQuery({
     queryKey: ["/api/employer/profile"],
     queryFn: async () => {
       const response = await fetch("/api/employer/profile", {
@@ -30,11 +30,13 @@ export function useEmployerAuth() {
       return response.json();
     },
     retry: false,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: true,
   });
 
   const loginMutation = useMutation({
     mutationFn: async (data: { email: string; password: string }) => {
-      const response = await fetch("/api/employer/login", {
+      const response = await fetch("/api/auth/employer-login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -64,7 +66,7 @@ export function useEmployerAuth() {
       lastName: string; 
       companyName: string; 
     }) => {
-      const response = await fetch("/api/employer/register", {
+      const response = await fetch("/api/auth/employer-register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -88,7 +90,7 @@ export function useEmployerAuth() {
 
   const logoutMutation = useMutation({
     mutationFn: async () => {
-      const response = await fetch("/api/employer/logout", {
+      const response = await fetch("/api/auth/employer-logout", {
         method: "POST",
         credentials: "include",
       });
@@ -116,5 +118,6 @@ export function useEmployerAuth() {
     isRegistering: registerMutation.isPending,
     loginError: loginMutation.error?.message,
     registerError: registerMutation.error?.message,
+    error: error?.message,
   };
 }

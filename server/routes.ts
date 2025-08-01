@@ -469,7 +469,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     next();
   };
 
-  // Employer authentication endpoints
+  // Employer authentication endpoints (also create auth/ prefixed routes for consistency)
+  app.post("/api/auth/employer-register", async (req, res) => {
+    try {
+      const { email, password, firstName, lastName, companyName } = req.body;
+      
+      // Check if employer already exists
+      const existingEmployer = employerUsers.find(u => u.email === email);
+      if (existingEmployer) {
+        return res.status(400).json({ message: "Employer already exists" });
+      }
+      
+      // Hash password
+      const hashedPassword = await bcrypt.hash(password, 10);
+      
+      // Create employer user
+      const newEmployer = {
+        id: employerUsers.length + 1,
+        email,
+        password: hashedPassword,
+        firstName,
+        lastName,
+        companyName
+      };
+      
+      employerUsers.push(newEmployer);
+      
+      // Create session
+      req.session.employerId = newEmployer.id;
+      
+      res.json({ 
+        message: "Employer registered successfully",
+        employer: { id: newEmployer.id, email, firstName, lastName, companyName }
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Registration failed" });
+    }
+  });
+
   app.post("/api/employer/register", async (req, res) => {
     try {
       const { email, password, firstName, lastName, companyName } = req.body;
@@ -504,6 +541,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       res.status(500).json({ message: "Registration failed" });
+    }
+  });
+
+  app.post("/api/auth/employer-login", async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      // Find employer
+      const employer = employerUsers.find(u => u.email === email);
+      if (!employer) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+      
+      // Verify password
+      const isValidPassword = await bcrypt.compare(password, employer.password);
+      if (!isValidPassword) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+      
+      // Create session
+      req.session.employerId = employer.id;
+      
+      res.json({ 
+        message: "Login successful",
+        employer: { id: employer.id, email: employer.email, firstName: employer.firstName, lastName: employer.lastName, companyName: employer.companyName }
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Login failed" });
     }
   });
 
@@ -552,6 +617,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch profile" });
     }
+  });
+
+  app.post("/api/auth/employer-logout", (req: any, res) => {
+    req.session.employerId = null;
+    res.json({ message: "Logged out successfully" });
   });
 
   app.post("/api/employer/logout", (req: any, res) => {
