@@ -50,7 +50,7 @@ export default function CompanyProfile() {
 
   // Fetch company data
   const { data: company, isLoading: companyLoading } = useQuery<Company>({
-    queryKey: ['/api/companies', companyId],
+    queryKey: [`/api/companies/${companyId}`],
   });
 
   // Fetch company jobs

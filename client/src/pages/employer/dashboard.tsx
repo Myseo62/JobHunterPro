@@ -9,6 +9,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { z } from "zod";
 import { 
   Building2, 
   Users, 
@@ -56,6 +62,289 @@ interface Company {
 interface Stats {
   activeJobs: number;
   totalApplications: number;
+}
+
+const jobPostingSchema = z.object({
+  title: z.string().min(1, "Job title is required"),
+  location: z.string().min(1, "Location is required"),
+  experience: z.string().min(1, "Experience level is required"),
+  employmentType: z.string().min(1, "Employment type is required"),
+  salaryMin: z.number().min(0, "Minimum salary must be positive"),
+  salaryMax: z.number().min(0, "Maximum salary must be positive"),
+  description: z.string().min(50, "Description must be at least 50 characters"),
+  requirements: z.string().min(10, "Requirements are required"),
+  benefits: z.string().optional(),
+  skills: z.string().min(1, "Required skills are needed")
+});
+
+type JobPostingFormData = z.infer<typeof jobPostingSchema>;
+
+function PostJobForm({ user, onSuccess }: { user: User; onSuccess: () => void }) {
+  const { toast } = useToast();
+  
+  const form = useForm<JobPostingFormData>({
+    resolver: zodResolver(jobPostingSchema),
+    defaultValues: {
+      title: "",
+      location: "",
+      experience: "",
+      employmentType: "",
+      salaryMin: 0,
+      salaryMax: 0,
+      description: "",
+      requirements: "",
+      benefits: "",
+      skills: ""
+    }
+  });
+
+  const createJobMutation = useMutation({
+    mutationFn: async (data: JobPostingFormData) => {
+      return apiRequest("POST", "/api/jobs", {
+        ...data,
+        companyId: 1, // Default company for now
+        isActive: true,
+        jobCategoryId: 1
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Job posted successfully!"
+      });
+      form.reset();
+      onSuccess();
+      queryClient.invalidateQueries({ queryKey: ["/api/jobs"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to post job",
+        variant: "destructive"
+      });
+    }
+  });
+
+  const onSubmit = (data: JobPostingFormData) => {
+    createJobMutation.mutate(data);
+  };
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <FormField
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Job Title *</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g. Senior Software Engineer" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="location"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Location *</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g. Bangalore, Mumbai, Remote" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="experience"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Experience Level</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select experience level" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="0-1">0-1 years</SelectItem>
+                    <SelectItem value="2-4">2-4 years</SelectItem>
+                    <SelectItem value="5-7">5-7 years</SelectItem>
+                    <SelectItem value="8-10">8-10 years</SelectItem>
+                    <SelectItem value="10+">10+ years</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="employmentType"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Employment Type</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select employment type" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="full-time">Full-time</SelectItem>
+                    <SelectItem value="part-time">Part-time</SelectItem>
+                    <SelectItem value="contract">Contract</SelectItem>
+                    <SelectItem value="internship">Internship</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="salaryMin"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Min Salary (LPA)</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    placeholder="e.g. 10" 
+                    {...field}
+                    onChange={(e) => field.onChange(Number(e.target.value))}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="salaryMax"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Max Salary (LPA)</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    placeholder="e.g. 18" 
+                    {...field}
+                    onChange={(e) => field.onChange(Number(e.target.value))}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Job Description *</FormLabel>
+              <FormControl>
+                <Textarea 
+                  rows={6}
+                  placeholder="Describe the role, responsibilities, and what makes this opportunity exciting..."
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="requirements"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Requirements *</FormLabel>
+              <FormControl>
+                <Textarea 
+                  rows={4}
+                  placeholder="List the key qualifications and requirements..."
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="skills"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Required Skills *</FormLabel>
+              <FormControl>
+                <Input 
+                  placeholder="e.g. React, Node.js, Python, AWS (comma separated)"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="benefits"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Benefits & Perks</FormLabel>
+              <FormControl>
+                <Textarea 
+                  rows={3}
+                  placeholder="Describe the benefits, perks, and company culture..."
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="flex gap-4">
+          <Button 
+            type="submit" 
+            className="flex-1 bg-gradient-to-r from-purple-600 to-green-600 hover:from-purple-700 hover:to-green-700"
+            disabled={createJobMutation.isPending}
+          >
+            {createJobMutation.isPending ? (
+              <>
+                <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" />
+                Posting...
+              </>
+            ) : (
+              <>
+                <Plus className="h-4 w-4 mr-2" />
+                Post Job
+              </>
+            )}
+          </Button>
+          <Button type="button" variant="outline" onClick={() => form.reset()}>
+            Clear Form
+          </Button>
+        </div>
+      </form>
+    </Form>
+  );
 }
 
 export default function EmployerDashboard() {
@@ -237,78 +526,13 @@ export default function EmployerDashboard() {
                 <CardDescription>Create a new job posting to attract top talent</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="job-title">Job Title *</Label>
-                    <Input id="job-title" placeholder="e.g. Senior Software Engineer" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="job-location">Location *</Label>
-                    <Input id="job-location" placeholder="e.g. Bangalore, Mumbai, Remote" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="job-experience">Experience Level</Label>
-                    <Select>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select experience level" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="0-1">0-1 years</SelectItem>
-                        <SelectItem value="2-4">2-4 years</SelectItem>
-                        <SelectItem value="5-7">5-7 years</SelectItem>
-                        <SelectItem value="8-10">8-10 years</SelectItem>
-                        <SelectItem value="10+">10+ years</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="job-type">Job Type</Label>
-                    <Select>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select job type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="full-time">Full-time</SelectItem>
-                        <SelectItem value="part-time">Part-time</SelectItem>
-                        <SelectItem value="contract">Contract</SelectItem>
-                        <SelectItem value="internship">Internship</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="salary-min">Min Salary (LPA)</Label>
-                    <Input id="salary-min" type="number" placeholder="e.g. 10" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="salary-max">Max Salary (LPA)</Label>
-                    <Input id="salary-max" type="number" placeholder="e.g. 18" />
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="job-description">Job Description *</Label>
-                  <Textarea 
-                    id="job-description" 
-                    rows={6}
-                    placeholder="Describe the role, responsibilities, and what makes this opportunity exciting..."
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="job-skills">Required Skills</Label>
-                  <Input 
-                    id="job-skills" 
-                    placeholder="e.g. React, Node.js, Python, AWS (comma separated)"
-                  />
-                </div>
-                
-                <div className="flex gap-4">
-                  <Button className="flex-1">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Post Job
-                  </Button>
-                  <Button variant="outline">Save as Draft</Button>
-                </div>
+                <PostJobForm user={user} onSuccess={() => {
+                  toast({
+                    title: "Job Posted Successfully",
+                    description: "Your job posting is now live and visible to candidates."
+                  });
+                  setActiveTab("overview");
+                }} />
               </CardContent>
             </Card>
           </TabsContent>
