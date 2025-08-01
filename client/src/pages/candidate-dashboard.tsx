@@ -1098,30 +1098,33 @@ export default function CandidateDashboard() {
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">Upload Your Resume</h3>
                   <p className="text-gray-600 mb-4">Upload a PDF or Word document to enhance your profile visibility</p>
                   <div className="flex items-center justify-center">
-                    <label className="cursor-pointer">
-                      <input 
-                        type="file" 
-                        className="hidden" 
-                        accept=".pdf,.doc,.docx"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) handleResumeUpload(file);
-                        }}
-                      />
-                      <Button className="cb-gradient-primary" disabled={parseStatus === 'parsing'}>
-                        {parseStatus === 'parsing' ? (
-                          <>
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                            Uploading...
-                          </>
-                        ) : (
-                          <>
-                            <Upload className="h-4 w-4 mr-2" />
-                            Choose File
-                          </>
-                        )}
-                      </Button>
-                    </label>
+                    <input 
+                      id="resume-upload"
+                      type="file" 
+                      className="hidden" 
+                      accept=".pdf,.doc,.docx"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleResumeUpload(file);
+                      }}
+                    />
+                    <Button 
+                      className="cb-gradient-primary" 
+                      disabled={parseStatus === 'parsing'}
+                      onClick={() => document.getElementById('resume-upload')?.click()}
+                    >
+                      {parseStatus === 'parsing' ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Uploading...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="h-4 w-4 mr-2" />
+                          Choose File
+                        </>
+                      )}
+                    </Button>
                   </div>
                 </div>
 
