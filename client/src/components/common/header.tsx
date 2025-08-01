@@ -176,9 +176,16 @@ export default function Header({ user, onLogout }: HeaderProps) {
                           {isEmployerAuthenticated ? employer?.email : user?.email}
                         </p>
                         {isEmployerAuthenticated && (
-                          <p className="text-xs leading-none text-blue-600 font-medium">
-                            {employer?.companyName}
-                          </p>
+                          <>
+                            <p className="text-xs leading-none text-blue-600 font-medium">
+                              {employer?.companyName}
+                            </p>
+                            <p className="text-xs leading-none text-purple-600 font-medium">
+                              {employer?.role === 'hr' ? 'HR Staff' : 
+                               employer?.role === 'employer_hr' ? 'HR Manager' : 
+                               'Company Admin'}
+                            </p>
+                          </>
                         )}
                       </div>
                     </DropdownMenuLabel>

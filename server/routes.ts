@@ -473,7 +473,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     {
       id: 1,
       email: "admin@techcorp.com",
-      password: "$2b$10$EIXvzQzpR1KsT9QqF5GHr.vFzLe4Q6GH3TXYG8g.CwYR0Qx2RhSYW",
+      password: "$2b$10$ExMgotLekOOM2dEImamJBOn6P.PGE3zSAgUHjbiyzyGvpWtsaJ2CK",
       firstName: "John",
       lastName: "Admin",
       companyName: "TechCorp Inc",
@@ -483,7 +483,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     {
       id: 2,
       email: "hr@techcorp.com", 
-      password: "$2b$10$EIXvzQzpR1KsT9QqF5GHr.vFzLe4Q6GH3TXYG8g.CwYR0Qx2RhSYW",
+      password: "$2b$10$M1CCQjhfDkL/rZFQbPv.5OJxsph7Avq69g3hY0Hxm4QBORPq22sla",
       firstName: "Jane",
       lastName: "HR",
       companyName: "TechCorp Inc",

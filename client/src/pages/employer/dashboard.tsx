@@ -95,52 +95,19 @@ export default function EmployerDashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-green-50">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-white/50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-purple-600 to-green-600 rounded-lg flex items-center justify-center">
-                <Building2 className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">Employer Dashboard</h1>
-                <p className="text-sm text-gray-600">Career-Bazaar</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4">
-              {companyData && (
-                <div className="flex items-center gap-2">
-                  <Badge variant={companyData?.subscriptionPlan === 'free' ? 'secondary' : 'default'}>
-                    <Crown className="h-3 w-3 mr-1" />
-                    {companyData?.subscriptionPlan?.charAt(0).toUpperCase() + companyData?.subscriptionPlan?.slice(1)} Plan
-                  </Badge>
-                </div>
-              )}
-              
-              <div className="flex items-center gap-3">
-                <Avatar>
-                  <AvatarFallback className="bg-purple-100 text-purple-600">
-                    {user.firstName[0]}{user.lastName[0]}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="text-sm">
-                  <p className="font-medium text-gray-900">{user.firstName} {user.lastName}</p>
-                  <p className="text-gray-600">{user.role.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</p>
-                </div>
-              </div>
-
-              <Button variant="outline" onClick={handleLogout}>
-                Logout
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
-
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Page Title */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-green-600 rounded-lg flex items-center justify-center">
+              <Building2 className="h-5 w-5 text-white" />
+            </div>
+            <h1 className="text-3xl font-bold text-gray-900">Employer Dashboard</h1>
+          </div>
+          <p className="text-gray-600">Manage your job postings, candidates, and team from one place</p>
+        </div>
+
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="overview">Overview</TabsTrigger>
