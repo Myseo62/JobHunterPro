@@ -4,12 +4,22 @@ import { storage } from "./storage";
 import { RewardService, REWARD_CATALOG } from "./reward-service";
 import { rewardPointsService } from "./reward-points";
 import { jobMatchingService } from "./job-matching-service";
+// Removed ResumeParser import since we're not using AI parsing for now
 import { insertUserSchema, loginSchema, insertJobSchema, insertApplicationSchema, jobSearchSchema, employerRegistrationSchema, insertBlogPostSchema, friendReferralSchema } from "@shared/schema";
 import { z } from "zod";
 import session from "express-session";
 import passport from "passport";
 import { setupSocialAuth } from "./auth/social-auth";
 import bcrypt from "bcrypt";
+import multer from "multer";
+import * as fs from "fs";
+import * as path from "path";
+
+// Configure multer for file uploads
+const upload = multer({ 
+  dest: 'uploads/',
+  limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
+});
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up session middleware
@@ -91,6 +101,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   const requireEmployer = requireRole(['employer_admin', 'employer_hr']);
   const requireCandidate = requireRole(['candidate']);
+
+  // Simple authentication middleware
+  const isAuthenticated = (req: any, res: any, next: any) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: 'Not authenticated' });
+    }
+    next();
+  };
 
   // Employer authentication routes
   app.post("/api/auth/employer-register", async (req, res) => {
@@ -874,6 +892,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error: any) {
       res.status(400).json({ message: error.message || "Login failed" });
+    }
+  });
+
+  // Simple resume file upload endpoint (without AI parsing)
+  app.post('/api/upload-resume-file', upload.single('resume'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: 'No file uploaded' });
+      }
+
+      // Store file information (you could save to database here)
+      const fileInfo = {
+        originalName: req.file.originalname,
+        filename: req.file.filename,
+        size: req.file.size,
+        uploadedAt: new Date()
+      };
+      
+      res.json({
+        message: 'Resume uploaded successfully',
+        fileInfo
+      });
+    } catch (error) {
+      console.error('Resume upload error:', error);
+      res.status(500).json({ 
+        message: 'Failed to upload resume',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // Update user profile with parsed resume data
+  app.post('/api/users/:id/apply-resume-data', isAuthenticated, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { skills, workExperience, education } = req.body;
+      
+      // Get current user data
+      const currentUser = await storage.getUserById(userId);
+      if (!currentUser) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+      
+      // Update user with parsed resume data
+      const updatedData = {
+        skills: [...(currentUser.skills || []), ...(skills || [])],
+        // Merge work experience and education arrays
+        workExperience: [...(currentUser.workExperience || []), ...(workExperience || [])],
+        education: [...(currentUser.education || []), ...(education || [])]
+      };
+      
+      const updatedUser = await storage.updateUser(userId, updatedData);
+      
+      res.json({
+        message: 'Profile updated with resume data',
+        user: updatedUser
+      });
+    } catch (error) {
+      console.error('Profile update error:', error);
+      res.status(500).json({ message: 'Failed to update profile' });
     }
   });
 

@@ -18,6 +18,154 @@ export const users = pgTable("users", {
   profileCompleted: boolean("profile_completed").default(false),
   rewardPoints: integer("reward_points").default(0),
   role: text("role").notNull().default("candidate"), // candidate, employer_admin, employer_hr
+  // Additional profile fields
+  dateOfBirth: timestamp("date_of_birth"),
+  gender: text("gender"),
+  maritalStatus: text("marital_status"),
+  nationality: text("nationality"),
+  languages: text("languages").array(),
+  linkedinUrl: text("linkedin_url"),
+  githubUrl: text("github_url"),
+  portfolioUrl: text("portfolio_url"),
+  profileSummary: text("profile_summary"),
+  careerObjective: text("career_objective"),
+  noticePeriod: text("notice_period"),
+  availability: text("availability"),
+  workAuthorization: text("work_authorization"),
+  willingToRelocate: boolean("willing_to_relocate").default(false),
+  profileImageUrl: text("profile_image_url"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Work Experience Table
+export const workExperiences = pgTable("work_experiences", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  companyName: text("company_name").notNull(),
+  jobTitle: text("job_title").notNull(),
+  department: text("department"),
+  location: text("location"),
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date"),
+  isCurrentJob: boolean("is_current_job").default(false),
+  description: text("description"),
+  achievements: text("achievements").array(),
+  technologies: text("technologies").array(),
+  salaryRange: text("salary_range"),
+  employmentType: text("employment_type"), // Full-time, Part-time, Contract, Internship
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Education Table
+export const educations = pgTable("educations", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  institutionName: text("institution_name").notNull(),
+  degree: text("degree").notNull(),
+  fieldOfStudy: text("field_of_study"),
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date"),
+  isCurrentStudy: boolean("is_current_study").default(false),
+  grade: text("grade"),
+  percentage: decimal("percentage"),
+  cgpa: decimal("cgpa"),
+  description: text("description"),
+  achievements: text("achievements").array(),
+  location: text("location"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Certifications Table
+export const certifications = pgTable("certifications", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  name: text("name").notNull(),
+  issuingOrganization: text("issuing_organization").notNull(),
+  issueDate: timestamp("issue_date").notNull(),
+  expiryDate: timestamp("expiry_date"),
+  credentialId: text("credential_id"),
+  credentialUrl: text("credential_url"),
+  description: text("description"),
+  skills: text("skills").array(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Projects Table
+export const projects = pgTable("projects", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  role: text("role"),
+  technologies: text("technologies").array(),
+  startDate: timestamp("start_date"),
+  endDate: timestamp("end_date"),
+  isOngoing: boolean("is_ongoing").default(false),
+  projectUrl: text("project_url"),
+  githubUrl: text("github_url"),
+  achievements: text("achievements").array(),
+  teamSize: integer("team_size"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Awards and Recognitions Table
+export const awards = pgTable("awards", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  title: text("title").notNull(),
+  issuingOrganization: text("issuing_organization").notNull(),
+  dateReceived: timestamp("date_received").notNull(),
+  description: text("description"),
+  category: text("category"), // Academic, Professional, Sports, etc.
+  level: text("level"), // International, National, State, Local
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// References Table
+export const references = pgTable("references", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  name: text("name").notNull(),
+  designation: text("designation"),
+  company: text("company"),
+  email: text("email"),
+  phone: text("phone"),
+  relationship: text("relationship"), // Manager, Colleague, Client, etc.
+  yearsKnown: integer("years_known"),
+  isContactable: boolean("is_contactable").default(true),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Skills Assessment Table
+export const skillAssessments = pgTable("skill_assessments", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  skillName: text("skill_name").notNull(),
+  proficiencyLevel: text("proficiency_level").notNull(), // Beginner, Intermediate, Advanced, Expert
+  yearsOfExperience: integer("years_of_experience"),
+  lastUsed: timestamp("last_used"),
+  isVerified: boolean("is_verified").default(false),
+  verificationSource: text("verification_source"),
+  endorsements: integer("endorsements").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Resume Upload History
+export const resumeUploads = pgTable("resume_uploads", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  fileName: text("file_name").notNull(),
+  fileUrl: text("file_url").notNull(),
+  fileSize: integer("file_size"),
+  uploadDate: timestamp("upload_date").defaultNow(),
+  isActive: boolean("is_active").default(true),
+  parsedData: text("parsed_data"), // JSON string of extracted data
+  parsingStatus: text("parsing_status").default("pending"), // pending, completed, failed
+  extractedSkills: text("extracted_skills").array(),
+  extractedExperience: text("extracted_experience"),
+  extractedEducation: text("extracted_education"),
 });
 
 export const companies = pgTable("companies", {
@@ -275,6 +423,22 @@ export const jobSearchSchema = z.object({
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type Company = typeof companies.$inferSelect;
+export type InsertWorkExperience = typeof workExperiences.$inferInsert;
+export type WorkExperience = typeof workExperiences.$inferSelect;
+export type InsertEducation = typeof educations.$inferInsert;
+export type Education = typeof educations.$inferSelect;
+export type InsertCertification = typeof certifications.$inferInsert;
+export type Certification = typeof certifications.$inferSelect;
+export type InsertProject = typeof projects.$inferInsert;
+export type Project = typeof projects.$inferSelect;
+export type InsertAward = typeof awards.$inferInsert;
+export type Award = typeof awards.$inferSelect;
+export type InsertReference = typeof references.$inferInsert;
+export type Reference = typeof references.$inferSelect;
+export type InsertSkillAssessment = typeof skillAssessments.$inferInsert;
+export type SkillAssessment = typeof skillAssessments.$inferSelect;
+export type InsertResumeUpload = typeof resumeUploads.$inferInsert;
+export type ResumeUpload = typeof resumeUploads.$inferSelect;
 export type InsertCompany = z.infer<typeof insertCompanySchema>;
 export type Job = typeof jobs.$inferSelect;
 export type InsertJob = z.infer<typeof insertJobSchema>;

@@ -27,7 +27,16 @@ import {
   Search,
   Filter,
   Sparkles,
-  Target
+  Target,
+  Save,
+  X,
+  Plus,
+  Award,
+  Trophy,
+  Users,
+  Upload,
+  FileCheck,
+  Star
 } from "lucide-react";
 import JobRecommendations from "@/components/jobs/job-recommendations";
 import { useQuery } from "@tanstack/react-query";
@@ -35,6 +44,19 @@ import { useQuery } from "@tanstack/react-query";
 export default function CandidateDashboard() {
   const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [isEditing, setIsEditing] = useState(false);
+  const [showRewardDetails, setShowRewardDetails] = useState(false);
+  const [newSkill, setNewSkill] = useState("");
+  const [userSkills, setUserSkills] = useState(user?.skills || []);
+  const [showAddExperience, setShowAddExperience] = useState(false);
+  const [experienceForm, setExperienceForm] = useState({
+    jobTitle: "",
+    companyName: "",
+    startDate: "",
+    endDate: "",
+    isCurrentJob: false,
+    description: ""
+  });
 
   const { data: applications } = useQuery({
     queryKey: ["/api/applications", user?.id],
@@ -169,137 +191,771 @@ export default function CandidateDashboard() {
     </div>
   );
 
-  const ProfileTab = () => (
-    <Card className="cb-glass-card">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <User className="h-5 w-5 text-purple-600" />
-          Personal Information
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
-            <p className="p-3 bg-gray-50 rounded-lg">{user?.firstName || 'Not provided'}</p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
-            <p className="p-3 bg-gray-50 rounded-lg">{user?.lastName || 'Not provided'}</p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-            <p className="p-3 bg-gray-50 rounded-lg flex items-center gap-2">
-              <Mail className="h-4 w-4 text-gray-500" />
-              {user?.email}
-            </p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
-            <p className="p-3 bg-gray-50 rounded-lg flex items-center gap-2">
-              <Phone className="h-4 w-4 text-gray-500" />
-              {user?.phone || 'Not provided'}
-            </p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
-            <p className="p-3 bg-gray-50 rounded-lg flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-gray-500" />
-              {user?.location || 'Not provided'}
-            </p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Experience</label>
-            <p className="p-3 bg-gray-50 rounded-lg">
-              {user?.experience ? `${user.experience} years` : 'Not provided'}
-            </p>
-          </div>
-        </div>
-        
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Skills</label>
-          <div className="flex flex-wrap gap-2">
-            {user?.skills?.map((skill: string, index: number) => (
-              <Badge key={index} variant="secondary">{skill}</Badge>
-            )) || <p className="text-gray-500">No skills added</p>}
-          </div>
-        </div>
-
-        <div className="flex gap-3">
-          <Button className="cb-gradient-primary">
-            <Edit className="h-4 w-4 mr-2" />
-            Edit Profile
-          </Button>
-          <Button variant="outline">
-            <Eye className="h-4 w-4 mr-2" />
-            Preview Profile
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
-
-  const ResumeTab = () => (
-    <Card className="cb-glass-card">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <FileText className="h-5 w-5 text-purple-600" />
-          Resume Management
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {user?.resumeUrl ? (
-          <div className="p-6 border-2 border-dashed border-gray-200 rounded-lg bg-gray-50">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <FileText className="h-8 w-8 text-purple-600" />
-                <div>
-                  <p className="font-medium text-gray-900">Current Resume</p>
-                  <p className="text-sm text-gray-600">PDF • Uploaded on Jan 15, 2025</p>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm">
-                  <Eye className="h-4 w-4 mr-2" />
-                  Preview
-                </Button>
-                <Button variant="outline" size="sm">
-                  <Download className="h-4 w-4 mr-2" />
-                  Download
-                </Button>
-                <Button variant="outline" size="sm">
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete
-                </Button>
-              </div>
+  const ProfileTab = () => {
+    const [activeSection, setActiveSection] = useState("personal");
+    
+    return (
+      <div className="space-y-6">
+        {/* Profile Navigation */}
+        <Card className="cb-glass-card">
+          <CardContent className="p-4">
+            <div className="flex flex-wrap gap-2">
+              {[
+                { id: "personal", label: "Personal Info", icon: User },
+                { id: "experience", label: "Work Experience", icon: Briefcase },
+                { id: "education", label: "Education", icon: FileText },
+                { id: "skills", label: "Skills & Assessments", icon: Target },
+                { id: "projects", label: "Projects", icon: Building },
+                { id: "certifications", label: "Certifications", icon: Award },
+                { id: "awards", label: "Awards & Recognition", icon: Trophy },
+                { id: "references", label: "References", icon: Users },
+              ].map((section) => {
+                const Icon = section.icon;
+                return (
+                  <Button
+                    key={section.id}
+                    variant={activeSection === section.id ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setActiveSection(section.id)}
+                    className="flex items-center gap-2"
+                  >
+                    <Icon className="h-4 w-4" />
+                    {section.label}
+                  </Button>
+                );
+              })}
             </div>
-          </div>
-        ) : (
-          <div className="p-8 border-2 border-dashed border-gray-200 rounded-lg text-center">
-            <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600 mb-4">No resume uploaded yet</p>
-            <Button className="cb-gradient-primary">
-              Upload Resume
-            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Personal Information Section */}
+        {activeSection === "personal" && (
+          <div className="space-y-6">
+            <Card className="cb-glass-card">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <User className="h-5 w-5 text-purple-600" />
+                  Personal Information
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                    <input 
+                      type="text" 
+                      defaultValue={user?.firstName || ''} 
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                    <input 
+                      type="text" 
+                      defaultValue={user?.lastName || ''} 
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                    <input 
+                      type="email" 
+                      defaultValue={user?.email || ''} 
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+                    <input 
+                      type="tel" 
+                      defaultValue={user?.phone || ''} 
+                      placeholder="+1 (555) 123-4567"
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                    <input 
+                      type="text" 
+                      defaultValue={user?.location || ''} 
+                      placeholder="City, State, Country"
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Total Experience</label>
+                    <select 
+                      defaultValue={user?.experience || ''} 
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    >
+                      <option value="">Select Experience</option>
+                      <option value="0">Fresher</option>
+                      <option value="1">1 Year</option>
+                      <option value="2">2 Years</option>
+                      <option value="3">3 Years</option>
+                      <option value="4">4 Years</option>
+                      <option value="5">5 Years</option>
+                      <option value="6">6-10 Years</option>
+                      <option value="10">10+ Years</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Current CTC (Annual)</label>
+                    <input 
+                      type="number" 
+                      defaultValue={user?.currentSalary || ''} 
+                      placeholder="Enter current salary"
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Expected CTC (Annual)</label>
+                    <input 
+                      type="number" 
+                      defaultValue={user?.expectedSalary || ''} 
+                      placeholder="Enter expected salary"
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Notice Period</label>
+                    <select className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                      <option value="">Select Notice Period</option>
+                      <option value="immediate">Immediate</option>
+                      <option value="15-days">15 Days</option>
+                      <option value="1-month">1 Month</option>
+                      <option value="2-months">2 Months</option>
+                      <option value="3-months">3 Months</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">LinkedIn Profile</label>
+                    <input 
+                      type="url" 
+                      placeholder="https://linkedin.com/in/yourprofile"
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">GitHub Profile</label>
+                    <input 
+                      type="url" 
+                      placeholder="https://github.com/yourusername"
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Portfolio Website</label>
+                    <input 
+                      type="url" 
+                      placeholder="https://yourportfolio.com"
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Professional Summary</label>
+                  <textarea 
+                    rows={4}
+                    placeholder="Write a brief professional summary highlighting your key strengths and career objectives..."
+                    className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <label className="flex items-center gap-2">
+                    <input type="checkbox" className="w-4 h-4 text-purple-600" />
+                    <span className="text-sm text-gray-700">Willing to relocate</span>
+                  </label>
+                </div>
+
+                <Button className="cb-gradient-primary">
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Personal Information
+                </Button>
+              </CardContent>
+            </Card>
           </div>
         )}
 
-        <div className="space-y-4">
-          <h3 className="font-semibold text-gray-900">Resume Tips</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-4 bg-purple-50 rounded-lg">
-              <h4 className="font-medium text-purple-900 mb-2">Keep it Updated</h4>
-              <p className="text-sm text-purple-700">Update your resume regularly with new skills and experiences.</p>
+        {/* Skills Section */}
+        {activeSection === "skills" && (
+          <Card className="cb-glass-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Target className="h-5 w-5 text-purple-600" />
+                Skills & Assessments
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Technical Skills</label>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {user?.skills?.map((skill: string, index: number) => (
+                    <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                      {skill}
+                      <button className="ml-1 text-red-500 hover:text-red-700">
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  )) || <p className="text-gray-500">No skills added yet</p>}
+                </div>
+                <div className="flex gap-2">
+                  <input 
+                    type="text" 
+                    placeholder="Add a skill and press Enter"
+                    className="flex-1 p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  />
+                  <Button>Add Skill</Button>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-4">Skill Proficiency Levels</h4>
+                <div className="space-y-4">
+                  {user?.skills?.slice(0, 6).map((skill: string, index: number) => (
+                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <span className="font-medium">{skill}</span>
+                      <select className="p-2 border border-gray-200 rounded">
+                        <option value="beginner">Beginner</option>
+                        <option value="intermediate">Intermediate</option>
+                        <option value="advanced">Advanced</option>
+                        <option value="expert">Expert</option>
+                      </select>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <Button className="cb-gradient-primary">
+                <Save className="h-4 w-4 mr-2" />
+                Save Skills
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Work Experience Section */}
+        {activeSection === "experience" && (
+          <Card className="cb-glass-card">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Briefcase className="h-5 w-5 text-purple-600" />
+                  Work Experience
+                </CardTitle>
+                <Button size="sm" className="cb-gradient-primary">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Experience
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Sample Experience Entry */}
+              <div className="border border-gray-200 rounded-lg p-4 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Job Title</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g., Senior Software Engineer"
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Company Name</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g., Microsoft"
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Employment Type</label>
+                    <select className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                      <option value="">Select Type</option>
+                      <option value="full-time">Full-time</option>
+                      <option value="part-time">Part-time</option>
+                      <option value="contract">Contract</option>
+                      <option value="internship">Internship</option>
+                      <option value="freelance">Freelance</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g., Bangalore, India"
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+                    <input 
+                      type="date" 
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+                    <input 
+                      type="date" 
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                    <label className="flex items-center gap-2 mt-2">
+                      <input type="checkbox" className="w-4 h-4 text-purple-600" />
+                      <span className="text-sm text-gray-700">Currently working here</span>
+                    </label>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Job Description</label>
+                  <textarea 
+                    rows={4}
+                    placeholder="Describe your responsibilities, achievements, and key projects..."
+                    className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Key Technologies Used</label>
+                  <input 
+                    type="text" 
+                    placeholder="e.g., React, Node.js, Python, AWS"
+                    className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button className="cb-gradient-primary">Save Experience</Button>
+                  <Button variant="outline">Cancel</Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Education Section */}
+        {activeSection === "education" && (
+          <Card className="cb-glass-card">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-purple-600" />
+                  Education
+                </CardTitle>
+                <Button size="sm" className="cb-gradient-primary">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Education
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="border border-gray-200 rounded-lg p-4 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Degree</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g., Bachelor of Technology"
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Field of Study</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g., Computer Science"
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Institution</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g., Indian Institute of Technology"
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g., Delhi, India"
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+                    <input 
+                      type="date" 
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+                    <input 
+                      type="date" 
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Grade/CGPA</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g., 8.5/10 or First Class"
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Percentage</label>
+                    <input 
+                      type="number" 
+                      placeholder="e.g., 85"
+                      min="0" 
+                      max="100"
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                  <textarea 
+                    rows={3}
+                    placeholder="Relevant coursework, projects, achievements..."
+                    className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button className="cb-gradient-primary">Save Education</Button>
+                  <Button variant="outline">Cancel</Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Awards Section */}
+        {activeSection === "awards" && (
+          <Card className="cb-glass-card">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Trophy className="h-5 w-5 text-purple-600" />
+                  Awards & Recognition
+                </CardTitle>
+                <Button size="sm" className="cb-gradient-primary">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Award
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="border border-gray-200 rounded-lg p-4 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Award Title</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g., Employee of the Year"
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Issuing Organization</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g., Microsoft Corporation"
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Date Received</label>
+                    <input 
+                      type="date" 
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                    <select className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                      <option value="">Select Category</option>
+                      <option value="academic">Academic</option>
+                      <option value="professional">Professional</option>
+                      <option value="technical">Technical</option>
+                      <option value="leadership">Leadership</option>
+                      <option value="innovation">Innovation</option>
+                      <option value="community">Community Service</option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                  <textarea 
+                    rows={3}
+                    placeholder="Describe the achievement and its significance..."
+                    className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button className="cb-gradient-primary">Save Award</Button>
+                  <Button variant="outline">Cancel</Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* References Section */}
+        {activeSection === "references" && (
+          <Card className="cb-glass-card">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5 text-purple-600" />
+                  Professional References
+                </CardTitle>
+                <Button size="sm" className="cb-gradient-primary">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Reference
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="border border-gray-200 rounded-lg p-4 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g., John Smith"
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Designation</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g., Senior Manager"
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Company</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g., Google"
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Relationship</label>
+                    <select className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                      <option value="">Select Relationship</option>
+                      <option value="manager">Direct Manager</option>
+                      <option value="colleague">Colleague</option>
+                      <option value="client">Client</option>
+                      <option value="mentor">Mentor</option>
+                      <option value="professor">Professor</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                    <input 
+                      type="email" 
+                      placeholder="e.g., john.smith@company.com"
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+                    <input 
+                      type="tel" 
+                      placeholder="e.g., +1 (555) 123-4567"
+                      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="flex items-center gap-2">
+                    <input type="checkbox" className="w-4 h-4 text-purple-600" />
+                    <span className="text-sm text-gray-700">Permission to contact this reference</span>
+                  </label>
+                </div>
+                <div className="flex gap-2">
+                  <Button className="cb-gradient-primary">Save Reference</Button>
+                  <Button variant="outline">Cancel</Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    );
+  };
+
+  const ResumeTab = () => {
+    const [parseStatus, setParseStatus] = useState('idle'); // idle, parsing, completed, error
+    const [parsedData, setParsedData] = useState(null);
+    
+    const handleResumeUpload = async (file: File) => {
+      setParseStatus('parsing');
+      
+      try {
+        const formData = new FormData();
+        formData.append('resume', file);
+        
+        const response = await fetch('/api/upload-resume-file', {
+          method: 'POST',
+          body: formData,
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          setParseStatus('completed');
+          // Show success message
+          alert('Resume uploaded successfully! You can now manually update your profile with the information from your resume.');
+        } else {
+          setParseStatus('error');
+        }
+      } catch (error) {
+        console.error('Resume upload failed:', error);
+        setParseStatus('error');
+      }
+    };
+    
+    return (
+      <div className="space-y-6">
+        <Card className="cb-glass-card">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-purple-600" />
+              Resume Management with AI Parser
+            </CardTitle>
+            <p className="text-gray-600">
+              Upload your resume and let our AI automatically extract your skills, experience, and education
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {user?.resumeUrl ? (
+              <div className="p-6 border-2 border-dashed border-gray-200 rounded-lg bg-gray-50">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <FileText className="h-8 w-8 text-purple-600" />
+                    <div>
+                      <p className="font-medium text-gray-900">Current Resume</p>
+                      <p className="text-sm text-gray-600">PDF • Uploaded on Jan 15, 2025</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm">
+                      <Eye className="h-4 w-4 mr-2" />
+                      Preview
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      <Download className="h-4 w-4 mr-2" />
+                      Download
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="p-8 border-2 border-dashed border-gray-300 rounded-lg text-center">
+                  <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Upload Your Resume</h3>
+                  <p className="text-gray-600 mb-4">Upload a PDF or Word document to enhance your profile visibility</p>
+                  <div className="flex items-center justify-center">
+                    <label className="cursor-pointer">
+                      <input 
+                        type="file" 
+                        className="hidden" 
+                        accept=".pdf,.doc,.docx"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleResumeUpload(file);
+                        }}
+                      />
+                      <Button className="cb-gradient-primary" disabled={parseStatus === 'parsing'}>
+                        {parseStatus === 'parsing' ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                            Uploading...
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="h-4 w-4 mr-2" />
+                            Choose File
+                          </>
+                        )}
+                      </Button>
+                    </label>
+                  </div>
+                </div>
+
+                {parseStatus === 'error' && (
+                  <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <p className="text-red-700">Resume upload failed. Please try again or contact support.</p>
+                  </div>
+                )}
+
+                {parseStatus === 'completed' && (
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <p className="text-green-700">Resume uploaded successfully! Please update your profile sections manually with your resume information.</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card className="cb-glass-card">
+                <CardHeader>
+                  <CardTitle className="text-lg">Resume Builder</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-600 mb-4">Create a professional resume using our guided builder</p>
+                  <Button variant="outline" className="w-full">
+                    <Edit className="h-4 w-4 mr-2" />
+                    Open Resume Builder
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card className="cb-glass-card">
+                <CardHeader>
+                  <CardTitle className="text-lg">Resume Analytics</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Profile Completeness</span>
+                      <span className="text-sm font-medium">75%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="bg-purple-600 h-2 rounded-full" style={{"width": "75%"}}></div>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">ATS Score</span>
+                      <span className="text-sm font-medium text-green-600">Good</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Skills Match</span>
+                      <span className="text-sm font-medium text-blue-600">85%</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
-            <div className="p-4 bg-green-50 rounded-lg">
-              <h4 className="font-medium text-green-900 mb-2">Use Keywords</h4>
-              <p className="text-sm text-green-700">Include industry-specific keywords to pass ATS filters.</p>
-            </div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
+          </CardContent>
+        </Card>
+      </div>
+    );
+  };
 
   const ApplicationsTab = () => (
     <Card className="cb-glass-card">
