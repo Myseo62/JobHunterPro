@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy } from "react";
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -50,8 +50,7 @@ import Contact from "@/pages/contact";
 import About from "@/pages/about";
 import FAQ from "@/pages/faq";
 import Help from "@/pages/help";
-import BlogIndex from "@/pages/blog/index";
-import BlogPost from "@/pages/blog/post";
+// Blog components will be lazy loaded
 
 
 function Router() {
@@ -112,6 +111,8 @@ function Router() {
           
           {/* Additional routes */}
           <Route path="/companies" component={() => <CompaniesDirectory user={user} />} />
+          <Route path="/blogs" component={lazy(() => import("@/pages/blogs"))} />
+          <Route path="/blogs/write" component={lazy(() => import("@/pages/blogs/write-blog"))} />
           <Route path="/services" component={() => <Services user={user} />} />
           <Route path="/resources" component={() => <Resources user={user} />} />
           <Route path="/terms" component={() => <Terms />} />
@@ -153,8 +154,8 @@ function Router() {
           <Route path="/about" component={() => <About />} />
           <Route path="/faq" component={() => <FAQ />} />
           <Route path="/help" component={() => <Help />} />
-          <Route path="/blog" component={() => <BlogIndex />} />
-          <Route path="/blog/:id" component={() => <BlogPost />} />
+          <Route path="/blog" component={lazy(() => import("@/pages/blog/index"))} />
+          <Route path="/blog/:id" component={lazy(() => import("@/pages/blog/post"))} />
 
           
           {/* Fallback to 404 */}

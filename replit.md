@@ -106,7 +106,7 @@ Preferred communication style: Simple, everyday language.
 - **Migration**: Use `npm run db:push` to sync schema changes
 - **Seeding**: Sample data populated via `server/seed.ts`
 
-### Recent Changes (July 23, 2025)
+### Recent Changes (August 1, 2025)
 - ✅ Successfully migrated from in-memory storage to PostgreSQL database
 - ✅ Implemented DatabaseStorage class with full CRUD operations
 - ✅ Created database schema with users, companies, jobs, applications, and job categories
@@ -147,5 +147,13 @@ Preferred communication style: Simple, everyday language.
 - ✅ **Integrated reward tracking for key actions: blog reading/writing, profile completion, job applications, friend referrals**
 - ✅ **Added reward points database schema with activities and redemptions tables**
 - ✅ **Built reward service with point awarding, redemption, and leaderboard functionality**
+- ✅ **LATEST: Implemented complete blog functionality for candidates with writing and reading capabilities**
+- ✅ **LATEST: Created reward points system with specific values: Friend referral (20 pts), Blog read (5 pts), Blog write (50 pts), Daily login (5 pts), Profile complete (50 pts)**
+- ✅ **LATEST: Added blog database tables (blogPosts, blogViews, friendReferrals, dailyLogins) with full migration**
+- ✅ **LATEST: Built blog writing interface with categories, tags, and publishing options**
+- ✅ **LATEST: Created blog listing page with search, filters, and responsive design**
+- ✅ **LATEST: Temporarily removed "Find Candidates" and "Post Jobs" from employer header menu as requested**
+- ✅ **LATEST: Enhanced reward points service with automatic tracking for all defined activities**
+- ✅ **LATEST: Integrated daily login rewards and blog interaction tracking with database persistence**
 
 The application uses a monorepo structure with shared types and schemas, enabling type safety across the full stack while maintaining clear separation between frontend and backend concerns.

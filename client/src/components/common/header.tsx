@@ -32,17 +32,14 @@ export default function Header({ user, onLogout }: HeaderProps) {
 
   // Navigation based on user type
   const getCandidateNavigation = () => [
-    { label: "Find Jobs", href: "/jobs" },
+    { label: "Jobs", href: "/jobs" },
     { label: "Companies", href: "/companies" },
-    { label: "Career Guide", href: "/services" },
-    { label: "Success Stories", href: "/resources" },
+    { label: "Blog", href: "/blogs" },
   ];
 
   const getEmployerNavigation = () => [
-    { label: "Post Jobs", href: "/employer/jobs" },
-    { label: "Find Candidates", href: "/employer/candidates" },
+    { label: "Dashboard", href: "/employer/dashboard" },
     { label: "Company Profile", href: "/employer/company" },
-    { label: "Analytics", href: "/employer/analytics" },
   ];
 
   const getHRNavigation = () => [

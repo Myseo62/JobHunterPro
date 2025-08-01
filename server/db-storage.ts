@@ -1,4 +1,4 @@
-import { users, companies, jobs, applications, jobCategories, companyEmployees, type User, type InsertUser, type Company, type InsertCompany, type Job, type InsertJob, type Application, type InsertApplication, type JobCategory, type InsertJobCategory, type JobWithCompany, type ApplicationWithJobAndCompany, type JobSearchParams, type CompanyEmployee, type InsertCompanyEmployee } from "@shared/schema";
+import { users, companies, jobs, applications, jobCategories, companyEmployees, blogPosts, friendReferrals, type User, type InsertUser, type Company, type InsertCompany, type Job, type InsertJob, type Application, type InsertApplication, type JobCategory, type InsertJobCategory, type JobWithCompany, type ApplicationWithJobAndCompany, type JobSearchParams, type CompanyEmployee, type InsertCompanyEmployee } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, like, gte, lte, desc, sql, ilike, or } from "drizzle-orm";
 import type { IStorage } from "./storage";
@@ -18,15 +18,12 @@ export class DatabaseStorage implements IStorage {
   async createUser(insertUser: InsertUser): Promise<User> {
     const [user] = await db
       .insert(users)
-      .values({
-        ...insertUser,
-        profileCompleted: false
-      })
+      .values(insertUser)
       .returning();
     return user;
   }
 
-  async updateUser(id: number, updateData: Partial<InsertUser>): Promise<User | undefined> {
+  async updateUser(id: number, updateData: Partial<User>): Promise<User | undefined> {
     const [user] = await db
       .update(users)
       .set(updateData)
@@ -48,10 +45,7 @@ export class DatabaseStorage implements IStorage {
   async createCompany(insertCompany: InsertCompany): Promise<Company> {
     const [company] = await db
       .insert(companies)
-      .values({
-        ...insertCompany,
-        reviewCount: insertCompany.reviewCount || 0
-      })
+      .values(insertCompany)
       .returning();
     return company;
   }
@@ -351,5 +345,78 @@ export class DatabaseStorage implements IStorage {
       activeJobs: jobsResult[0]?.count || 0,
       totalApplications: applicationsResult[0]?.count || 0,
     };
+  }
+
+  // Blog methods
+  async getAllBlogs(): Promise<any[]> {
+    const blogs = await db.select({
+      id: blogPosts.id,
+      title: blogPosts.title,
+      excerpt: blogPosts.excerpt,
+      content: blogPosts.content,
+      category: blogPosts.category,
+      tags: blogPosts.tags,
+      viewCount: blogPosts.viewCount,
+      likeCount: blogPosts.likeCount,
+      createdAt: blogPosts.createdAt,
+      author: {
+        id: users.id,
+        firstName: users.firstName,
+        lastName: users.lastName,
+      }
+    })
+    .from(blogPosts)
+    .innerJoin(users, eq(blogPosts.userId, users.id))
+    .where(eq(blogPosts.isPublished, true))
+    .orderBy(desc(blogPosts.createdAt));
+    
+    return blogs;
+  }
+
+  async getBlogById(id: number): Promise<any | null> {
+    const [blog] = await db.select({
+      id: blogPosts.id,
+      title: blogPosts.title,
+      excerpt: blogPosts.excerpt,
+      content: blogPosts.content,
+      category: blogPosts.category,
+      tags: blogPosts.tags,
+      viewCount: blogPosts.viewCount,
+      likeCount: blogPosts.likeCount,
+      createdAt: blogPosts.createdAt,
+      author: {
+        id: users.id,
+        firstName: users.firstName,
+        lastName: users.lastName,
+      }
+    })
+    .from(blogPosts)
+    .innerJoin(users, eq(blogPosts.userId, users.id))
+    .where(eq(blogPosts.id, id))
+    .limit(1);
+    
+    return blog || null;
+  }
+
+  async createBlog(blogData: any): Promise<any> {
+    const [blog] = await db.insert(blogPosts)
+      .values(blogData)
+      .returning();
+    return blog;
+  }
+
+  async getUserBlogs(userId: number): Promise<any[]> {
+    return await db.select()
+      .from(blogPosts)
+      .where(eq(blogPosts.userId, userId))
+      .orderBy(desc(blogPosts.createdAt));
+  }
+
+  // Friend referral methods
+  async createFriendReferral(referralData: any): Promise<any> {
+    const [referral] = await db.insert(friendReferrals)
+      .values(referralData)
+      .returning();
+    return referral;
   }
 }

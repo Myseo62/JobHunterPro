@@ -130,6 +130,50 @@ export const candidateDownloads = pgTable("candidate_downloads", {
   downloadedAt: timestamp("downloaded_at").defaultNow(),
 });
 
+// Blog posts by candidates
+export const blogPosts = pgTable("blog_posts", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  excerpt: text("excerpt"),
+  tags: text("tags").array(),
+  category: text("category"), // tech, career, experience, tips, etc.
+  isPublished: boolean("is_published").default(false),
+  viewCount: integer("view_count").default(0),
+  likeCount: integer("like_count").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Blog post views for tracking
+export const blogViews = pgTable("blog_views", {
+  id: serial("id").primaryKey(),
+  blogId: integer("blog_id").references(() => blogPosts.id).notNull(),
+  userId: integer("user_id").references(() => users.id), // Can be null for anonymous views
+  viewedAt: timestamp("viewed_at").defaultNow(),
+});
+
+// Friend referrals tracking
+export const friendReferrals = pgTable("friend_referrals", {
+  id: serial("id").primaryKey(),
+  referrerId: integer("referrer_id").references(() => users.id).notNull(),
+  referredEmail: text("referred_email").notNull(),
+  referredUserId: integer("referred_user_id").references(() => users.id), // Set when they register
+  status: text("status").notNull().default("pending"), // pending, completed, failed
+  pointsAwarded: integer("points_awarded").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  completedAt: timestamp("completed_at"),
+});
+
+// Daily login tracking
+export const dailyLogins = pgTable("daily_logins", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  loginDate: timestamp("login_date").defaultNow(),
+  pointsAwarded: integer("points_awarded").default(5),
+});
+
 // Company subscription plans
 export const subscriptionPlans = pgTable("subscription_plans", {
   id: serial("id").primaryKey(),
@@ -175,6 +219,23 @@ export const insertApplicationSchema = createInsertSchema(applications).omit({
 export const insertJobCategorySchema = createInsertSchema(jobCategories).omit({
   id: true,
   jobCount: true,
+});
+
+// Blog schemas
+export const insertBlogPostSchema = createInsertSchema(blogPosts).omit({
+  id: true,
+  viewCount: true,
+  likeCount: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  title: z.string().min(5, "Title must be at least 5 characters"),
+  content: z.string().min(50, "Content must be at least 50 characters"),
+});
+
+// Friend referral schema
+export const friendReferralSchema = z.object({
+  referredEmail: z.string().email("Valid email required"),
 });
 
 // Login schemas
@@ -242,3 +303,11 @@ export type InsertCandidateDownload = typeof candidateDownloads.$inferInsert;
 export type SubscriptionPlan = typeof subscriptionPlans.$inferSelect;
 export type InsertSubscriptionPlan = typeof subscriptionPlans.$inferInsert;
 export type EmployerRegistrationData = z.infer<typeof employerRegistrationSchema>;
+
+// Blog types
+export type BlogPost = typeof blogPosts.$inferSelect;
+export type InsertBlogPost = z.infer<typeof insertBlogPostSchema>;
+export type BlogView = typeof blogViews.$inferSelect;
+export type FriendReferral = typeof friendReferrals.$inferSelect;
+export type InsertFriendReferral = z.infer<typeof friendReferralSchema>;
+export type DailyLogin = typeof dailyLogins.$inferSelect;

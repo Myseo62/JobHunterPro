@@ -2,7 +2,8 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { RewardService, REWARD_CATALOG } from "./reward-service";
-import { insertUserSchema, loginSchema, insertJobSchema, insertApplicationSchema, jobSearchSchema, employerRegistrationSchema } from "@shared/schema";
+import { rewardPointsService } from "./reward-points";
+import { insertUserSchema, loginSchema, insertJobSchema, insertApplicationSchema, jobSearchSchema, employerRegistrationSchema, insertBlogPostSchema, friendReferralSchema } from "@shared/schema";
 import { z } from "zod";
 import session from "express-session";
 import passport from "passport";
@@ -707,6 +708,131 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(job);
     } catch (error) {
       res.status(500).json({ message: "Failed to create job" });
+    }
+  });
+
+  // Blog endpoints
+  app.get("/api/blogs", async (req, res) => {
+    try {
+      const blogs = await storage.getAllBlogs();
+      res.json(blogs);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch blogs" });
+    }
+  });
+
+  app.get("/api/blogs/:id", async (req, res) => {
+    try {
+      const blogId = parseInt(req.params.id);
+      const blog = await storage.getBlogById(blogId);
+      
+      if (!blog) {
+        return res.status(404).json({ message: "Blog not found" });
+      }
+
+      // Award reading points if user is authenticated
+      if (req.isAuthenticated()) {
+        const user = req.user as any;
+        if (user.role === 'candidate') {
+          await rewardPointsService.awardBlogReadPoints(user.id, blogId);
+        }
+      }
+
+      res.json(blog);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch blog" });
+    }
+  });
+
+  app.post("/api/blogs", requireRole(['candidate']), async (req, res) => {
+    try {
+      const user = req.user as any;
+      const blogData = insertBlogPostSchema.parse({
+        ...req.body,
+        userId: user.id
+      });
+
+      const blog = await storage.createBlog(blogData);
+      
+      // Award points for blog writing if published
+      if (blogData.isPublished) {
+        await rewardPointsService.awardBlogWritePoints(user.id, blog.id);
+      }
+
+      const userBlogs = await storage.getUserBlogs(user.id);
+      res.json({ blog, totalPosts: userBlogs.length });
+    } catch (error: any) {
+      res.status(400).json({ message: error.message || "Failed to create blog" });
+    }
+  });
+
+  // Friend referral endpoints  
+  app.post("/api/referrals", requireRole(['candidate']), async (req, res) => {
+    try {
+      const user = req.user as any;
+      const { referredEmail } = friendReferralSchema.parse(req.body);
+      
+      const referral = await storage.createFriendReferral({
+        referrerId: user.id,
+        referredEmail,
+        status: 'pending'
+      });
+
+      res.json({ message: "Friend referral sent", referral });
+    } catch (error: any) {
+      res.status(400).json({ message: error.message || "Failed to send referral" });
+    }
+  });
+
+  // Reward endpoints
+  app.get("/api/rewards/activities", requireRole(['candidate']), async (req, res) => {
+    try {
+      const user = req.user as any;
+      const activities = await rewardPointsService.getUserActivities(user.id);
+      res.json(activities);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch activities" });
+    }
+  });
+
+  app.get("/api/rewards/leaderboard", async (req, res) => {
+    try {
+      const leaderboard = await rewardPointsService.getLeaderboard();
+      res.json(leaderboard);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch leaderboard" });
+    }
+  });
+
+  // Login endpoint with daily login reward
+  app.post("/api/auth/login", async (req, res) => {
+    try {
+      const { email, password } = loginSchema.parse(req.body);
+      const user = await storage.getUserByEmail(email);
+      
+      if (!user) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      const isValid = await bcrypt.compare(password, user.password);
+      if (!isValid) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      // Award daily login points for candidates
+      if (user.role === 'candidate') {
+        await rewardPointsService.awardDailyLoginPoints(user.id);
+      }
+
+      (req as any).login(user, (err: any) => {
+        if (err) {
+          return res.status(500).json({ message: "Login failed" });
+        }
+        const { password: _, ...userResponse } = user;
+        res.json({ message: "Login successful", user: userResponse });
+      });
+    } catch (error: any) {
+      res.status(400).json({ message: error.message || "Login failed" });
     }
   });
 
