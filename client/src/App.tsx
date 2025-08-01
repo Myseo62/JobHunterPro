@@ -50,7 +50,8 @@ import Contact from "@/pages/contact";
 import About from "@/pages/about";
 import FAQ from "@/pages/faq";
 import Help from "@/pages/help";
-// Blog components will be lazy loaded
+import BlogIndex from "@/pages/blog/index";
+import BlogPost from "@/pages/blog/post";
 
 
 function Router() {
@@ -77,6 +78,7 @@ function Router() {
           <Route path="/jobs" component={() => <Jobs user={user} />} />
           <Route path="/jobs/:id" component={() => <JobDetail user={user} />} />
           <Route path="/companies/:id" component={() => <CompanyProfilePage user={user} />} />
+          <Route path="/company/profile/:id" component={() => <CompanyProfile />} />
           
           {/* Auth routes */}
           <Route path="/login">
@@ -99,9 +101,8 @@ function Router() {
           
           {/* Additional routes */}
           <Route path="/companies" component={() => <CompaniesDirectory user={user} />} />
-          <Route path="/blogs" component={lazy(() => import("@/pages/blogs"))} />
-          <Route path="/blogs/write" component={lazy(() => import("@/pages/blogs/write-blog"))} />
-          <Route path="/blogs/:id" component={lazy(() => import("@/pages/blogs/blog-detail"))} />
+          <Route path="/blog" component={() => <BlogIndex />} />
+          <Route path="/blog/:id" component={() => <BlogPost />} />
           <Route path="/services" component={() => <Services user={user} />} />
           <Route path="/resources" component={() => <Resources user={user} />} />
           <Route path="/terms" component={() => <Terms />} />
@@ -117,7 +118,6 @@ function Router() {
 
           {/* Company management routes */}
           <Route path="/company/dashboard" component={() => <CompanyDashboard user={user} />} />
-          <Route path="/company/profile/:id?" component={() => <CompanyProfile />} />
           <Route path="/company/settings" component={() => <CompanySettings user={user} />} />
 
           {/* Additional candidate pages */}
