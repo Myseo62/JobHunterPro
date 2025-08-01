@@ -330,14 +330,15 @@ export default function Header({ user, onLogout }: HeaderProps) {
               </div>
             )}
 
-            <div className="hidden lg:flex items-center text-sm text-gray-600 border-l pl-4 ml-4">
+            {/* Temporarily removed Post a Job button */}
+            {/* <div className="hidden lg:flex items-center text-sm text-gray-600 border-l pl-4 ml-4">
               <div className="flex flex-col">
                 <span className="text-xs text-gray-500">For employers</span>
                 <Link href="/employer/post-job">
                   <span className="text-purple-600 hover:text-purple-700 font-medium cursor-pointer transition-colors">Post a job</span>
                 </Link>
               </div>
-            </div>
+            </div> */}
 
             {/* Mobile menu button */}
             <Button
