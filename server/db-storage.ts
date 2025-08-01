@@ -23,7 +23,7 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async updateUser(id: number, updateData: Partial<User>): Promise<User | undefined> {
+  async updateUser(id: number, updateData: Partial<InsertUser>): Promise<User | undefined> {
     const [user] = await db
       .update(users)
       .set(updateData)
@@ -418,5 +418,18 @@ export class DatabaseStorage implements IStorage {
       .values(referralData)
       .returning();
     return referral;
+  }
+
+  // Blog interaction methods
+  async incrementBlogView(blogId: number): Promise<void> {
+    await db.update(blogPosts)
+      .set({ viewCount: sql`${blogPosts.viewCount} + 1` })
+      .where(eq(blogPosts.id, blogId));
+  }
+
+  async incrementBlogLike(blogId: number): Promise<void> {
+    await db.update(blogPosts)
+      .set({ likeCount: sql`${blogPosts.likeCount} + 1` })
+      .where(eq(blogPosts.id, blogId));
   }
 }

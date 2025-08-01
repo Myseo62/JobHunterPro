@@ -19,6 +19,7 @@ import {
   Target
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
+import ReferralSection from "./referral-section";
 
 interface RewardPointsWidgetProps {
   user: any;
@@ -94,12 +95,13 @@ export default function RewardPointsWidget({ user, compact = false }: RewardPoin
           </DialogHeader>
           <RewardsDashboard 
             points={points}
-            history={history}
-            redemptions={redemptions}
-            catalog={catalog}
+            history={history || []}
+            redemptions={redemptions || []}
+            catalog={catalog || {}}
             leaderboard={leaderboard || []}
             onRedeem={(rewardType) => redeemMutation.mutate({ rewardType })}
             isRedeeming={redeemMutation.isPending}
+            user={user}
           />
         </DialogContent>
       </Dialog>
@@ -152,7 +154,8 @@ function RewardsDashboard({
   catalog, 
   leaderboard, 
   onRedeem, 
-  isRedeeming 
+  isRedeeming,
+  user 
 }: {
   points: number;
   history: any[];
@@ -161,6 +164,7 @@ function RewardsDashboard({
   leaderboard: any[];
   onRedeem: (rewardType: string) => void;
   isRedeeming: boolean;
+  user?: any;
 }) {
   return (
     <div className="space-y-6">
@@ -204,8 +208,9 @@ function RewardsDashboard({
       </div>
 
       <Tabs defaultValue="catalog" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="catalog">Reward Catalog</TabsTrigger>
+          <TabsTrigger value="referrals">Refer Friends</TabsTrigger>
           <TabsTrigger value="history">Activity History</TabsTrigger>
           <TabsTrigger value="redemptions">My Rewards</TabsTrigger>
           <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
@@ -237,6 +242,10 @@ function RewardsDashboard({
               </Card>
             ))}
           </div>
+        </TabsContent>
+
+        <TabsContent value="referrals" className="space-y-4">
+          <ReferralSection points={points} userId={user?.id} />
         </TabsContent>
 
         <TabsContent value="history" className="space-y-4">

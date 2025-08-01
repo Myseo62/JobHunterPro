@@ -113,6 +113,10 @@ function Router() {
           <Route path="/companies" component={() => <CompaniesDirectory user={user} />} />
           <Route path="/blogs" component={lazy(() => import("@/pages/blogs"))} />
           <Route path="/blogs/write" component={lazy(() => import("@/pages/blogs/write-blog"))} />
+          <Route path="/blogs/:id" component={() => {
+            const BlogDetail = lazy(() => import("@/pages/blogs/blog-detail"));
+            return <BlogDetail user={user} />;
+          }} />
           <Route path="/services" component={() => <Services user={user} />} />
           <Route path="/resources" component={() => <Resources user={user} />} />
           <Route path="/terms" component={() => <Terms />} />

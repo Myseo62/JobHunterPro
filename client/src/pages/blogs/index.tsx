@@ -199,9 +199,9 @@ export default function BlogsPage() {
                     </div>
                   </div>
                   <CardTitle className="text-lg line-clamp-2">
-                    <Link href={`/blogs/${blog.id}`} className="hover:text-purple-600 transition-colors">
+                    <a href={`/blogs/${blog.id}`} className="hover:text-purple-600 transition-colors">
                       {blog.title}
-                    </Link>
+                    </a>
                   </CardTitle>
                   {blog.excerpt && (
                     <CardDescription className="line-clamp-2">
@@ -241,11 +241,11 @@ export default function BlogsPage() {
                   )}
 
                   <div className="flex items-center justify-between">
-                    <Link href={`/blogs/${blog.id}`}>
+                    <a href={`/blogs/${blog.id}`}>
                       <Button size="sm" variant="outline">
                         Read More
                       </Button>
-                    </Link>
+                    </a>
                     <div className="flex items-center gap-3 text-xs text-gray-500">
                       <div className="flex items-center gap-1">
                         <Heart className="h-3 w-3" />
