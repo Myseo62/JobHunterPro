@@ -36,6 +36,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize passport
   app.use(passport.initialize());
   app.use(passport.session());
+
+  // Passport serialization
+  passport.serializeUser((user: any, done) => {
+    done(null, user.id);
+  });
+
+  passport.deserializeUser(async (id: number, done) => {
+    try {
+      const user = await storage.getUser(id);
+      done(null, user);
+    } catch (error) {
+      done(error, null);
+    }
+  });
   
   // Set up social authentication strategies
   setupSocialAuth();
@@ -77,8 +91,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Get current user
   app.get('/api/auth/user', (req, res) => {
-    if (req.isAuthenticated()) {
-      const { password, ...userResponse } = req.user as any;
+    if (req.isAuthenticated() || req.session?.user) {
+      const user = req.user || req.session?.user;
+      const { password, ...userResponse } = user as any;
       res.json(userResponse);
     } else {
       res.status(401).json({ message: 'Not authenticated' });
@@ -210,46 +225,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         role: "candidate", // Default role for manual registration
       });
       
-      // Store user in session
-      req.session.user = user;
-      
-      // Remove password from response
-      const { password, ...userResponse } = user;
-      res.json(userResponse);
+      // Log in user using Passport.js
+      (req as any).login(user, (err: any) => {
+        if (err) {
+          return res.status(500).json({ message: "Registration failed" });
+        }
+        // Remove password from response
+        const { password, ...userResponse } = user;
+        res.json(userResponse);
+      });
     } catch (error) {
       res.status(400).json({ message: error instanceof Error ? error.message : "Registration failed" });
     }
   });
 
-  app.post("/api/auth/login", async (req, res) => {
-    try {
-      const { email, password } = loginSchema.parse(req.body);
-      
-      const user = await storage.getUserByEmail(email);
-      if (!user) {
-        return res.status(401).json({ message: "Invalid credentials" });
-      }
-      
-      // Check if user is a candidate
-      if (user.role !== 'candidate') {
-        return res.status(401).json({ message: "This login is for candidates only. Please use employer login." });
-      }
-
-      const isValid = await bcrypt.compare(password, user.password);
-      if (!isValid) {
-        return res.status(401).json({ message: "Invalid credentials" });
-      }
-      
-      // Store user in session
-      req.session.user = user;
-      
-      // Remove password from response
-      const { password: _, ...userResponse } = user;
-      res.json(userResponse);
-    } catch (error) {
-      res.status(400).json({ message: error instanceof Error ? error.message : "Login failed" });
-    }
-  });
+  // Candidate login route removed - handled by the Passport-based login route below
 
   // User routes
   app.get("/api/users/:id", async (req, res) => {

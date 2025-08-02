@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
+import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -43,6 +44,7 @@ import { useQuery } from "@tanstack/react-query";
 
 export default function CandidateDashboard() {
   const { user, logout } = useAuth();
+  const [location, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [isEditing, setIsEditing] = useState(false);
   const [showRewardDetails, setShowRewardDetails] = useState(false);
@@ -1291,7 +1293,7 @@ export default function CandidateDashboard() {
             <div className="text-center py-8">
               <Briefcase className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-600">No applications yet</p>
-              <Button className="cb-gradient-primary mt-4">Browse Jobs</Button>
+              <Button className="cb-gradient-primary mt-4" onClick={() => navigate('/jobs')}>Browse Jobs</Button>
             </div>
           )}
         </div>
