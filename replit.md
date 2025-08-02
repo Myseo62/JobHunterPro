@@ -164,6 +164,13 @@ Preferred communication style: Simple, everyday language.
 - ✅ **LATEST: Created similar jobs recommendations with 40%+ similarity scoring algorithm**
 - ✅ **LATEST: Built job recommendations component with match scores, skills analysis, and smart filtering**
 - ✅ **LATEST: Integrated AI recommendations into homepage and job detail pages with professional UI**
+- ✅ **LATEST: Temporarily disabled all candidate functionalities while preserving UI structure as requested**
+
+## Current Status
+- **Candidate Features**: Temporarily disabled for maintenance (CANDIDATE_FEATURES_ENABLED = false)
+- **Employer Features**: Fully operational
+- **UI**: All interfaces remain intact and functional
+- **Backend**: Candidate endpoints return 503 "Service temporarily unavailable" responses
 
 The application uses a monorepo structure with shared types and schemas, enabling type safety across the full stack while maintaining clear separation between frontend and backend concerns.
 

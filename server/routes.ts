@@ -22,6 +22,19 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Feature flag to temporarily disable candidate functionalities
+  const CANDIDATE_FEATURES_ENABLED = false;
+  
+  // Middleware to check if candidate features are enabled
+  const checkCandidateFeatures = (req: any, res: any, next: any) => {
+    if (!CANDIDATE_FEATURES_ENABLED) {
+      return res.status(503).json({ 
+        message: "Candidate features are temporarily disabled for maintenance" 
+      });
+    }
+    next();
+  };
+
   // Set up session middleware
   app.use(session({
     secret: process.env.SESSION_SECRET || 'career-bazaar-secret-key',
@@ -189,7 +202,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Authentication routes
-  app.post("/api/auth/register", async (req, res) => {
+  app.post("/api/auth/register", checkCandidateFeatures, async (req, res) => {
     try {
       const userData = insertUserSchema.parse(req.body);
       
@@ -218,7 +231,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/auth/login", async (req, res) => {
+  app.post("/api/auth/login", checkCandidateFeatures, async (req, res) => {
     try {
       const { email, password } = loginSchema.parse(req.body);
       
@@ -249,7 +262,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // User routes
-  app.get("/api/users/:id", async (req, res) => {
+  app.get("/api/users/:id", checkCandidateFeatures, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const user = await storage.getUser(id);
@@ -265,7 +278,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/users/:id", async (req, res) => {
+  app.put("/api/users/:id", checkCandidateFeatures, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const updateData = insertUserSchema.partial().parse(req.body);
@@ -419,7 +432,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Application routes
-  app.post("/api/applications", async (req, res) => {
+  app.post("/api/applications", checkCandidateFeatures, async (req, res) => {
     try {
       const applicationData = insertApplicationSchema.parse(req.body);
       
@@ -436,7 +449,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/applications/user/:userId", async (req, res) => {
+  app.get("/api/applications/user/:userId", checkCandidateFeatures, async (req, res) => {
     try {
       const userId = parseInt(req.params.userId);
       const applications = await storage.getApplicationsByUser(userId);
@@ -896,7 +909,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Simple resume file upload endpoint (without AI parsing)
-  app.post('/api/upload-resume-file', upload.single('resume'), async (req, res) => {
+  app.post('/api/upload-resume-file', checkCandidateFeatures, upload.single('resume'), async (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: 'No file uploaded' });
@@ -924,7 +937,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update user resume URL
-  app.post('/api/users/:id/resume', async (req, res) => {
+  app.post('/api/users/:id/resume', checkCandidateFeatures, async (req, res) => {
     try {
       const { id } = req.params;
       const { resumeUrl, originalName } = req.body;
@@ -938,7 +951,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update user skills
-  app.post('/api/users/:id/skills', async (req, res) => {
+  app.post('/api/users/:id/skills', checkCandidateFeatures, async (req, res) => {
     try {
       const { id } = req.params;
       const { skills } = req.body;
@@ -952,7 +965,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Add work experience
-  app.post('/api/users/:id/experience', async (req, res) => {
+  app.post('/api/users/:id/experience', checkCandidateFeatures, async (req, res) => {
     try {
       const { id } = req.params;
       const experienceData = req.body;
@@ -966,7 +979,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Add education
-  app.post('/api/users/:id/education', async (req, res) => {
+  app.post('/api/users/:id/education', checkCandidateFeatures, async (req, res) => {
     try {
       const { id } = req.params;
       const educationData = req.body;
@@ -980,7 +993,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update user profile with parsed resume data
-  app.post('/api/users/:id/apply-resume-data', isAuthenticated, async (req, res) => {
+  app.post('/api/users/:id/apply-resume-data', checkCandidateFeatures, isAuthenticated, async (req, res) => {
     try {
       const userId = parseInt(req.params.id);
       const { skills, workExperience, education } = req.body;
