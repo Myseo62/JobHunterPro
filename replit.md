@@ -166,6 +166,7 @@ Preferred communication style: Simple, everyday language.
 - ✅ **LATEST: Integrated AI recommendations into homepage and job detail pages with professional UI**
 - ✅ **LATEST: Temporarily disabled all candidate functionalities while preserving UI structure as requested**
 - ✅ **LATEST: Re-enabled all candidate functionalities end-to-end with complete feature restoration**
+- ✅ **LATEST: Disabled quick actions section in candidate dashboard per user request**
 
 ## Current Status
 - **Candidate Features**: Fully operational and enabled (CANDIDATE_FEATURES_ENABLED = true)

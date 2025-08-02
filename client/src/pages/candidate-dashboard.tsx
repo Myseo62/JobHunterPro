@@ -237,6 +237,38 @@ export default function CandidateDashboard() {
         </Card>
       </div>
 
+      {/* Quick Actions Section - DISABLED */}
+      {/* 
+      <Card className="cb-glass-card">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-purple-600" />
+            Quick Actions
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Button variant="outline" className="h-20 flex-col gap-2">
+              <Upload className="h-6 w-6" />
+              <span className="text-sm">Update Resume</span>
+            </Button>
+            <Button variant="outline" className="h-20 flex-col gap-2">
+              <Search className="h-6 w-6" />
+              <span className="text-sm">Find Jobs</span>
+            </Button>
+            <Button variant="outline" className="h-20 flex-col gap-2">
+              <Bell className="h-6 w-6" />
+              <span className="text-sm">Set Alert</span>
+            </Button>
+            <Button variant="outline" className="h-20 flex-col gap-2">
+              <User className="h-6 w-6" />
+              <span className="text-sm">Edit Profile</span>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+      */}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="cb-glass-card">
           <CardHeader>
@@ -283,7 +315,8 @@ export default function CandidateDashboard() {
                     <p className="font-medium text-gray-900">{job.title}</p>
                     <p className="text-sm text-gray-600">{job.company?.name}</p>
                   </div>
-                  <Button variant="outline" size="sm">View</Button>
+                  {/* Quick Action Button Disabled */}
+                  {/* <Button variant="outline" size="sm">View</Button> */}
                 </div>
               ))}
               {(!Array.isArray(savedJobs) || savedJobs.length === 0) && (
