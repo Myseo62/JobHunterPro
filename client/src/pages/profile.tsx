@@ -159,23 +159,48 @@ export default function Profile({ user }: { user: any }) {
 
   // Profile handling functions
   const handleProfileSave = async () => {
+    console.log('Starting profile save...', editableProfile);
     try {
       const response = await fetch(`/api/users/${user.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(editableProfile),
+        credentials: 'include', // Include cookies for authentication
+        body: JSON.stringify({
+          firstName: editableProfile.firstName,
+          lastName: editableProfile.lastName,
+          phone: editableProfile.phone,
+          location: editableProfile.location,
+          experience: parseInt(editableProfile.experience) || 0,
+          profileSummary: editableProfile.profileSummary,
+          linkedinUrl: editableProfile.linkedinUrl,
+          githubUrl: editableProfile.githubUrl,
+          portfolioUrl: editableProfile.portfolioUrl,
+        }),
       });
 
+      console.log('Response status:', response.status);
+      
       if (response.ok) {
         const updatedUser = await response.json();
-        // Update user data in parent component
+        console.log('Profile updated successfully:', updatedUser);
+        alert('Profile updated successfully!');
         window.location.reload(); // Simple refresh for now
         setIsEditingProfile(false);
+      } else {
+        const errorData = await response.text();
+        console.error('Update failed:', errorData);
+        if (response.status === 401) {
+          alert('Session expired. Please log in again.');
+          window.location.href = '/login';
+        } else {
+          alert('Failed to update profile. Please try again.');
+        }
       }
     } catch (error) {
-      console.error('Failed to update profile:', error);
+      console.error('Network error:', error);
+      alert('Network error. Please check your connection and try again.');
     }
   };
 
@@ -189,6 +214,7 @@ export default function Profile({ user }: { user: any }) {
 
       const response = await fetch('/api/upload-resume-file', {
         method: 'POST',
+        credentials: 'include', // Include cookies for authentication
         body: formData,
       });
 
@@ -201,6 +227,7 @@ export default function Profile({ user }: { user: any }) {
           headers: {
             'Content-Type': 'application/json',
           },
+          credentials: 'include', // Include cookies for authentication
           body: JSON.stringify({
             resumeUrl: `/uploads/${result.fileInfo.filename}`,
             originalName: result.fileInfo.originalName,
@@ -560,7 +587,15 @@ export default function Profile({ user }: { user: any }) {
                   <Button variant="outline" onClick={() => setIsEditingProfile(false)}>
                     Cancel
                   </Button>
-                  <Button className="cb-gradient-primary" onClick={handleProfileSave}>
+                  <Button 
+                    className="cb-gradient-primary" 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      console.log('Save button clicked');
+                      handleProfileSave();
+                    }}
+                    type="button"
+                  >
                     <Save className="h-4 w-4 mr-2" />
                     Save Changes
                   </Button>
