@@ -416,27 +416,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Application routes
-  app.post("/api/applications", async (req, res) => {
+  app.post("/api/applications", isAuthenticated, async (req: any, res) => {
     try {
-      const applicationData = insertApplicationSchema.parse(req.body);
+      const user = req.user || (req.session as any)?.user;
+
+      const { jobId } = req.body;
+      
+      if (!user || !user.id) {
+        return res.status(401).json({ message: "User not authenticated properly" });
+      }
       
       // Check if user already applied
-      const hasApplied = await storage.hasUserApplied(applicationData.userId, applicationData.jobId);
+      const hasApplied = await storage.hasUserApplied(user.id, jobId);
       if (hasApplied) {
         return res.status(400).json({ message: "You have already applied for this job" });
       }
       
+      const applicationData = {
+        userId: user.id,
+        jobId: jobId,
+        status: "pending"
+      };
+      
       const application = await storage.createApplication(applicationData);
       res.json(application);
     } catch (error) {
+
       res.status(400).json({ message: error instanceof Error ? error.message : "Application failed" });
     }
   });
 
-  app.get("/api/applications/user/:userId", async (req, res) => {
+  app.get("/api/applications", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = parseInt(req.params.userId);
-      const applications = await storage.getApplicationsByUser(userId);
+      const user = req.user || (req.session as any)?.user;
+      const applications = await storage.getApplicationsByUser(user.id);
       res.json(applications);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch applications" });

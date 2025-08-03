@@ -168,8 +168,7 @@ export default function CandidateDashboard() {
   };
 
   const { data: applications } = useQuery({
-    queryKey: ["/api/applications/user", user?.id],
-    queryFn: () => fetch(`/api/applications/user/${user?.id}`).then(res => res.json()),
+    queryKey: ['/api/applications'],
     enabled: !!user?.id,
   });
 
