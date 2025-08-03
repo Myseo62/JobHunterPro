@@ -343,8 +343,25 @@ export const insertUserSchema = createInsertSchema(users).omit({
 }).extend({
   bio: z.string().optional(),
   skills: z.array(z.string()).optional(),
-  experience: z.string().optional(),
+  experience: z.union([z.number(), z.string().transform(val => parseInt(val))]).optional(), // Accept both number and string
   expectedSalary: z.number().optional(),
+});
+
+// Update schema for profile updates
+export const updateUserSchema = z.object({
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
+  phone: z.string().optional(),
+  location: z.string().optional(),
+  experience: z.union([z.number(), z.string().transform(val => parseInt(val)), z.null()]).optional(),
+  profileSummary: z.string().optional(),
+  linkedinUrl: z.string().optional(),
+  githubUrl: z.string().optional(),
+  portfolioUrl: z.string().optional(),
+  skills: z.array(z.string()).optional(),
+  currentSalary: z.union([z.number(), z.string()]).optional(),
+  expectedSalary: z.union([z.number(), z.string()]).optional(),
+  resumeUrl: z.string().optional(),
 });
 
 export const insertCompanySchema = createInsertSchema(companies).omit({

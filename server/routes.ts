@@ -5,7 +5,7 @@ import { RewardService, REWARD_CATALOG } from "./reward-service";
 import { rewardPointsService } from "./reward-points";
 import { jobMatchingService } from "./job-matching-service";
 // Removed ResumeParser import since we're not using AI parsing for now
-import { insertUserSchema, loginSchema, insertJobSchema, insertApplicationSchema, jobSearchSchema, employerRegistrationSchema, insertBlogPostSchema, friendReferralSchema } from "@shared/schema";
+import { insertUserSchema, updateUserSchema, loginSchema, insertJobSchema, insertApplicationSchema, jobSearchSchema, employerRegistrationSchema, insertBlogPostSchema, friendReferralSchema } from "@shared/schema";
 import { z } from "zod";
 import session from "express-session";
 import passport from "passport";
@@ -265,7 +265,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/users/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const updateData = insertUserSchema.partial().parse(req.body);
+      // Clean up empty strings to null for optional fields
+      const cleanedBody = { ...req.body };
+      Object.keys(cleanedBody).forEach(key => {
+        if (cleanedBody[key] === '' || cleanedBody[key] === undefined) {
+          cleanedBody[key] = null;
+        }
+      });
+      
+      const updateData = updateUserSchema.parse(cleanedBody);
       
       const user = await storage.updateUser(id, updateData);
       if (!user) {

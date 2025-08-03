@@ -168,15 +168,15 @@ export default function Profile({ user }: { user: any }) {
         },
         credentials: 'include', // Include cookies for authentication
         body: JSON.stringify({
-          firstName: editableProfile.firstName,
-          lastName: editableProfile.lastName,
-          phone: editableProfile.phone,
-          location: editableProfile.location,
-          experience: parseInt(editableProfile.experience) || 0,
-          profileSummary: editableProfile.profileSummary,
-          linkedinUrl: editableProfile.linkedinUrl,
-          githubUrl: editableProfile.githubUrl,
-          portfolioUrl: editableProfile.portfolioUrl,
+          firstName: editableProfile.firstName || '',
+          lastName: editableProfile.lastName || '',
+          phone: editableProfile.phone || '',
+          location: editableProfile.location || '',
+          experience: editableProfile.experience ? parseInt(editableProfile.experience) : null,
+          profileSummary: editableProfile.profileSummary || '',
+          linkedinUrl: editableProfile.linkedinUrl || '',
+          githubUrl: editableProfile.githubUrl || '',
+          portfolioUrl: editableProfile.portfolioUrl || '',
         }),
       });
 

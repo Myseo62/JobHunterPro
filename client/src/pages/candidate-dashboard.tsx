@@ -103,7 +103,6 @@ export default function CandidateDashboard() {
       try {
         await fetch(`/api/users/${user.id}/skills`, {
           method: 'POST',
-          credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
           body: JSON.stringify({ skills: updatedSkills })
