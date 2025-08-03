@@ -1,4 +1,4 @@
-import { users, companies, jobs, applications, jobCategories, companyEmployees, blogPosts, friendReferrals, type User, type InsertUser, type Company, type InsertCompany, type Job, type InsertJob, type Application, type InsertApplication, type JobCategory, type InsertJobCategory, type JobWithCompany, type ApplicationWithJobAndCompany, type JobSearchParams, type CompanyEmployee, type InsertCompanyEmployee } from "@shared/schema";
+import { users, companies, jobs, applications, jobCategories, companyEmployees, blogPosts, friendReferrals, savedJobs, jobAlerts, followedCompanies, messages, companyReviews, type User, type InsertUser, type Company, type InsertCompany, type Job, type InsertJob, type Application, type InsertApplication, type JobCategory, type InsertJobCategory, type JobWithCompany, type ApplicationWithJobAndCompany, type JobSearchParams, type CompanyEmployee, type InsertCompanyEmployee, type SavedJob, type InsertSavedJob, type JobAlert, type InsertJobAlert, type FollowedCompany, type InsertFollowedCompany, type Message, type InsertMessage, type CompanyReview, type InsertCompanyReview } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, like, gte, lte, desc, sql, ilike, or } from "drizzle-orm";
 import type { IStorage } from "./storage";
@@ -447,5 +447,216 @@ export class DatabaseStorage implements IStorage {
     await db.update(blogPosts)
       .set({ likeCount: sql`${blogPosts.likeCount} + 1` })
       .where(eq(blogPosts.id, blogId));
+  }
+
+  // Saved Jobs methods
+  async saveJob(userId: number, jobId: number): Promise<SavedJob> {
+    const [savedJob] = await db.insert(savedJobs)
+      .values({ userId, jobId })
+      .returning();
+    return savedJob;
+  }
+
+  async unsaveJob(userId: number, jobId: number): Promise<void> {
+    await db.delete(savedJobs)
+      .where(and(eq(savedJobs.userId, userId), eq(savedJobs.jobId, jobId)));
+  }
+
+  async getSavedJobsByUser(userId: number): Promise<any[]> {
+    return await db.select({
+      id: savedJobs.id,
+      savedAt: savedJobs.savedAt,
+      job: {
+        id: jobs.id,
+        title: jobs.title,
+        location: jobs.location,
+        salaryMin: jobs.salaryMin,
+        salaryMax: jobs.salaryMax,
+        jobType: jobs.jobType,
+        postedAt: jobs.postedAt,
+        company: {
+          id: companies.id,
+          name: companies.name,
+          logo: companies.logo,
+        }
+      }
+    })
+    .from(savedJobs)
+    .innerJoin(jobs, eq(savedJobs.jobId, jobs.id))
+    .innerJoin(companies, eq(jobs.companyId, companies.id))
+    .where(eq(savedJobs.userId, userId))
+    .orderBy(desc(savedJobs.savedAt));
+  }
+
+  async isJobSaved(userId: number, jobId: number): Promise<boolean> {
+    const [result] = await db.select()
+      .from(savedJobs)
+      .where(and(eq(savedJobs.userId, userId), eq(savedJobs.jobId, jobId)))
+      .limit(1);
+    return !!result;
+  }
+
+  // Job Alerts methods
+  async createJobAlert(alertData: InsertJobAlert): Promise<JobAlert> {
+    const [alert] = await db.insert(jobAlerts)
+      .values(alertData)
+      .returning();
+    return alert;
+  }
+
+  async getJobAlertsByUser(userId: number): Promise<JobAlert[]> {
+    return await db.select()
+      .from(jobAlerts)
+      .where(eq(jobAlerts.userId, userId))
+      .orderBy(desc(jobAlerts.createdAt));
+  }
+
+  async updateJobAlert(id: number, updateData: Partial<InsertJobAlert>): Promise<JobAlert | undefined> {
+    const [alert] = await db.update(jobAlerts)
+      .set(updateData)
+      .where(eq(jobAlerts.id, id))
+      .returning();
+    return alert || undefined;
+  }
+
+  async deleteJobAlert(id: number): Promise<void> {
+    await db.delete(jobAlerts).where(eq(jobAlerts.id, id));
+  }
+
+  // Followed Companies methods
+  async followCompany(userId: number, companyId: number): Promise<FollowedCompany> {
+    const [followedCompany] = await db.insert(followedCompanies)
+      .values({ userId, companyId })
+      .returning();
+    return followedCompany;
+  }
+
+  async unfollowCompany(userId: number, companyId: number): Promise<void> {
+    await db.delete(followedCompanies)
+      .where(and(eq(followedCompanies.userId, userId), eq(followedCompanies.companyId, companyId)));
+  }
+
+  async getFollowedCompaniesByUser(userId: number): Promise<any[]> {
+    return await db.select({
+      id: followedCompanies.id,
+      followedAt: followedCompanies.followedAt,
+      company: {
+        id: companies.id,
+        name: companies.name,
+        logo: companies.logo,
+        industry: companies.industry,
+        location: companies.location,
+        rating: companies.rating,
+        reviewCount: companies.reviewCount,
+      }
+    })
+    .from(followedCompanies)
+    .innerJoin(companies, eq(followedCompanies.companyId, companies.id))
+    .where(eq(followedCompanies.userId, userId))
+    .orderBy(desc(followedCompanies.followedAt));
+  }
+
+  async isCompanyFollowed(userId: number, companyId: number): Promise<boolean> {
+    const [result] = await db.select()
+      .from(followedCompanies)
+      .where(and(eq(followedCompanies.userId, userId), eq(followedCompanies.companyId, companyId)))
+      .limit(1);
+    return !!result;
+  }
+
+  // Messages methods
+  async sendMessage(messageData: InsertMessage): Promise<Message> {
+    const [message] = await db.insert(messages)
+      .values(messageData)
+      .returning();
+    return message;
+  }
+
+  async getMessagesByUser(userId: number): Promise<any[]> {
+    return await db.select({
+      id: messages.id,
+      subject: messages.subject,
+      content: messages.content,
+      isRead: messages.isRead,
+      sentAt: messages.sentAt,
+      sender: {
+        id: sql`sender.id`,
+        firstName: sql`sender.first_name`,
+        lastName: sql`sender.last_name`,
+      },
+      receiver: {
+        id: sql`receiver.id`,
+        firstName: sql`receiver.first_name`,
+        lastName: sql`receiver.last_name`,
+      }
+    })
+    .from(messages)
+    .leftJoin(sql`${users} as sender`, eq(messages.senderId, sql`sender.id`))
+    .leftJoin(sql`${users} as receiver`, eq(messages.receiverId, sql`receiver.id`))
+    .where(or(eq(messages.senderId, userId), eq(messages.receiverId, userId)))
+    .orderBy(desc(messages.sentAt));
+  }
+
+  async markMessageAsRead(messageId: number): Promise<void> {
+    await db.update(messages)
+      .set({ isRead: true })
+      .where(eq(messages.id, messageId));
+  }
+
+  // Company Reviews methods
+  async createCompanyReview(reviewData: InsertCompanyReview): Promise<CompanyReview> {
+    const [review] = await db.insert(companyReviews)
+      .values(reviewData)
+      .returning();
+    return review;
+  }
+
+  async getCompanyReviews(companyId: number): Promise<any[]> {
+    return await db.select({
+      id: companyReviews.id,
+      rating: companyReviews.rating,
+      title: companyReviews.title,
+      pros: companyReviews.pros,
+      cons: companyReviews.cons,
+      isAnonymous: companyReviews.isAnonymous,
+      recommendToFriend: companyReviews.recommendToFriend,
+      createdAt: companyReviews.createdAt,
+      reviewer: {
+        id: users.id,
+        firstName: users.firstName,
+        lastName: users.lastName,
+      }
+    })
+    .from(companyReviews)
+    .innerJoin(users, eq(companyReviews.userId, users.id))
+    .where(eq(companyReviews.companyId, companyId))
+    .orderBy(desc(companyReviews.createdAt));
+  }
+
+  // Dashboard stats methods
+  async getDashboardStats(userId: number): Promise<{
+    savedJobsCount: number;
+    applicationsCount: number;
+    profileViews: number;
+    jobAlertsCount: number;
+  }> {
+    const [savedJobsResult] = await db.select({ count: sql<number>`count(*)` })
+      .from(savedJobs)
+      .where(eq(savedJobs.userId, userId));
+
+    const [applicationsResult] = await db.select({ count: sql<number>`count(*)` })
+      .from(applications)
+      .where(eq(applications.userId, userId));
+
+    const [jobAlertsResult] = await db.select({ count: sql<number>`count(*)` })
+      .from(jobAlerts)
+      .where(and(eq(jobAlerts.userId, userId), eq(jobAlerts.isActive, true)));
+
+    return {
+      savedJobsCount: savedJobsResult?.count || 0,
+      applicationsCount: applicationsResult?.count || 0,
+      profileViews: Math.floor(Math.random() * 100) + 50, // Simulated for now
+      jobAlertsCount: jobAlertsResult?.count || 0,
+    };
   }
 }

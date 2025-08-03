@@ -39,7 +39,6 @@ export default function Header({ user, onLogout }: HeaderProps) {
 
   const getEmployerNavigation = () => [
     { label: "Dashboard", href: "/employer/dashboard" },
-    { label: "Post Job", href: "/employer/post-job" },
     { label: "Company Profile", href: "/employer/company" },
   ];
 
@@ -200,13 +199,7 @@ export default function Header({ user, onLogout }: HeaderProps) {
                           <span>Dashboard</span>
                         </DropdownMenuItem>
                         
-                        <DropdownMenuItem 
-                          className="cursor-pointer hover:bg-purple-50 focus:bg-purple-50"
-                          onClick={() => handleMenuItemClick('/employer/post-job')}
-                        >
-                          <Star className="mr-2 h-4 w-4" />
-                          <span>Post Job</span>
-                        </DropdownMenuItem>
+                        {/* Post Job moved to dashboard - removed from dropdown */}
                         
                         {employer?.role === 'hr' || employer?.role === 'employer_hr' ? (
                           // HR-specific menu items

@@ -1,11 +1,26 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Briefcase, IndianRupee, Star, Clock } from "lucide-react";
+import { MapPin, Briefcase, IndianRupee, Star, Clock, Heart } from "lucide-react";
 import { useLocation } from "wouter";
 import { JobCardProps } from "@/lib/types";
 
-export default function JobCard({ job, onApply, hasApplied = false }: JobCardProps) {
+interface ExtendedJobCardProps extends JobCardProps {
+  onSave?: (jobId: number) => void;
+  onUnsave?: (jobId: number) => void;
+  isSaved?: boolean;
+  user?: any;
+}
+
+export default function JobCard({ 
+  job, 
+  onApply, 
+  onSave, 
+  onUnsave, 
+  hasApplied = false, 
+  isSaved = false,
+  user 
+}: ExtendedJobCardProps) {
   const [, setLocation] = useLocation();
   
   const formatSalary = (min: string, max: string) => {
@@ -110,17 +125,29 @@ export default function JobCard({ job, onApply, hasApplied = false }: JobCardPro
               </Badge>
             )}
           </div>
-          <Button
-            onClick={() => onApply(job.id)}
-            disabled={hasApplied}
-            className={`font-medium text-sm ${
-              hasApplied
-                ? "bg-green-500 hover:bg-green-600"
-                : "bg-orange-500 hover:bg-orange-600"
-            } text-white`}
-          >
-            {hasApplied ? "Applied" : "Apply Now"}
-          </Button>
+          <div className="flex items-center gap-2">
+            {user && (onSave || onUnsave) && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => isSaved ? onUnsave?.(job.id) : onSave?.(job.id)}
+                className={`p-2 ${isSaved ? 'text-red-500 hover:text-red-600' : 'text-gray-400 hover:text-red-500'}`}
+              >
+                <Heart className={`h-4 w-4 ${isSaved ? 'fill-current' : ''}`} />
+              </Button>
+            )}
+            <Button
+              onClick={() => onApply(job.id)}
+              disabled={hasApplied}
+              className={`font-medium text-sm ${
+                hasApplied
+                  ? "bg-green-500 hover:bg-green-600"
+                  : "bg-orange-500 hover:bg-orange-600"
+              } text-white`}
+            >
+              {hasApplied ? "Applied" : "Apply Now"}
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>

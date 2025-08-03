@@ -20,6 +20,7 @@ export default function Jobs({ user }: JobsProps) {
   const { toast } = useToast();
   const [filters, setFilters] = useState<SearchFilters>({});
   const [appliedJobs, setAppliedJobs] = useState<Set<number>>(new Set());
+  const [savedJobIds, setSavedJobIds] = useState<Set<number>>(new Set());
 
   // Parse URL parameters
   useEffect(() => {
@@ -54,15 +55,29 @@ export default function Jobs({ user }: JobsProps) {
 
   const { data: userApplications } = useQuery({
     queryKey: ["/api/applications/user", user?.id],
+    queryFn: () => fetch(`/api/applications/user/${user?.id}`).then(res => res.json()),
+    enabled: !!user,
+  });
+
+  const { data: savedJobs } = useQuery({
+    queryKey: ["/api/saved-jobs/user", user?.id],
+    queryFn: () => fetch(`/api/saved-jobs/user/${user?.id}`).then(res => res.json()),
     enabled: !!user,
   });
 
   useEffect(() => {
-    if (userApplications) {
+    if (Array.isArray(userApplications)) {
       const jobIds = new Set(userApplications.map((app: any) => app.jobId));
       setAppliedJobs(jobIds);
     }
   }, [userApplications]);
+
+  useEffect(() => {
+    if (Array.isArray(savedJobs)) {
+      const jobIds = new Set(savedJobs.map((savedJob: any) => savedJob.jobId));
+      setSavedJobIds(jobIds);
+    }
+  }, [savedJobs]);
 
   const handleSearch = (query: string, location: string) => {
     const newFilters = { ...filters, query, location };
@@ -98,6 +113,65 @@ export default function Jobs({ user }: JobsProps) {
       toast({
         title: "Application failed",
         description: "There was an error submitting your application. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSaveJob = async (jobId: number) => {
+    if (!user) {
+      toast({
+        title: "Please login",
+        description: "You need to login to save jobs",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await apiRequest("POST", "/api/saved-jobs", {
+        userId: user.id,
+        jobId,
+      });
+
+      setSavedJobIds(prev => new Set(prev).add(jobId));
+      
+      toast({
+        title: "Job saved",
+        description: "Job has been saved to your profile!",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save job. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleUnsaveJob = async (jobId: number) => {
+    if (!user) return;
+
+    try {
+      await apiRequest("DELETE", "/api/saved-jobs", {
+        userId: user.id,
+        jobId,
+      });
+
+      setSavedJobIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(jobId);
+        return newSet;
+      });
+      
+      toast({
+        title: "Job unsaved",
+        description: "Job has been removed from your saved jobs",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to unsave job. Please try again.",
         variant: "destructive",
       });
     }
@@ -179,7 +253,11 @@ export default function Jobs({ user }: JobsProps) {
                     key={job.id} 
                     job={job} 
                     onApply={handleApply}
+                    onSave={handleSaveJob}
+                    onUnsave={handleUnsaveJob}
                     hasApplied={appliedJobs.has(job.id)}
+                    isSaved={savedJobIds.has(job.id)}
+                    user={user}
                   />
                 ))}
               </div>

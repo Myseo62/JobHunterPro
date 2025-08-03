@@ -37,14 +37,16 @@ import {
   Users,
   Upload,
   FileCheck,
-  Star
+  Star,
+  ExternalLink
 } from "lucide-react";
 import JobRecommendations from "@/components/jobs/job-recommendations";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export default function CandidateDashboard() {
   const { user, logout } = useAuth();
   const [location, navigate] = useLocation();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [isEditing, setIsEditing] = useState(false);
   const [showRewardDetails, setShowRewardDetails] = useState(false);
@@ -172,20 +174,28 @@ export default function CandidateDashboard() {
   });
 
   const { data: savedJobs } = useQuery({
-    queryKey: ["/api/jobs/saved", user?.id],
+    queryKey: ["/api/saved-jobs/user", user?.id],
+    queryFn: () => fetch(`/api/saved-jobs/user/${user?.id}`).then(res => res.json()),
     enabled: !!user?.id,
   });
 
   const { data: jobAlerts } = useQuery({
-    queryKey: ["/api/job-alerts", user?.id],
+    queryKey: ["/api/job-alerts/user", user?.id], 
+    queryFn: () => fetch(`/api/job-alerts/user/${user?.id}`).then(res => res.json()),
+    enabled: !!user?.id,
+  });
+
+  const { data: dashboardStatsData } = useQuery({
+    queryKey: ["/api/dashboard/stats", user?.id],
+    queryFn: () => fetch(`/api/dashboard/stats/${user?.id}`).then(res => res.json()),
     enabled: !!user?.id,
   });
 
   const dashboardStats = {
-    totalApplications: Array.isArray(applications) ? applications.length : 0,
-    savedJobs: Array.isArray(savedJobs) ? savedJobs.length : 0,
-    profileViews: 127,
-    jobAlerts: Array.isArray(jobAlerts) ? jobAlerts.length : 0,
+    totalApplications: dashboardStatsData?.applicationsCount || 0,
+    savedJobs: dashboardStatsData?.savedJobsCount || 0,
+    profileViews: dashboardStatsData?.profileViews || 0,
+    jobAlerts: dashboardStatsData?.jobAlertsCount || 0,
   };
 
   const DashboardOverview = () => (
@@ -312,11 +322,11 @@ export default function CandidateDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {Array.isArray(savedJobs) && savedJobs.slice(0, 3).map((job: any) => (
-                <div key={job.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              {Array.isArray(savedJobs) && savedJobs.slice(0, 3).map((savedJob: any) => (
+                <div key={savedJob.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div>
-                    <p className="font-medium text-gray-900">{job.title}</p>
-                    <p className="text-sm text-gray-600">{job.company?.name}</p>
+                    <p className="font-medium text-gray-900">{savedJob.job?.title}</p>
+                    <p className="text-sm text-gray-600">{savedJob.job?.company?.name}</p>
                   </div>
                   {/* Quick Action Button Disabled */}
                   {/* <Button variant="outline" size="sm">View</Button> */}
@@ -1335,55 +1345,221 @@ export default function CandidateDashboard() {
     </Card>
   );
 
-  const AlertsTab = () => (
-    <Card className="cb-glass-card">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Bell className="h-5 w-5 text-purple-600" />
-            Job Alerts
-          </CardTitle>
-          <Button className="cb-gradient-primary">Create Alert</Button>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {Array.isArray(jobAlerts) && jobAlerts.map((alert: any) => (
-            <div key={alert.id} className="p-4 border border-gray-200 rounded-lg">
-              <div className="flex items-start justify-between">
+  const AlertsTab = () => {
+    const [showCreateAlert, setShowCreateAlert] = useState(false);
+    const [alertForm, setAlertForm] = useState({
+      title: "",
+      keywords: "",
+      location: "",
+      jobType: "",
+      experienceLevel: "",
+      salaryMin: "",
+      frequency: "daily"
+    });
+
+    const handleCreateAlert = async () => {
+      if (!user || !alertForm.title || !alertForm.keywords) return;
+
+      try {
+        const response = await fetch('/api/job-alerts', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId: user.id,
+            ...alertForm,
+          }),
+        });
+
+        if (response.ok) {
+          queryClient.invalidateQueries(["/api/job-alerts/user", user?.id]);
+          setShowCreateAlert(false);
+          setAlertForm({
+            title: "",
+            keywords: "",
+            location: "",
+            jobType: "",
+            experienceLevel: "",
+            salaryMin: "",
+            frequency: "daily"
+          });
+        }
+      } catch (error) {
+        console.error('Failed to create alert:', error);
+      }
+    };
+
+    const handleToggleAlert = async (alertId: number, isActive: boolean) => {
+      try {
+        await fetch(`/api/job-alerts/${alertId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ isActive: !isActive }),
+        });
+        
+        queryClient.invalidateQueries(["/api/job-alerts/user", user?.id]);
+      } catch (error) {
+        console.error('Failed to toggle alert:', error);
+      }
+    };
+
+    const handleDeleteAlert = async (alertId: number) => {
+      try {
+        await fetch(`/api/job-alerts/${alertId}`, {
+          method: 'DELETE',
+        });
+        
+        queryClient.invalidateQueries(["/api/job-alerts/user", user?.id]);
+      } catch (error) {
+        console.error('Failed to delete alert:', error);
+      }
+    };
+
+    return (
+      <Card className="cb-glass-card">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Bell className="h-5 w-5 text-orange-600" />
+              Job Alerts ({Array.isArray(jobAlerts) ? jobAlerts.length : 0})
+            </CardTitle>
+            <Button 
+              className="cb-gradient-primary"
+              onClick={() => setShowCreateAlert(true)}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Create Alert
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {showCreateAlert && (
+            <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
+              <h3 className="font-semibold text-gray-900 mb-4">Create New Job Alert</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">{alert.title}</h3>
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    <Badge variant="secondary">{alert.location}</Badge>
-                    <Badge variant="secondary">{alert.experience}</Badge>
-                    <Badge variant="secondary">{alert.jobType}</Badge>
-                  </div>
-                  <p className="text-sm text-gray-600">
-                    {alert.frequency} • Last sent: {new Date(alert.lastSent).toLocaleDateString()}
-                  </p>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Alert Title</label>
+                  <input
+                    type="text"
+                    value={alertForm.title}
+                    onChange={(e) => setAlertForm({...alertForm, title: e.target.value})}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500"
+                    placeholder="e.g., Senior Developer Jobs"
+                  />
                 </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm">
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Keywords</label>
+                  <input
+                    type="text"
+                    value={alertForm.keywords}
+                    onChange={(e) => setAlertForm({...alertForm, keywords: e.target.value})}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500"
+                    placeholder="e.g., React, Node.js, JavaScript"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                  <input
+                    type="text"
+                    value={alertForm.location}
+                    onChange={(e) => setAlertForm({...alertForm, location: e.target.value})}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500"
+                    placeholder="e.g., Bangalore, Mumbai"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Frequency</label>
+                  <select
+                    value={alertForm.frequency}
+                    onChange={(e) => setAlertForm({...alertForm, frequency: e.target.value})}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500"
+                  >
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="instant">Instant</option>
+                  </select>
                 </div>
               </div>
-            </div>
-          ))}
-          {(!Array.isArray(jobAlerts) || jobAlerts.length === 0) && (
-            <div className="text-center py-8">
-              <Bell className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">No job alerts set up</p>
-              <Button className="cb-gradient-primary mt-4">Create Your First Alert</Button>
+              <div className="flex gap-2">
+                <Button onClick={handleCreateAlert} className="cb-gradient-primary">
+                  Create Alert
+                </Button>
+                <Button variant="outline" onClick={() => setShowCreateAlert(false)}>
+                  Cancel
+                </Button>
+              </div>
             </div>
           )}
-        </div>
-      </CardContent>
-    </Card>
-  );
+
+          <div className="space-y-4">
+            {Array.isArray(jobAlerts) && jobAlerts.map((alert: any) => (
+              <div key={alert.id} className="p-4 border border-gray-200 rounded-lg">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-900 mb-2">{alert.title}</h3>
+                    <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
+                      <span className="flex items-center gap-1">
+                        <Search className="h-4 w-4" />
+                        {alert.keywords}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <MapPin className="h-4 w-4" />
+                        {alert.location || "Any location"}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Clock className="h-4 w-4" />
+                        Created {new Date(alert.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant={alert.isActive ? "default" : "secondary"}>
+                        {alert.isActive ? "Active" : "Paused"}
+                      </Badge>
+                      <span className="text-sm text-gray-600">
+                        {alert.frequency} notifications
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleToggleAlert(alert.id, alert.isActive)}
+                    >
+                      {alert.isActive ? "Pause" : "Activate"}
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleDeleteAlert(alert.id)}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+            {(!Array.isArray(jobAlerts) || jobAlerts.length === 0) && (
+              <div className="text-center py-8">
+                <Bell className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-600">No job alerts set up</p>
+                <Button 
+                  className="cb-gradient-primary mt-4"
+                  onClick={() => setShowCreateAlert(true)}
+                >
+                  Create Your First Alert
+                </Button>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
 
   const MessagesTab = () => (
     <Card className="cb-glass-card">
@@ -1598,14 +1774,312 @@ export default function CandidateDashboard() {
     </div>
   );
 
+  // Add SavedJobsTab component
+  const SavedJobsTab = () => {
+    const [searchTerm, setSearchTerm] = useState("");
+    const [filteredJobs, setFilteredJobs] = useState(savedJobs || []);
+
+    useEffect(() => {
+      if (savedJobs) {
+        const filtered = savedJobs.filter((savedJob: any) => 
+          savedJob.job?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          savedJob.job?.company?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        setFilteredJobs(filtered);
+      }
+    }, [savedJobs, searchTerm]);
+
+    const handleUnsaveJob = async (jobId: number) => {
+      try {
+        const response = await fetch('/api/saved-jobs', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ userId: user?.id, jobId }),
+        });
+        
+        if (response.ok) {
+          // Refetch saved jobs
+          queryClient.invalidateQueries(["/api/saved-jobs/user", user?.id]);
+        }
+      } catch (error) {
+        console.error('Failed to unsave job:', error);
+      }
+    };
+
+    return (
+      <Card className="cb-glass-card">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Heart className="h-5 w-5 text-green-600" />
+              Saved Jobs ({Array.isArray(savedJobs) ? savedJobs.length : 0})
+            </CardTitle>
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search saved jobs..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {Array.isArray(filteredJobs) && filteredJobs.length > 0 ? (
+              filteredJobs.map((savedJob: any) => (
+                <div key={savedJob.id} className="p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-900 mb-2">{savedJob.job?.title}</h3>
+                      <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
+                        <span className="flex items-center gap-1">
+                          <Building className="h-4 w-4" />
+                          {savedJob.job?.company?.name}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <MapPin className="h-4 w-4" />
+                          {savedJob.job?.location}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Clock className="h-4 w-4" />
+                          Saved {new Date(savedJob.savedAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-4 text-sm">
+                        <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded">
+                          {savedJob.job?.jobType}
+                        </span>
+                        {savedJob.job?.salaryMin && savedJob.job?.salaryMax && (
+                          <span className="text-green-600 font-medium">
+                            ₹{savedJob.job.salaryMin}L - ₹{savedJob.job.salaryMax}L
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => window.open(`/jobs/${savedJob.job?.id}`, '_blank')}
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleUnsaveJob(savedJob.job?.id)}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-8">
+                <Heart className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-600">
+                  {searchTerm ? "No saved jobs match your search" : "You haven't saved any jobs yet"}
+                </p>
+                <Button className="cb-gradient-primary mt-4" onClick={() => window.location.href = '/jobs'}>
+                  Browse Jobs
+                </Button>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
+  // Blog functionality
+  const BlogTab = () => {
+    const [showWriteBlog, setShowWriteBlog] = useState(false);
+    const [blogForm, setBlogForm] = useState({
+      title: "",
+      content: "",
+      category: "career-advice",
+      tags: "",
+      isPublished: false
+    });
+
+    const { data: userBlogs } = useQuery({
+      queryKey: ["/api/blogs/user", user?.id],
+      queryFn: () => fetch(`/api/blogs/user/${user?.id}`).then(res => res.json()),
+      enabled: !!user,
+    });
+
+    const handlePublishBlog = async () => {
+      if (!user || !blogForm.title || !blogForm.content) return;
+
+      try {
+        const response = await fetch('/api/blogs', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            authorId: user.id,
+            title: blogForm.title,
+            content: blogForm.content,
+            category: blogForm.category,
+            tags: blogForm.tags.split(',').map(tag => tag.trim()),
+            isPublished: true
+          }),
+        });
+
+        if (response.ok) {
+          queryClient.invalidateQueries(["/api/blogs/user", user?.id]);
+          setShowWriteBlog(false);
+          setBlogForm({
+            title: "",
+            content: "",
+            category: "career-advice",
+            tags: "",
+            isPublished: false
+          });
+        }
+      } catch (error) {
+        console.error('Failed to publish blog:', error);
+      }
+    };
+
+    return (
+      <Card className="cb-glass-card">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-blue-600" />
+              My Blogs ({Array.isArray(userBlogs) ? userBlogs.length : 0})
+            </CardTitle>
+            <Button 
+              className="cb-gradient-primary"
+              onClick={() => setShowWriteBlog(true)}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Write Blog
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {showWriteBlog && (
+            <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
+              <h3 className="font-semibold text-gray-900 mb-4">Write New Blog</h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                  <input
+                    type="text"
+                    value={blogForm.title}
+                    onChange={(e) => setBlogForm({...blogForm, title: e.target.value})}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500"
+                    placeholder="Enter blog title..."
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                  <select
+                    value={blogForm.category}
+                    onChange={(e) => setBlogForm({...blogForm, category: e.target.value})}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500"
+                  >
+                    <option value="career-advice">Career Advice</option>
+                    <option value="interview-tips">Interview Tips</option>
+                    <option value="industry-insights">Industry Insights</option>
+                    <option value="skill-development">Skill Development</option>
+                    <option value="workplace-culture">Workplace Culture</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Tags</label>
+                  <input
+                    type="text"
+                    value={blogForm.tags}
+                    onChange={(e) => setBlogForm({...blogForm, tags: e.target.value})}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500"
+                    placeholder="Enter tags separated by commas..."
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Content</label>
+                  <textarea
+                    value={blogForm.content}
+                    onChange={(e) => setBlogForm({...blogForm, content: e.target.value})}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 h-32"
+                    placeholder="Write your blog content..."
+                  />
+                </div>
+              </div>
+              <div className="flex gap-2 mt-4">
+                <Button onClick={handlePublishBlog} className="cb-gradient-primary">
+                  Publish Blog
+                </Button>
+                <Button variant="outline" onClick={() => setShowWriteBlog(false)}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-4">
+            {Array.isArray(userBlogs) && userBlogs.map((blog: any) => (
+              <div key={blog.id} className="p-4 border border-gray-200 rounded-lg">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-900 mb-2">{blog.title}</h3>
+                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">{blog.content}</p>
+                    <div className="flex items-center gap-4 text-sm text-gray-600">
+                      <span>Category: {blog.category}</span>
+                      <span>Views: {blog.views || 0}</span>
+                      <span>Published: {new Date(blog.publishedAt || blog.createdAt).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm">
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+            {(!Array.isArray(userBlogs) || userBlogs.length === 0) && (
+              <div className="text-center py-8">
+                <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-600">You haven't written any blogs yet</p>
+                <Button 
+                  className="cb-gradient-primary mt-4"
+                  onClick={() => setShowWriteBlog(true)}
+                >
+                  Write Your First Blog
+                </Button>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
   const tabItems = [
     { id: "dashboard", label: "User Dashboard", icon: User, component: DashboardOverview },
     { id: "recommendations", label: "AI Recommendations", icon: Sparkles, component: RecommendationsTab },
     { id: "profile", label: "Profile", icon: User, component: ProfileTab },
     { id: "resume", label: "My Resume", icon: FileText, component: ResumeTab },
     { id: "applications", label: "My Applied", icon: Briefcase, component: ApplicationsTab },
-    { id: "following", label: "Following Employers", icon: Heart, component: FollowingTab },
+    { id: "saved", label: "Saved Jobs", icon: Heart, component: SavedJobsTab },
     { id: "alerts", label: "Alerts Jobs", icon: Bell, component: AlertsTab },
+    { id: "blogs", label: "My Blogs", icon: FileText, component: BlogTab },
     { id: "messages", label: "Messages", icon: MessageCircle, component: MessagesTab },
     { id: "meetings", label: "Meetings", icon: Calendar, component: MeetingsTab },
     { id: "password", label: "Change Password", icon: Settings, component: PasswordTab },

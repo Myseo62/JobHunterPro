@@ -836,6 +836,195 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Saved Jobs API Routes
+  app.post("/api/saved-jobs", async (req, res) => {
+    try {
+      const { userId, jobId } = req.body;
+      const savedJob = await storage.saveJob(userId, jobId);
+      res.json(savedJob);
+    } catch (error) {
+      res.status(400).json({ message: error instanceof Error ? error.message : "Failed to save job" });
+    }
+  });
+
+  app.delete("/api/saved-jobs", async (req, res) => {
+    try {
+      const { userId, jobId } = req.body;
+      await storage.unsaveJob(userId, jobId);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(400).json({ message: error instanceof Error ? error.message : "Failed to unsave job" });
+    }
+  });
+
+  app.get("/api/saved-jobs/user/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const savedJobs = await storage.getSavedJobsByUser(userId);
+      res.json(savedJobs);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch saved jobs" });
+    }
+  });
+
+  app.get("/api/saved-jobs/check/:userId/:jobId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const jobId = parseInt(req.params.jobId);
+      const isSaved = await storage.isJobSaved(userId, jobId);
+      res.json({ isSaved });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to check job save status" });
+    }
+  });
+
+  // Job Alerts API Routes
+  app.post("/api/job-alerts", async (req, res) => {
+    try {
+      const alertData = req.body;
+      const alert = await storage.createJobAlert(alertData);
+      res.json(alert);
+    } catch (error) {
+      res.status(400).json({ message: error instanceof Error ? error.message : "Failed to create job alert" });
+    }
+  });
+
+  app.get("/api/job-alerts/user/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const alerts = await storage.getJobAlertsByUser(userId);
+      res.json(alerts);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch job alerts" });
+    }
+  });
+
+  app.put("/api/job-alerts/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updateData = req.body;
+      const alert = await storage.updateJobAlert(id, updateData);
+      res.json(alert);
+    } catch (error) {
+      res.status(400).json({ message: error instanceof Error ? error.message : "Failed to update job alert" });
+    }
+  });
+
+  app.delete("/api/job-alerts/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteJobAlert(id);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(400).json({ message: error instanceof Error ? error.message : "Failed to delete job alert" });
+    }
+  });
+
+  // Followed Companies API Routes
+  app.post("/api/followed-companies", async (req, res) => {
+    try {
+      const { userId, companyId } = req.body;
+      const followedCompany = await storage.followCompany(userId, companyId);
+      res.json(followedCompany);
+    } catch (error) {
+      res.status(400).json({ message: error instanceof Error ? error.message : "Failed to follow company" });
+    }
+  });
+
+  app.delete("/api/followed-companies", async (req, res) => {
+    try {
+      const { userId, companyId } = req.body;
+      await storage.unfollowCompany(userId, companyId);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(400).json({ message: error instanceof Error ? error.message : "Failed to unfollow company" });
+    }
+  });
+
+  app.get("/api/followed-companies/user/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const followedCompanies = await storage.getFollowedCompaniesByUser(userId);
+      res.json(followedCompanies);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch followed companies" });
+    }
+  });
+
+  app.get("/api/followed-companies/check/:userId/:companyId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const companyId = parseInt(req.params.companyId);
+      const isFollowed = await storage.isCompanyFollowed(userId, companyId);
+      res.json({ isFollowed });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to check company follow status" });
+    }
+  });
+
+  // Messages API Routes
+  app.post("/api/messages", async (req, res) => {
+    try {
+      const messageData = req.body;
+      const message = await storage.sendMessage(messageData);
+      res.json(message);
+    } catch (error) {
+      res.status(400).json({ message: error instanceof Error ? error.message : "Failed to send message" });
+    }
+  });
+
+  app.get("/api/messages/user/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const messages = await storage.getMessagesByUser(userId);
+      res.json(messages);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch messages" });
+    }
+  });
+
+  app.put("/api/messages/:id/read", async (req, res) => {
+    try {
+      const messageId = parseInt(req.params.id);
+      await storage.markMessageAsRead(messageId);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(400).json({ message: error instanceof Error ? error.message : "Failed to mark message as read" });
+    }
+  });
+
+  // Company Reviews API Routes
+  app.post("/api/company-reviews", async (req, res) => {
+    try {
+      const reviewData = req.body;
+      const review = await storage.createCompanyReview(reviewData);
+      res.json(review);
+    } catch (error) {
+      res.status(400).json({ message: error instanceof Error ? error.message : "Failed to create review" });
+    }
+  });
+
+  app.get("/api/company-reviews/:companyId", async (req, res) => {
+    try {
+      const companyId = parseInt(req.params.companyId);
+      const reviews = await storage.getCompanyReviews(companyId);
+      res.json(reviews);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch company reviews" });
+    }
+  });
+
+  // Dashboard Stats API Route
+  app.get("/api/dashboard/stats/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const stats = await storage.getDashboardStats(userId);
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch dashboard stats" });
+    }
+  });
+
   // Reward endpoints
   app.get("/api/rewards/activities", requireRole(['candidate']), async (req, res) => {
     try {

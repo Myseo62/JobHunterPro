@@ -373,6 +373,63 @@ export const insertJobCategorySchema = createInsertSchema(jobCategories).omit({
   jobCount: true,
 });
 
+// Saved Jobs table
+export const savedJobs = pgTable("saved_jobs", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  jobId: integer("job_id").references(() => jobs.id).notNull(),
+  savedAt: timestamp("saved_at").defaultNow(),
+});
+
+// Job Alerts table
+export const jobAlerts = pgTable("job_alerts", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  title: text("title").notNull(),
+  keywords: text("keywords"),
+  location: text("location"),
+  experienceLevel: text("experience_level"),
+  salaryMin: decimal("salary_min"),
+  salaryMax: decimal("salary_max"),
+  jobType: text("job_type"),
+  skills: text("skills").array(),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Followed Companies table
+export const followedCompanies = pgTable("followed_companies", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  companyId: integer("company_id").references(() => companies.id).notNull(),
+  followedAt: timestamp("followed_at").defaultNow(),
+});
+
+// Messages table
+export const messages = pgTable("messages", {
+  id: serial("id").primaryKey(),
+  senderId: integer("sender_id").references(() => users.id).notNull(),
+  receiverId: integer("receiver_id").references(() => users.id).notNull(),
+  subject: text("subject").notNull(),
+  content: text("content").notNull(),
+  isRead: boolean("is_read").default(false),
+  sentAt: timestamp("sent_at").defaultNow(),
+});
+
+// Company Reviews table
+export const companyReviews = pgTable("company_reviews", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  companyId: integer("company_id").references(() => companies.id).notNull(),
+  rating: decimal("rating").notNull(),
+  title: text("title").notNull(),
+  pros: text("pros"),
+  cons: text("cons"),
+  isAnonymous: boolean("is_anonymous").default(false),
+  recommendToFriend: boolean("recommend_to_friend").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Blog schemas
 export const insertBlogPostSchema = createInsertSchema(blogPosts).omit({
   id: true,
@@ -383,6 +440,43 @@ export const insertBlogPostSchema = createInsertSchema(blogPosts).omit({
 }).extend({
   title: z.string().min(5, "Title must be at least 5 characters"),
   content: z.string().min(50, "Content must be at least 50 characters"),
+});
+
+// New candidate functionality schemas
+export const insertSavedJobSchema = createInsertSchema(savedJobs).omit({
+  id: true,
+  savedAt: true,
+});
+
+export const insertJobAlertSchema = createInsertSchema(jobAlerts).omit({
+  id: true,
+  createdAt: true,
+}).extend({
+  title: z.string().min(3, "Title must be at least 3 characters"),
+  skills: z.array(z.string()).optional(),
+});
+
+export const insertFollowedCompanySchema = createInsertSchema(followedCompanies).omit({
+  id: true,
+  followedAt: true,
+});
+
+export const insertMessageSchema = createInsertSchema(messages).omit({
+  id: true,
+  sentAt: true,
+}).extend({
+  subject: z.string().min(3, "Subject must be at least 3 characters"),
+  content: z.string().min(10, "Message must be at least 10 characters"),
+});
+
+export const insertCompanyReviewSchema = createInsertSchema(companyReviews).omit({
+  id: true,
+  createdAt: true,
+}).extend({
+  rating: z.number().min(1).max(5),
+  title: z.string().min(5, "Title must be at least 5 characters"),
+  pros: z.string().optional(),
+  cons: z.string().optional(),
 });
 
 // Friend referral schema
@@ -448,6 +542,18 @@ export type JobCategory = typeof jobCategories.$inferSelect;
 export type InsertJobCategory = z.infer<typeof insertJobCategorySchema>;
 export type LoginData = z.infer<typeof loginSchema>;
 export type JobSearchParams = z.infer<typeof jobSearchSchema>;
+export type BlogPost = typeof blogPosts.$inferSelect;
+export type InsertBlogPost = z.infer<typeof insertBlogPostSchema>;
+export type SavedJob = typeof savedJobs.$inferSelect;
+export type InsertSavedJob = z.infer<typeof insertSavedJobSchema>;
+export type JobAlert = typeof jobAlerts.$inferSelect;
+export type InsertJobAlert = z.infer<typeof insertJobAlertSchema>;
+export type FollowedCompany = typeof followedCompanies.$inferSelect;
+export type InsertFollowedCompany = z.infer<typeof insertFollowedCompanySchema>;
+export type Message = typeof messages.$inferSelect;
+export type InsertMessage = z.infer<typeof insertMessageSchema>;
+export type CompanyReview = typeof companyReviews.$inferSelect;
+export type InsertCompanyReview = z.infer<typeof insertCompanyReviewSchema>;
 
 // Extended types for API responses
 export type JobWithCompany = Job & {
