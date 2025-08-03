@@ -21,6 +21,9 @@ export default function Jobs({ user }: JobsProps) {
   const [filters, setFilters] = useState<SearchFilters>({});
   const [appliedJobs, setAppliedJobs] = useState<Set<number>>(new Set());
   const [savedJobIds, setSavedJobIds] = useState<Set<number>>(new Set());
+  
+  // Debug: Check if save functionality is loaded
+  console.log('Jobs page loaded with save functionality v2.0');
 
   // Parse URL parameters
   useEffect(() => {

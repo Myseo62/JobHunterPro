@@ -23,6 +23,9 @@ export default function JobCard({
 }: ExtendedJobCardProps) {
   const [, setLocation] = useLocation();
   
+  // Debug: Heart functionality v2.0
+  console.log('JobCard heart button enabled:', !!onSave, isSaved);
+  
   const formatSalary = (min: string, max: string) => {
     const minLakhs = Math.round(parseInt(min) / 100000);
     const maxLakhs = Math.round(parseInt(max) / 100000);
