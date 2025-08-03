@@ -1370,7 +1370,7 @@ export default function CandidateDashboard() {
         });
 
         if (response.ok) {
-          queryClient.invalidateQueries(['/api/job-alerts']);
+          queryClient.invalidateQueries({ queryKey: ['/api/job-alerts'] });
           setShowCreateAlert(false);
           setAlertForm({
             title: "",
@@ -1397,7 +1397,7 @@ export default function CandidateDashboard() {
           body: JSON.stringify({ isActive: !isActive }),
         });
         
-        queryClient.invalidateQueries(['/api/job-alerts']);
+        queryClient.invalidateQueries({ queryKey: ['/api/job-alerts'] });
       } catch (error) {
         console.error('Failed to toggle alert:', error);
       }
@@ -1409,7 +1409,7 @@ export default function CandidateDashboard() {
           method: 'DELETE',
         });
         
-        queryClient.invalidateQueries(['/api/job-alerts']);
+        queryClient.invalidateQueries({ queryKey: ['/api/job-alerts'] });
       } catch (error) {
         console.error('Failed to delete alert:', error);
       }
@@ -1776,7 +1776,7 @@ export default function CandidateDashboard() {
     const [searchTerm, setSearchTerm] = useState("");
     const [filteredJobs, setFilteredJobs] = useState(savedJobs || []);
 
-    useEffect(() => {
+    React.useEffect(() => {
       if (savedJobs) {
         const filtered = savedJobs.filter((savedJob: any) => 
           savedJob.job?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -1798,7 +1798,7 @@ export default function CandidateDashboard() {
         
         if (response.ok) {
           // Refetch saved jobs
-          queryClient.invalidateQueries(['/api/saved-jobs']);
+          queryClient.invalidateQueries({ queryKey: ['/api/saved-jobs'] });
         }
       } catch (error) {
         console.error('Failed to unsave job:', error);
@@ -1934,7 +1934,7 @@ export default function CandidateDashboard() {
         });
 
         if (response.ok) {
-          queryClient.invalidateQueries(["/api/blogs/user", user?.id]);
+          queryClient.invalidateQueries({ queryKey: ["/api/blogs/user", user?.id] });
           setShowWriteBlog(false);
           setBlogForm({
             title: "",

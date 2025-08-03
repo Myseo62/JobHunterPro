@@ -94,60 +94,19 @@ export default function Jobs({ user }: JobsProps) {
   };
 
   const handleApply = async (jobId: number) => {
-    if (!user) {
-      setLocation("/login");
-      return;
-    }
-
-    try {
-      await apiRequest("POST", "/api/applications", {
-        userId: user.id,
-        jobId,
-        status: "applied",
-      });
-
-      setAppliedJobs(prev => new Set(prev).add(jobId));
-      toast({
-        title: "Application submitted",
-        description: "Your application has been submitted successfully.",
-      });
-    } catch (error) {
-      toast({
-        title: "Application failed",
-        description: "There was an error submitting your application. Please try again.",
-        variant: "destructive",
-      });
-    }
+    toast({
+      title: "Feature Temporarily Disabled",
+      description: "Job application functionality is currently under maintenance",
+      variant: "destructive",
+    });
   };
 
   const handleSaveJob = async (jobId: number) => {
-    if (!user) {
-      toast({
-        title: "Please login",
-        description: "You need to login to save jobs",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      await apiRequest("POST", "/api/saved-jobs", {
-        jobId,
-      });
-
-      setSavedJobIds(prev => new Set(prev).add(jobId));
-      
-      toast({
-        title: "Job saved",
-        description: "Job has been saved to your profile!",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to save job. Please try again.",
-        variant: "destructive",
-      });
-    }
+    toast({
+      title: "Feature Temporarily Disabled",
+      description: "Job saving functionality is currently under maintenance",
+      variant: "destructive",
+    });
   };
 
   const handleUnsaveJob = async (jobId: number) => {
