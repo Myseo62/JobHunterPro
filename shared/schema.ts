@@ -578,10 +578,7 @@ export type SubscriptionPlan = typeof subscriptionPlans.$inferSelect;
 export type InsertSubscriptionPlan = typeof subscriptionPlans.$inferInsert;
 export type EmployerRegistrationData = z.infer<typeof employerRegistrationSchema>;
 
-// Blog types
-export type BlogPost = typeof blogPosts.$inferSelect;
-export type InsertBlogPost = z.infer<typeof insertBlogPostSchema>;
 export type BlogView = typeof blogViews.$inferSelect;
-export type FriendReferral = typeof friendReferrals.$inferSelect;
-export type InsertFriendReferral = z.infer<typeof friendReferralSchema>;
+export type InsertBlogView = typeof blogViews.$inferInsert;
 export type DailyLogin = typeof dailyLogins.$inferSelect;
+export type InsertDailyLogin = typeof dailyLogins.$inferInsert;

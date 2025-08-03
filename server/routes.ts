@@ -122,8 +122,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Simple authentication middleware
   const isAuthenticated = (req: any, res: any, next: any) => {
-    if (!req.isAuthenticated()) {
+    if (!req.isAuthenticated() && !(req.session as any)?.user) {
       return res.status(401).json({ message: 'Not authenticated' });
+    }
+    // Set user from session if not set by passport
+    if (!(req.user) && (req.session as any)?.user) {
+      req.user = (req.session as any).user;
     }
     next();
   };
@@ -836,31 +840,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Saved Jobs API Routes
-  app.post("/api/saved-jobs", async (req, res) => {
+  // Saved Jobs API Routes (with authentication)
+  app.post("/api/saved-jobs", isAuthenticated, async (req: any, res) => {
     try {
-      const { userId, jobId } = req.body;
-      const savedJob = await storage.saveJob(userId, jobId);
+      const { jobId } = req.body;
+      const user = req.user || (req.session as any)?.user;
+      const savedJob = await storage.saveJob(user.id, jobId);
       res.json(savedJob);
     } catch (error) {
       res.status(400).json({ message: error instanceof Error ? error.message : "Failed to save job" });
     }
   });
 
-  app.delete("/api/saved-jobs", async (req, res) => {
+  app.delete("/api/saved-jobs", isAuthenticated, async (req: any, res) => {
     try {
-      const { userId, jobId } = req.body;
-      await storage.unsaveJob(userId, jobId);
+      const { jobId } = req.body;
+      const user = req.user || (req.session as any)?.user;
+      await storage.unsaveJob(user.id, jobId);
       res.json({ success: true });
     } catch (error) {
       res.status(400).json({ message: error instanceof Error ? error.message : "Failed to unsave job" });
     }
   });
 
-  app.get("/api/saved-jobs/user/:userId", async (req, res) => {
+  app.get("/api/saved-jobs", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = parseInt(req.params.userId);
-      const savedJobs = await storage.getSavedJobsByUser(userId);
+      const user = req.user || (req.session as any)?.user;
+      const savedJobs = await storage.getSavedJobsByUser(user.id);
       res.json(savedJobs);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch saved jobs" });
@@ -878,10 +884,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Job Alerts API Routes
-  app.post("/api/job-alerts", async (req, res) => {
+  // Job Alerts API Routes (with authentication) 
+  app.post("/api/job-alerts", isAuthenticated, async (req: any, res) => {
     try {
-      const alertData = req.body;
+      const user = req.user || (req.session as any)?.user;
+      const alertData = { ...req.body, userId: user.id };
       const alert = await storage.createJobAlert(alertData);
       res.json(alert);
     } catch (error) {
@@ -889,36 +896,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/job-alerts/user/:userId", async (req, res) => {
+  app.get("/api/job-alerts", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = parseInt(req.params.userId);
-      const alerts = await storage.getJobAlertsByUser(userId);
+      const user = req.user || (req.session as any)?.user;
+      const alerts = await storage.getJobAlertsByUser(user.id);
       res.json(alerts);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch job alerts" });
     }
   });
 
-  app.put("/api/job-alerts/:id", async (req, res) => {
+  app.put("/api/job-alerts/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const id = parseInt(req.params.id);
+      const alertId = parseInt(req.params.id);
       const updateData = req.body;
-      const alert = await storage.updateJobAlert(id, updateData);
+      const alert = await storage.updateJobAlert(alertId, updateData);
       res.json(alert);
     } catch (error) {
       res.status(400).json({ message: error instanceof Error ? error.message : "Failed to update job alert" });
     }
   });
 
-  app.delete("/api/job-alerts/:id", async (req, res) => {
+  app.delete("/api/job-alerts/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const id = parseInt(req.params.id);
-      await storage.deleteJobAlert(id);
+      const alertId = parseInt(req.params.id);
+      await storage.deleteJobAlert(alertId);
       res.json({ success: true });
     } catch (error) {
       res.status(400).json({ message: error instanceof Error ? error.message : "Failed to delete job alert" });
     }
   });
+
+
 
   // Followed Companies API Routes
   app.post("/api/followed-companies", async (req, res) => {

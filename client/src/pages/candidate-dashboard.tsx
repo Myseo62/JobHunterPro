@@ -174,14 +174,12 @@ export default function CandidateDashboard() {
   });
 
   const { data: savedJobs } = useQuery({
-    queryKey: ["/api/saved-jobs/user", user?.id],
-    queryFn: () => fetch(`/api/saved-jobs/user/${user?.id}`).then(res => res.json()),
+    queryKey: ['/api/saved-jobs'],
     enabled: !!user?.id,
   });
 
   const { data: jobAlerts } = useQuery({
-    queryKey: ["/api/job-alerts/user", user?.id], 
-    queryFn: () => fetch(`/api/job-alerts/user/${user?.id}`).then(res => res.json()),
+    queryKey: ['/api/job-alerts'],
     enabled: !!user?.id,
   });
 
@@ -1373,7 +1371,7 @@ export default function CandidateDashboard() {
         });
 
         if (response.ok) {
-          queryClient.invalidateQueries(["/api/job-alerts/user", user?.id]);
+          queryClient.invalidateQueries(['/api/job-alerts']);
           setShowCreateAlert(false);
           setAlertForm({
             title: "",
@@ -1400,7 +1398,7 @@ export default function CandidateDashboard() {
           body: JSON.stringify({ isActive: !isActive }),
         });
         
-        queryClient.invalidateQueries(["/api/job-alerts/user", user?.id]);
+        queryClient.invalidateQueries(['/api/job-alerts']);
       } catch (error) {
         console.error('Failed to toggle alert:', error);
       }
@@ -1412,7 +1410,7 @@ export default function CandidateDashboard() {
           method: 'DELETE',
         });
         
-        queryClient.invalidateQueries(["/api/job-alerts/user", user?.id]);
+        queryClient.invalidateQueries(['/api/job-alerts']);
       } catch (error) {
         console.error('Failed to delete alert:', error);
       }
@@ -1801,7 +1799,7 @@ export default function CandidateDashboard() {
         
         if (response.ok) {
           // Refetch saved jobs
-          queryClient.invalidateQueries(["/api/saved-jobs/user", user?.id]);
+          queryClient.invalidateQueries(['/api/saved-jobs']);
         }
       } catch (error) {
         console.error('Failed to unsave job:', error);

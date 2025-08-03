@@ -63,8 +63,7 @@ export default function Jobs({ user }: JobsProps) {
   });
 
   const { data: savedJobs } = useQuery({
-    queryKey: ["/api/saved-jobs/user", user?.id],
-    queryFn: () => fetch(`/api/saved-jobs/user/${user?.id}`).then(res => res.json()),
+    queryKey: ['/api/saved-jobs'],
     enabled: !!user,
   });
 
@@ -133,7 +132,6 @@ export default function Jobs({ user }: JobsProps) {
 
     try {
       await apiRequest("POST", "/api/saved-jobs", {
-        userId: user.id,
         jobId,
       });
 
@@ -157,7 +155,6 @@ export default function Jobs({ user }: JobsProps) {
 
     try {
       await apiRequest("DELETE", "/api/saved-jobs", {
-        userId: user.id,
         jobId,
       });
 
