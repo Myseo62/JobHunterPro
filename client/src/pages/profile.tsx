@@ -5,6 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { 
   User, 
   FileText, 
@@ -27,7 +30,8 @@ import {
   Search,
   Filter,
   Plus,
-  X
+  X,
+  Save
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import RewardPointsWidget from "@/components/rewards/reward-points-widget";
@@ -44,6 +48,25 @@ export default function Profile({ user }: { user: any }) {
   };
   
   const [activeTab, setActiveTab] = useState(getTabFromUrl);
+  
+  // Profile editing states
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [editableProfile, setEditableProfile] = useState({
+    firstName: user?.firstName || '',
+    lastName: user?.lastName || '',
+    phone: user?.phone || '',
+    location: user?.location || '',
+    experience: user?.experience || '',
+    skills: user?.skills || [],
+    profileSummary: user?.profileSummary || '',
+    linkedinUrl: user?.linkedinUrl || '',
+    githubUrl: user?.githubUrl || '',
+    portfolioUrl: user?.portfolioUrl || ''
+  });
+  
+  // Resume upload states
+  const [isUploadingResume, setIsUploadingResume] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   // All hooks must be called before any early returns
   const { data: applications } = useQuery({
@@ -86,6 +109,24 @@ export default function Profile({ user }: { user: any }) {
     window.history.pushState(null, '', `#${tabId}`);
   };
 
+  // Update editable profile when user data changes
+  useEffect(() => {
+    if (user) {
+      setEditableProfile({
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        phone: user.phone || '',
+        location: user.location || '',
+        experience: user.experience || '',
+        skills: user.skills || [],
+        profileSummary: user.profileSummary || '',
+        linkedinUrl: user.linkedinUrl || '',
+        githubUrl: user.githubUrl || '',
+        portfolioUrl: user.portfolioUrl || ''
+      });
+    }
+  }, [user]);
+
   // Listen for hash changes and redirect to login if not authenticated
   useEffect(() => {
     if (!user) {
@@ -115,6 +156,85 @@ export default function Profile({ user }: { user: any }) {
       }
     }
   }, [user]);
+
+  // Profile handling functions
+  const handleProfileSave = async () => {
+    try {
+      const response = await fetch(`/api/users/${user.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(editableProfile),
+      });
+
+      if (response.ok) {
+        const updatedUser = await response.json();
+        // Update user data in parent component
+        window.location.reload(); // Simple refresh for now
+        setIsEditingProfile(false);
+      }
+    } catch (error) {
+      console.error('Failed to update profile:', error);
+    }
+  };
+
+  const handleFileUpload = async () => {
+    if (!selectedFile) return;
+
+    setIsUploadingResume(true);
+    try {
+      const formData = new FormData();
+      formData.append('resume', selectedFile);
+
+      const response = await fetch('/api/upload-resume-file', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        
+        // Update user with resume URL
+        await fetch(`/api/users/${user.id}/resume`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            resumeUrl: `/uploads/${result.fileInfo.filename}`,
+            originalName: result.fileInfo.originalName,
+          }),
+        });
+
+        window.location.reload(); // Refresh to show updated resume
+      }
+    } catch (error) {
+      console.error('Failed to upload resume:', error);
+      alert('Failed to upload resume. Please try again.');
+    } finally {
+      setIsUploadingResume(false);
+      setSelectedFile(null);
+    }
+  };
+
+  const handleResumeDelete = async () => {
+    try {
+      await fetch(`/api/users/${user.id}/resume`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          resumeUrl: null,
+          originalName: null,
+        }),
+      });
+      window.location.reload();
+    } catch (error) {
+      console.error('Failed to delete resume:', error);
+    }
+  };
 
   if (!user) {
     return null;
@@ -347,11 +467,108 @@ export default function Profile({ user }: { user: any }) {
         </div>
 
         <div className="flex gap-3">
-          <Button className="cb-gradient-primary">
-            <Edit className="h-4 w-4 mr-2" />
-            Edit Profile
-          </Button>
-          <Button variant="outline">
+          <Dialog open={isEditingProfile} onOpenChange={setIsEditingProfile}>
+            <DialogTrigger asChild>
+              <Button className="cb-gradient-primary">
+                <Edit className="h-4 w-4 mr-2" />
+                Edit Profile
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Edit Profile</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="firstName">First Name</Label>
+                    <Input
+                      id="firstName"
+                      value={editableProfile.firstName}
+                      onChange={(e) => setEditableProfile({...editableProfile, firstName: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="lastName">Last Name</Label>
+                    <Input
+                      id="lastName"
+                      value={editableProfile.lastName}
+                      onChange={(e) => setEditableProfile({...editableProfile, lastName: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="phone">Phone</Label>
+                    <Input
+                      id="phone"
+                      value={editableProfile.phone}
+                      onChange={(e) => setEditableProfile({...editableProfile, phone: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="location">Location</Label>
+                    <Input
+                      id="location"
+                      value={editableProfile.location}
+                      onChange={(e) => setEditableProfile({...editableProfile, location: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="experience">Experience (years)</Label>
+                    <Input
+                      id="experience"
+                      type="number"
+                      value={editableProfile.experience}
+                      onChange={(e) => setEditableProfile({...editableProfile, experience: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="linkedinUrl">LinkedIn URL</Label>
+                    <Input
+                      id="linkedinUrl"
+                      value={editableProfile.linkedinUrl}
+                      onChange={(e) => setEditableProfile({...editableProfile, linkedinUrl: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="githubUrl">GitHub URL</Label>
+                    <Input
+                      id="githubUrl"
+                      value={editableProfile.githubUrl}
+                      onChange={(e) => setEditableProfile({...editableProfile, githubUrl: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="portfolioUrl">Portfolio URL</Label>
+                    <Input
+                      id="portfolioUrl"
+                      value={editableProfile.portfolioUrl}
+                      onChange={(e) => setEditableProfile({...editableProfile, portfolioUrl: e.target.value})}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="profileSummary">Profile Summary</Label>
+                  <Textarea
+                    id="profileSummary"
+                    rows={4}
+                    value={editableProfile.profileSummary}
+                    onChange={(e) => setEditableProfile({...editableProfile, profileSummary: e.target.value})}
+                    placeholder="Write a brief summary about yourself..."
+                  />
+                </div>
+                <div className="flex justify-end gap-3">
+                  <Button variant="outline" onClick={() => setIsEditingProfile(false)}>
+                    Cancel
+                  </Button>
+                  <Button className="cb-gradient-primary" onClick={handleProfileSave}>
+                    <Save className="h-4 w-4 mr-2" />
+                    Save Changes
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+          <Button variant="outline" onClick={() => window.open(`/candidate/${user.id}`, '_blank')}>
             <Eye className="h-4 w-4 mr-2" />
             Preview Profile
           </Button>
@@ -380,15 +597,24 @@ export default function Profile({ user }: { user: any }) {
                 </div>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={() => window.open(user.resumeUrl, '_blank')}>
                   <Eye className="h-4 w-4 mr-2" />
                   Preview
                 </Button>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={() => {
+                  const link = document.createElement('a');
+                  link.href = user.resumeUrl;
+                  link.download = 'resume.pdf';
+                  link.click();
+                }}>
                   <Download className="h-4 w-4 mr-2" />
                   Download
                 </Button>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={async () => {
+                  if (confirm('Are you sure you want to delete your resume?')) {
+                    await handleResumeDelete();
+                  }
+                }}>
                   <Trash2 className="h-4 w-4 mr-2" />
                   Delete
                 </Button>
@@ -399,9 +625,32 @@ export default function Profile({ user }: { user: any }) {
           <div className="p-8 border-2 border-dashed border-gray-200 rounded-lg text-center">
             <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-600 mb-4">No resume uploaded yet</p>
-            <Button className="cb-gradient-primary">
-              Upload Resume
-            </Button>
+            <div>
+              <input
+                type="file"
+                accept=".pdf,.doc,.docx"
+                onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                className="hidden"
+                id="resume-upload"
+              />
+              <label htmlFor="resume-upload">
+                <Button className="cb-gradient-primary" type="button">
+                  Choose Resume File
+                </Button>
+              </label>
+              {selectedFile && (
+                <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                  <p className="text-sm text-blue-700 mb-2">Selected: {selectedFile.name}</p>
+                  <Button 
+                    onClick={handleFileUpload}
+                    disabled={isUploadingResume}
+                    className="cb-gradient-primary"
+                  >
+                    {isUploadingResume ? 'Uploading...' : 'Upload Resume'}
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
         )}
 

@@ -1130,11 +1130,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Update user resume URL
   app.post('/api/users/:id/resume', async (req, res) => {
     try {
-      const { id } = req.params;
+      const userId = parseInt(req.params.id);
       const { resumeUrl, originalName } = req.body;
       
-      // Mock update - in real app, save to database
-      res.json({ message: 'Resume URL updated successfully' });
+      const updatedUser = await storage.updateUser(userId, { resumeUrl });
+      if (!updatedUser) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+      
+      res.json({ message: 'Resume URL updated successfully', user: updatedUser });
     } catch (error: any) {
       console.error('Resume URL update error:', error);
       res.status(500).json({ message: 'Failed to update resume URL: ' + error.message });
