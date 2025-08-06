@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -1065,6 +1065,7 @@ export default function CandidateDashboard() {
         
         const response = await fetch('/api/upload-resume-file', {
           method: 'POST',
+          credentials: 'include',
           body: formData,
         });
         
@@ -1078,6 +1079,7 @@ export default function CandidateDashboard() {
               await fetch(`/api/users/${user.id}/resume`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 body: JSON.stringify({ 
                   resumeUrl: result.fileInfo.filename,
                   originalName: result.fileInfo.originalName 
@@ -1778,7 +1780,7 @@ export default function CandidateDashboard() {
     const [filteredJobs, setFilteredJobs] = useState(savedJobs || []);
 
     React.useEffect(() => {
-      if (savedJobs) {
+      if (savedJobs && Array.isArray(savedJobs)) {
         const filtered = savedJobs.filter((savedJob: any) => 
           savedJob.job?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           savedJob.job?.company?.name?.toLowerCase().includes(searchTerm.toLowerCase())

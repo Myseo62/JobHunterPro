@@ -1,0 +1,21 @@
+Issue: Clicking the "Upload Resume" button (in Quick Actions) or the "Choose File" button (in the "My Resume" tab) on the candidate dashboard does not open the file selection dialog.
+
+Investigation Steps:
+
+Open Developer Tools: Open the browser's developer tools. This can usually be done by right-clicking on the page and selecting "Inspect" or "Inspect Element," or by pressing F12.
+Check the Console for Errors: Navigate to the "Console" tab in the developer tools. Click the "Upload Resume" button (if visible) and the "Choose File" button in the "My Resume" tab. Observe the console for any JavaScript errors (red messages) that appear when the buttons are clicked. These errors can indicate issues with the event handlers or other parts of the code.
+Inspect the File Input Element:
+Go to the "Elements" or "Inspector" tab in the developer tools.
+Navigate to the "My Resume" tab in the application.
+Use the element selection tool (usually an arrow icon) to click on the area where the "Choose File" button is located.
+Examine the surrounding HTML code to locate the <input type="file"> element.
+Verify that this input element has the ID resume-upload.
+Confirm that the input element does not have display: none; or visibility: hidden; styles applied directly to it that might prevent it from being triggered by the label or button. The code uses className="hidden", which should be handled correctly by the framework/CSS, but it's worth double-checking in the computed styles.
+Debug the Click Handler:
+In the "Sources" or "Debugger" tab, open the file client/src/pages/candidate-dashboard.tsx.
+Find the onClick handler for the button that is supposed to trigger the file upload. This is likely the button that calls document.getElementById('resume-upload')?.click().
+Set a breakpoint inside this onClick function (click on the line number in the source code).
+Go back to the application and click the "Choose File" button in the "My Resume" tab.
+When the debugger pauses at the breakpoint, hover over document.getElementById('resume-upload') to see if it successfully finds the input element. You can also execute document.getElementById('resume-upload') in the console to test it directly.
+Step through the code to see if the .click() method is being called and if any errors occur during or after this call.
+Check Event Listeners (Advanced): In the "Elements" tab, with the file input element selected, look for an "Event Listeners" tab or section. This can show you what click (or other) event listeners are attached to the element and its parents, which might reveal if an unexpected handler is interfering.
