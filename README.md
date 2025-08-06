@@ -1,70 +1,94 @@
-# Career-Bazaar - Job Portal Application
+# Career-Bazaar - AI-Powered Job Portal
 
-A comprehensive job portal web application built with React, Node.js, and PostgreSQL. Career-Bazaar provides a complete platform for job seekers to find opportunities and for employers to post jobs and manage applications.
+An advanced job platform revolutionizing professional development through intelligent, personalized career management tools.
 
-## Features
+![Career-Bazaar](https://img.shields.io/badge/Status-Production%20Ready-green)
+![License](https://img.shields.io/badge/License-MIT-blue)
+![Version](https://img.shields.io/badge/Version-1.0.0-orange)
+
+## 🚀 Features
 
 ### For Job Seekers
-- Browse and search jobs with advanced filters
-- Apply for positions with cover letters
-- Save jobs for later viewing
-- Track application status
-- Set up personalized job alerts
-- Complete profile management with skills and experience
-- Social media login (Google & LinkedIn)
+- **Smart Profile Management** - Comprehensive profile editing with skills, experience, and career objectives
+- **Intelligent Job Search** - AI-powered job matching with personalized recommendations
+- **Resume Management** - Upload, store, and manage resume files with secure cloud storage
+- **Application Tracking** - Track job applications with status updates and interview scheduling
+- **Reward Points System** - Earn points for profile completion, job applications, blog writing, and referrals
+- **Career Blog** - Write and read career-related articles with engagement tracking
+- **Messaging System** - Direct communication with employers and HR teams
+- **Job Alerts** - Customizable alerts for new job opportunities matching your criteria
 
 ### For Employers
-- Post and manage job listings
-- View and manage applications
-- Search and contact candidates
-- Messaging system with applicants
-- Company profile management
-- Analytics and reporting
+- **Company Profiles** - Comprehensive company information with ratings and reviews
+- **Job Posting** - Advanced job posting with requirements, benefits, and screening questions
+- **Candidate Search** - Search and filter candidates based on skills, experience, and location
+- **Application Management** - Review applications with status tracking and communication tools
+- **Dashboard Analytics** - Track job posting performance and candidate engagement
 
-### Platform Features
-- Company directory with detailed profiles
-- Blog system for career advice
-- Responsive design for all devices
-- Real-time notifications
-- Advanced search and filtering
-- Professional UI with glassmorphism effects
+### Technical Highlights
+- **AI-Powered Matching** - Intelligent job recommendations based on user profiles and preferences
+- **Social Authentication** - Google and LinkedIn OAuth integration for seamless login
+- **Real-time Messaging** - WebSocket-based messaging system for instant communication
+- **Responsive Design** - Modern UI with purple-green gradient theme and glassmorphism effects
+- **Database Optimization** - PostgreSQL with efficient queries and connection pooling
+- **Security** - Session-based authentication with CSRF protection and data validation
 
-## Tech Stack
+## 🛠️ Tech Stack
 
 ### Frontend
 - **React 18** with TypeScript
 - **Tailwind CSS** with shadcn/ui components
-- **Wouter** for lightweight routing
 - **TanStack Query** for server state management
-- **React Hook Form** with Zod validation
-- **Radix UI** primitives
+- **Wouter** for lightweight routing
+- **Radix UI** primitives for accessibility
 
 ### Backend
 - **Node.js** with Express.js
-- **TypeScript** throughout the stack
 - **PostgreSQL** with Drizzle ORM
+- **Neon Database** serverless connection
 - **Passport.js** for authentication
-- **Social OAuth** (Google & LinkedIn)
-- **Session-based** authentication
+- **Multer** for file uploads
 
-### Database
-- **PostgreSQL** with Neon Database
-- **Drizzle ORM** for type-safe operations
-- **Database migrations** with Drizzle Kit
+### Development
+- **Vite** for frontend build and development
+- **TypeScript** for type safety across the stack
+- **ESBuild** for backend bundling
+- **Drizzle Kit** for database migrations
 
-## Quick Start
+## 🏗️ Architecture
+
+The application follows a modern full-stack architecture:
+
+```
+Career-Bazaar/
+├── client/                 # React frontend
+│   ├── src/
+│   │   ├── components/    # Reusable UI components
+│   │   ├── pages/         # Route components
+│   │   ├── hooks/         # Custom React hooks
+│   │   └── lib/           # Utilities and configurations
+├── server/                # Express backend
+│   ├── auth/              # Authentication strategies
+│   ├── routes.ts          # API route handlers
+│   ├── storage.ts         # Database operations
+│   └── job-matching-service.ts  # AI matching logic
+├── shared/                # Shared types and schemas
+│   └── schema.ts          # Database schema and validation
+└── uploads/               # File storage directory
+```
+
+## 🚀 Getting Started
 
 ### Prerequisites
 - Node.js 18+ 
 - PostgreSQL database
-- Google OAuth credentials (optional)
-- LinkedIn OAuth credentials (optional)
+- Environment variables configured
 
 ### Installation
 
 1. Clone the repository:
 ```bash
-git clone [repository-url]
+git clone <repository-url>
 cd career-bazaar
 ```
 
@@ -76,29 +100,12 @@ npm install
 3. Set up environment variables:
 ```bash
 cp .env.example .env
-```
-
-Configure the following variables:
-```env
-DATABASE_URL=postgresql://username:password@host:port/database_name
-PGHOST=your_host
-PGPORT=5432
-PGUSER=your_username
-PGPASSWORD=your_password
-PGDATABASE=your_database_name
-SESSION_SECRET=your_random_session_secret
-
-# Optional - for social login
-GOOGLE_CLIENT_ID=your_google_client_id
-GOOGLE_CLIENT_SECRET=your_google_client_secret
-LINKEDIN_CLIENT_ID=your_linkedin_client_id
-LINKEDIN_CLIENT_SECRET=your_linkedin_client_secret
+# Configure your database URL, session secret, and OAuth credentials
 ```
 
 4. Set up the database:
 ```bash
 npm run db:push
-npx tsx server/seed.ts
 ```
 
 5. Start the development server:
@@ -106,145 +113,95 @@ npx tsx server/seed.ts
 npm run dev
 ```
 
-Visit `http://localhost:5000` to see the application.
+The application will be available at `http://localhost:5000`
 
-## Deployment
+## 📱 User Roles
 
-### Digital Ocean Droplet Deployment
+### Candidates
+- Register and complete comprehensive profiles
+- Search and apply for jobs with intelligent matching
+- Track applications and communicate with employers
+- Earn reward points for platform engagement
+- Write and read career-related blog posts
 
-1. **Server Setup** (Ubuntu 20.04+):
-```bash
-# Update system
-sudo apt update && sudo apt upgrade -y
+### Employers
+- Create company profiles with detailed information
+- Post jobs with advanced filtering options
+- Search and contact qualified candidates
+- Manage applications and interview scheduling
+- Access analytics and performance metrics
 
-# Install Node.js 18
-curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-sudo apt-get install -y nodejs
+## 🔒 Security Features
 
-# Install PostgreSQL
-sudo apt install postgresql postgresql-contrib -y
+- **Authentication** - Multi-provider OAuth with session management
+- **Data Validation** - Zod schemas for request/response validation
+- **File Upload Security** - Type validation and size limits
+- **SQL Injection Prevention** - Parameterized queries with Drizzle ORM
+- **CSRF Protection** - Session-based CSRF tokens
+- **Rate Limiting** - API endpoint protection
 
-# Install PM2 for process management
-sudo npm install -g pm2
+## 📊 Database Schema
 
-# Install Nginx (optional, for reverse proxy)
-sudo apt install nginx -y
-```
+The application uses a comprehensive PostgreSQL schema with the following main tables:
 
-2. **Database Setup**:
-```bash
-sudo -u postgres psql
-CREATE DATABASE career_bazaar;
-CREATE USER career_user WITH ENCRYPTED PASSWORD 'your_password';
-GRANT ALL PRIVILEGES ON DATABASE career_bazaar TO career_user;
-\q
-```
+- **users** - User profiles and authentication
+- **companies** - Company information and profiles
+- **jobs** - Job postings with requirements and benefits
+- **applications** - Job application tracking
+- **reward_points** - User engagement and point system
+- **blog_posts** - Career-related articles and content
+- **messages** - Communication between users
 
-3. **Deploy Application**:
-```bash
-# Clone repository
-git clone [your-repo-url] /var/www/career-bazaar
-cd /var/www/career-bazaar
+## 🎨 Design System
 
-# Install dependencies
-npm install
+- **Color Scheme** - Purple-green gradient theme with glassmorphism effects
+- **Typography** - Inter font family for modern readability
+- **Components** - Consistent design system with Radix UI primitives
+- **Responsive** - Mobile-first design approach
+- **Accessibility** - WCAG 2.1 compliant components
 
-# Build application
-npm run build
+## 🧪 Testing
 
-# Set up environment variables
-cp .env.example .env
-# Edit .env with your production values
+Comprehensive testing documentation is available in:
+- `TESTING_GUIDE.md` - Page-by-page testing instructions
+- `SITE_MAP.md` - Complete navigation structure and user flows
 
-# Set up database
-npm run db:push
-npx tsx server/seed.ts
+## 📈 Performance
 
-# Start with PM2
-pm2 start ecosystem.config.js
-pm2 save
-pm2 startup
-```
+- **Frontend** - Code splitting with lazy loading
+- **Backend** - Connection pooling and query optimization
+- **Database** - Indexed queries and efficient relationships
+- **Caching** - TanStack Query for client-side caching
+- **Images** - Optimized asset delivery
 
-4. **Nginx Configuration** (optional):
-```nginx
-server {
-    listen 80;
-    server_name your-domain.com;
+## 🚀 Deployment
 
-    location / {
-        proxy_pass http://localhost:5000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_cache_bypass $http_upgrade;
-    }
-}
-```
+The application is production-ready with:
+- Environment-based configuration
+- Database migrations
+- Static asset serving
+- Session storage in PostgreSQL
+- Comprehensive error handling
 
-## Scripts
-
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run start` - Start production server
-- `npm run db:push` - Push schema changes to database
-- `npm run db:generate` - Generate database migrations
-
-## API Endpoints
-
-### Authentication
-- `POST /api/auth/register` - Register new user
-- `POST /api/auth/login` - Login user
-- `POST /api/auth/logout` - Logout user
-- `GET /api/auth/user` - Get current user
-- `GET /api/auth/google` - Google OAuth login
-- `GET /api/auth/linkedin` - LinkedIn OAuth login
-
-### Jobs
-- `GET /api/jobs` - Get jobs with filters
-- `GET /api/jobs/:id` - Get job details
-- `POST /api/jobs` - Create job (employers)
-- `PUT /api/jobs/:id` - Update job (employers)
-
-### Applications
-- `GET /api/applications` - Get user applications
-- `POST /api/applications` - Apply for job
-- `PUT /api/applications/:id` - Update application status
-
-### Companies
-- `GET /api/companies` - Get companies
-- `GET /api/companies/:id` - Get company details
-- `GET /api/companies/featured` - Get featured companies
-
-## Database Schema
-
-The application uses PostgreSQL with the following main tables:
-- `users` - User accounts and profiles
-- `companies` - Company information and profiles
-- `jobs` - Job postings and details
-- `applications` - Job applications and status
-- `job_categories` - Job categorization system
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature-name`
-3. Make your changes and commit: `git commit -m 'Add feature'`
-4. Push to the branch: `git push origin feature-name`
-5. Submit a pull request
-
-## License
+## 📄 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## Support
+## 🤝 Contributing
 
-For support, please create an issue in the GitHub repository or contact the development team.
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📞 Support
+
+For support and questions:
+- Email: support@career-bazaar.com
+- Documentation: [Project Documentation](./TESTING_GUIDE.md)
+- Issues: [GitHub Issues](../../issues)
 
 ---
 
-Built with ❤️ using React, Node.js, and PostgreSQL
+**Career-Bazaar** - Find your career, not just a job! 🚀
