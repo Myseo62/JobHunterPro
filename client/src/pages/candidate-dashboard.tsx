@@ -42,16 +42,27 @@ import {
 } from "lucide-react";
 import JobRecommendations from "@/components/jobs/job-recommendations";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
 
 export default function CandidateDashboard() {
   const { user, logout } = useAuth();
   const [location, navigate] = useLocation();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [isEditing, setIsEditing] = useState(false);
   const [showRewardDetails, setShowRewardDetails] = useState(false);
   const [newSkill, setNewSkill] = useState("");
-  const [userSkills, setUserSkills] = useState(user?.skills || []);
+  const [userSkills, setUserSkills] = useState<string[]>(user?.skills || []);
+
+  // Update userSkills when user data changes
+  useEffect(() => {
+    if (user?.skills) {
+      setUserSkills(user.skills);
+    }
+  }, [user?.skills]);
   const [showAddExperience, setShowAddExperience] = useState(false);
   const [experienceForm, setExperienceForm] = useState({
     jobTitle: "",
@@ -79,16 +90,25 @@ export default function CandidateDashboard() {
       setUserSkills(updatedSkills);
       setNewSkill("");
       
-      // Save to backend
+      // Save to backend via user profile update
       if (user?.id) {
         try {
-          await fetch(`/api/users/${user.id}/skills`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ skills: updatedSkills })
+          const skillToAdd = newSkill.trim();
+          await apiRequest("PUT", `/api/users/${user.id}`, {
+            skills: updatedSkills
           });
+          toast({
+            title: "Skill Added",
+            description: `${skillToAdd} has been added to your skills!`,
+          });
+          queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
         } catch (error) {
           console.error('Failed to save skills:', error);
+          toast({
+            title: "Error",
+            description: "Failed to save skill. Please try again.",
+            variant: "destructive",
+          });
         }
       }
     }
@@ -98,17 +118,24 @@ export default function CandidateDashboard() {
     const updatedSkills = userSkills.filter(skill => skill !== skillToRemove);
     setUserSkills(updatedSkills);
     
-    // Save to backend
+    // Save to backend via user profile update
     if (user?.id) {
       try {
-        await fetch(`/api/users/${user.id}/skills`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ skills: updatedSkills })
+        await apiRequest("PUT", `/api/users/${user.id}`, {
+          skills: updatedSkills
         });
+        toast({
+          title: "Skill Removed",
+          description: `${skillToRemove} has been removed from your skills.`,
+        });
+        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       } catch (error) {
         console.error('Failed to save skills:', error);
+        toast({
+          title: "Error",
+          description: "Failed to remove skill. Please try again.",
+          variant: "destructive",
+        });
       }
     }
   };
