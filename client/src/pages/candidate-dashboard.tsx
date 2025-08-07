@@ -6,13 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  User, 
-  FileText, 
-  Briefcase, 
-  Heart, 
-  Bell, 
-  MessageCircle, 
+import {
+  User,
+  FileText,
+  Briefcase,
+  Heart,
+  Bell,
+  MessageCircle,
   Calendar,
   Settings,
   LogOut,
@@ -90,7 +90,7 @@ export default function CandidateDashboard() {
       const updatedSkills = [...userSkills, newSkill.trim()];
       setUserSkills(updatedSkills);
       setNewSkill("");
-      
+
       // Save to backend via user profile update
       if (user?.id) {
         try {
@@ -118,7 +118,7 @@ export default function CandidateDashboard() {
   const removeSkill = async (skillToRemove: string) => {
     const updatedSkills = userSkills.filter(skill => skill !== skillToRemove);
     setUserSkills(updatedSkills);
-    
+
     // Save to backend via user profile update
     if (user?.id) {
       try {
@@ -149,7 +149,7 @@ export default function CandidateDashboard() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(experienceForm)
         });
-        
+
         setShowAddExperience(false);
         setExperienceForm({
           jobTitle: "",
@@ -159,7 +159,7 @@ export default function CandidateDashboard() {
           isCurrentJob: false,
           description: ""
         });
-        
+
         alert('Work experience added successfully!');
       } catch (error) {
         console.error('Failed to add work experience:', error);
@@ -176,7 +176,7 @@ export default function CandidateDashboard() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(educationForm)
         });
-        
+
         setShowAddEducation(false);
         setEducationForm({
           degree: "",
@@ -187,7 +187,7 @@ export default function CandidateDashboard() {
           grade: "",
           description: ""
         });
-        
+
         alert('Education details added successfully!');
       } catch (error) {
         console.error('Failed to add education:', error);
@@ -277,7 +277,7 @@ export default function CandidateDashboard() {
       </div>
 
       {/* Quick Actions Section - DISABLED */}
-      {/* 
+      {/*
       <Card className="cb-glass-card">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -324,8 +324,8 @@ export default function CandidateDashboard() {
                     <p className="font-medium text-gray-900">{app.job?.title}</p>
                     <p className="text-sm text-gray-600">{app.job?.company?.name}</p>
                   </div>
-                  <Badge 
-                    variant={app.status === 'pending' ? 'secondary' : 
+                  <Badge
+                    variant={app.status === 'pending' ? 'secondary' :
                             app.status === 'accepted' ? 'default' : 'destructive'}
                   >
                     {app.status}
@@ -370,7 +370,7 @@ export default function CandidateDashboard() {
 
   const ProfileTab = () => {
     const [activeSection, setActiveSection] = useState("personal");
-    
+
     return (
       <div className="space-y-6">
         {/* Profile Navigation */}
@@ -419,50 +419,50 @@ export default function CandidateDashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
-                    <input 
-                      type="text" 
-                      defaultValue={user?.firstName || ''} 
+                    <input
+                      type="text"
+                      defaultValue={user?.firstName || ''}
                       className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
-                    <input 
-                      type="text" 
-                      defaultValue={user?.lastName || ''} 
+                    <input
+                      type="text"
+                      defaultValue={user?.lastName || ''}
                       className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                    <input 
-                      type="email" 
-                      defaultValue={user?.email || ''} 
+                    <input
+                      type="email"
+                      defaultValue={user?.email || ''}
                       className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
-                    <input 
-                      type="tel" 
-                      defaultValue={user?.phone || ''} 
+                    <input
+                      type="tel"
+                      defaultValue={user?.phone || ''}
                       placeholder="+1 (555) 123-4567"
                       className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
-                    <input 
-                      type="text" 
-                      defaultValue={user?.location || ''} 
+                    <input
+                      type="text"
+                      defaultValue={user?.location || ''}
                       placeholder="City, State, Country"
                       className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Total Experience</label>
-                    <select 
-                      defaultValue={user?.experience || ''} 
+                    <select
+                      defaultValue={user?.experience || ''}
                       className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     >
                       <option value="">Select Experience</option>
@@ -478,18 +478,18 @@ export default function CandidateDashboard() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Current CTC (Annual)</label>
-                    <input 
-                      type="number" 
-                      defaultValue={user?.currentSalary || ''} 
+                    <input
+                      type="number"
+                      defaultValue={user?.currentSalary || ''}
                       placeholder="Enter current salary"
                       className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Expected CTC (Annual)</label>
-                    <input 
-                      type="number" 
-                      defaultValue={user?.expectedSalary || ''} 
+                    <input
+                      type="number"
+                      defaultValue={user?.expectedSalary || ''}
                       placeholder="Enter expected salary"
                       className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
@@ -507,24 +507,24 @@ export default function CandidateDashboard() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">LinkedIn Profile</label>
-                    <input 
-                      type="url" 
+                    <input
+                      type="url"
                       placeholder="https://linkedin.com/in/yourprofile"
                       className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">GitHub Profile</label>
-                    <input 
-                      type="url" 
+                    <input
+                      type="url"
                       placeholder="https://github.com/yourusername"
                       className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Portfolio Website</label>
-                    <input 
-                      type="url" 
+                    <input
+                      type="url"
                       placeholder="https://yourportfolio.com"
                       className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
@@ -533,7 +533,7 @@ export default function CandidateDashboard() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Professional Summary</label>
-                  <textarea 
+                  <textarea
                     rows={4}
                     placeholder="Write a brief professional summary highlighting your key strengths and career objectives..."
                     className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
@@ -572,7 +572,7 @@ export default function CandidateDashboard() {
                   {userSkills.map((skill: string, index: number) => (
                     <Badge key={index} variant="secondary" className="flex items-center gap-1">
                       {skill}
-                      <button 
+                      <button
                         onClick={() => removeSkill(skill)}
                         className="ml-1 text-red-500 hover:text-red-700"
                       >
@@ -583,8 +583,8 @@ export default function CandidateDashboard() {
                   {userSkills.length === 0 && <p className="text-gray-500">No skills added yet</p>}
                 </div>
                 <div className="flex gap-2">
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={newSkill}
                     onChange={(e) => setNewSkill(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && addSkill()}
@@ -619,10 +619,10 @@ export default function CandidateDashboard() {
                 <h4 className="font-semibold text-gray-900 mb-4">Suggested Skills</h4>
                 <div className="flex flex-wrap gap-2">
                   {['React', 'Node.js', 'Python', 'JavaScript', 'TypeScript', 'SQL', 'MongoDB', 'AWS'].map((skill) => (
-                    <Button 
-                      key={skill} 
-                      variant="outline" 
-                      size="sm" 
+                    <Button
+                      key={skill}
+                      variant="outline"
+                      size="sm"
                       onClick={() => {
                         if (!userSkills.includes(skill)) {
                           setUserSkills([...userSkills, skill]);
@@ -654,8 +654,8 @@ export default function CandidateDashboard() {
                   <Briefcase className="h-5 w-5 text-purple-600" />
                   Work Experience
                 </CardTitle>
-                <Button 
-                  size="sm" 
+                <Button
+                  size="sm"
                   className="cb-gradient-primary"
                   onClick={() => setShowAddExperience(!showAddExperience)}
                 >
@@ -672,8 +672,8 @@ export default function CandidateDashboard() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Job Title</label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         value={experienceForm.jobTitle}
                         onChange={(e) => setExperienceForm({...experienceForm, jobTitle: e.target.value})}
                         placeholder="e.g., Senior Software Engineer"
@@ -682,8 +682,8 @@ export default function CandidateDashboard() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Company Name</label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         value={experienceForm.companyName}
                         onChange={(e) => setExperienceForm({...experienceForm, companyName: e.target.value})}
                         placeholder="e.g., Google"
@@ -692,8 +692,8 @@ export default function CandidateDashboard() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
-                      <input 
-                        type="month" 
+                      <input
+                        type="month"
                         value={experienceForm.startDate}
                         onChange={(e) => setExperienceForm({...experienceForm, startDate: e.target.value})}
                         className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
@@ -701,8 +701,8 @@ export default function CandidateDashboard() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
-                      <input 
-                        type="month" 
+                      <input
+                        type="month"
                         value={experienceForm.endDate}
                         onChange={(e) => setExperienceForm({...experienceForm, endDate: e.target.value})}
                         disabled={experienceForm.isCurrentJob}
@@ -712,18 +712,18 @@ export default function CandidateDashboard() {
                   </div>
                   <div>
                     <label className="flex items-center gap-2">
-                      <input 
-                        type="checkbox" 
+                      <input
+                        type="checkbox"
                         checked={experienceForm.isCurrentJob}
                         onChange={(e) => setExperienceForm({...experienceForm, isCurrentJob: e.target.checked, endDate: e.target.checked ? '' : experienceForm.endDate})}
-                        className="w-4 h-4 text-purple-600" 
+                        className="w-4 h-4 text-purple-600"
                       />
                       <span className="text-sm text-gray-700">I currently work here</span>
                     </label>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Job Description</label>
-                    <textarea 
+                    <textarea
                       rows={4}
                       value={experienceForm.description}
                       onChange={(e) => setExperienceForm({...experienceForm, description: e.target.value})}
@@ -736,8 +736,8 @@ export default function CandidateDashboard() {
                       <Save className="h-4 w-4 mr-2" />
                       Save Experience
                     </Button>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       onClick={() => setShowAddExperience(false)}
                     >
                       Cancel
@@ -764,7 +764,7 @@ export default function CandidateDashboard() {
                   </div>
                 </div>
                 <p className="text-gray-700 text-sm">
-                  Led development of scalable web applications using React and Node.js. 
+                  Led development of scalable web applications using React and Node.js.
                   Managed a team of 5 developers and improved system performance by 40%.
                   Implemented CI/CD pipelines and automated testing frameworks.
                 </p>
@@ -788,8 +788,8 @@ export default function CandidateDashboard() {
                   <FileText className="h-5 w-5 text-purple-600" />
                   Education Background
                 </CardTitle>
-                <Button 
-                  size="sm" 
+                <Button
+                  size="sm"
                   className="cb-gradient-primary"
                   onClick={() => setShowAddEducation(!showAddEducation)}
                 >
@@ -806,8 +806,8 @@ export default function CandidateDashboard() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Degree</label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         value={educationForm.degree}
                         onChange={(e) => setEducationForm({...educationForm, degree: e.target.value})}
                         placeholder="e.g., Bachelor of Technology"
@@ -816,8 +816,8 @@ export default function CandidateDashboard() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Field of Study</label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         value={educationForm.fieldOfStudy}
                         onChange={(e) => setEducationForm({...educationForm, fieldOfStudy: e.target.value})}
                         placeholder="e.g., Computer Science"
@@ -826,8 +826,8 @@ export default function CandidateDashboard() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Institution</label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         value={educationForm.institution}
                         onChange={(e) => setEducationForm({...educationForm, institution: e.target.value})}
                         placeholder="e.g., Indian Institute of Technology"
@@ -836,8 +836,8 @@ export default function CandidateDashboard() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Grade/CGPA</label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         value={educationForm.grade}
                         onChange={(e) => setEducationForm({...educationForm, grade: e.target.value})}
                         placeholder="e.g., 8.5 CGPA or First Class"
@@ -846,8 +846,8 @@ export default function CandidateDashboard() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
-                      <input 
-                        type="month" 
+                      <input
+                        type="month"
                         value={educationForm.startDate}
                         onChange={(e) => setEducationForm({...educationForm, startDate: e.target.value})}
                         className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
@@ -855,8 +855,8 @@ export default function CandidateDashboard() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
-                      <input 
-                        type="month" 
+                      <input
+                        type="month"
                         value={educationForm.endDate}
                         onChange={(e) => setEducationForm({...educationForm, endDate: e.target.value})}
                         className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
@@ -865,7 +865,7 @@ export default function CandidateDashboard() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Description (Optional)</label>
-                    <textarea 
+                    <textarea
                       rows={3}
                       value={educationForm.description}
                       onChange={(e) => setEducationForm({...educationForm, description: e.target.value})}
@@ -878,8 +878,8 @@ export default function CandidateDashboard() {
                       <Save className="h-4 w-4 mr-2" />
                       Save Education
                     </Button>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       onClick={() => setShowAddEducation(false)}
                     >
                       Cancel
@@ -907,7 +907,7 @@ export default function CandidateDashboard() {
                   </div>
                 </div>
                 <p className="text-gray-700 text-sm">
-                  Specialized in Artificial Intelligence and Machine Learning. Completed major projects 
+                  Specialized in Artificial Intelligence and Machine Learning. Completed major projects
                   in deep learning and computer vision. Dean's List for academic excellence.
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -941,24 +941,24 @@ export default function CandidateDashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Award Title</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       placeholder="e.g., Employee of the Year"
                       className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Issuing Organization</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       placeholder="e.g., Microsoft Corporation"
                       className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Date Received</label>
-                    <input 
-                      type="date" 
+                    <input
+                      type="date"
                       className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                   </div>
@@ -977,7 +977,7 @@ export default function CandidateDashboard() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                  <textarea 
+                  <textarea
                     rows={3}
                     placeholder="Describe the achievement and its significance..."
                     className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
@@ -1012,24 +1012,24 @@ export default function CandidateDashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       placeholder="e.g., John Smith"
                       className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Designation</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       placeholder="e.g., Senior Manager"
                       className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Company</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       placeholder="e.g., Google"
                       className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
@@ -1047,16 +1047,16 @@ export default function CandidateDashboard() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                    <input 
-                      type="email" 
+                    <input
+                      type="email"
                       placeholder="e.g., john.smith@company.com"
                       className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
-                    <input 
-                      type="tel" 
+                    <input
+                      type="tel"
                       placeholder="e.g., +1 (555) 123-4567"
                       className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
@@ -1084,29 +1084,29 @@ export default function CandidateDashboard() {
     const [parseStatus, setParseStatus] = useState('idle'); // idle, parsing, completed, error
     const [parsedData, setParsedData] = useState(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    
+
     const handleResumeUpload = async (file: File) => {
       console.log('handleResumeUpload called with file:', file.name, file.size, file.type);
       setParseStatus('parsing');
-      
+
       try {
         const formData = new FormData();
         formData.append('resume', file);
-        
+
         console.log('Sending upload request...');
         const response = await fetch('/api/upload-resume-file', {
           method: 'POST',
           credentials: 'include',
           body: formData,
         });
-        
+
         console.log('Upload response status:', response.status);
-        
+
         if (response.ok) {
           const result = await response.json();
           console.log('Upload successful:', result);
           setParseStatus('completed');
-          
+
           // Update user's resume URL in the database
           if (user?.id) {
             try {
@@ -1114,9 +1114,9 @@ export default function CandidateDashboard() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
-                body: JSON.stringify({ 
+                body: JSON.stringify({
                   resumeUrl: result.fileInfo.filename,
-                  originalName: result.fileInfo.originalName 
+                  originalName: result.fileInfo.originalName
                 })
               });
               console.log('Resume URL updated successfully');
@@ -1133,7 +1133,7 @@ export default function CandidateDashboard() {
         setParseStatus('error');
       }
     };
-    
+
     return (
       <div className="space-y-6">
         <Card className="cb-glass-card">
@@ -1174,7 +1174,7 @@ export default function CandidateDashboard() {
                 </div>
               </div>
             ) : (
-              <DirectFileUploader 
+              <DirectFileUploader
                 userId={user?.id}
                 onUploadComplete={() => {
                   // Refresh user data
@@ -1194,8 +1194,8 @@ export default function CandidateDashboard() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-600 mb-4">Share your experience and earn 50 reward points per blog post</p>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="w-full"
                     onClick={() => window.location.href = '/blogs/write'}
                   >
@@ -1211,8 +1211,8 @@ export default function CandidateDashboard() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-600 mb-4">Read career advice and earn 5 reward points per blog read</p>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="w-full"
                     onClick={() => window.location.href = '/blogs'}
                   >
@@ -1237,16 +1237,16 @@ export default function CandidateDashboard() {
             My Applications
           </CardTitle>
           <div className="flex gap-2">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               size="sm"
               onClick={() => alert('Filter functionality coming soon!')}
             >
               <Filter className="h-4 w-4 mr-2" />
               Filter
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               size="sm"
               onClick={() => alert('Search functionality coming soon!')}
             >
@@ -1264,8 +1264,8 @@ export default function CandidateDashboard() {
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     <h3 className="font-semibold text-gray-900">{app.job?.title}</h3>
-                    <Badge 
-                      variant={app.status === 'pending' ? 'secondary' : 
+                    <Badge
+                      variant={app.status === 'pending' ? 'secondary' :
                               app.status === 'accepted' ? 'default' : 'destructive'}
                     >
                       {app.status}
@@ -1400,7 +1400,7 @@ export default function CandidateDashboard() {
           },
           body: JSON.stringify({ isActive: !isActive }),
         });
-        
+
         queryClient.invalidateQueries({ queryKey: ['/api/job-alerts'] });
       } catch (error) {
         console.error('Failed to toggle alert:', error);
@@ -1412,7 +1412,7 @@ export default function CandidateDashboard() {
         await fetch(`/api/job-alerts/${alertId}`, {
           method: 'DELETE',
         });
-        
+
         queryClient.invalidateQueries({ queryKey: ['/api/job-alerts'] });
       } catch (error) {
         console.error('Failed to delete alert:', error);
@@ -1427,7 +1427,7 @@ export default function CandidateDashboard() {
               <Bell className="h-5 w-5 text-orange-600" />
               Job Alerts ({Array.isArray(jobAlerts) ? jobAlerts.length : 0})
             </CardTitle>
-            <Button 
+            <Button
               className="cb-gradient-primary"
               onClick={() => setShowCreateAlert(true)}
             >
@@ -1525,15 +1525,15 @@ export default function CandidateDashboard() {
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       size="sm"
                       onClick={() => handleToggleAlert(alert.id, alert.isActive)}
                     >
                       {alert.isActive ? "Pause" : "Activate"}
                     </Button>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       size="sm"
                       onClick={() => handleDeleteAlert(alert.id)}
                       className="text-red-600 hover:text-red-700"
@@ -1548,7 +1548,7 @@ export default function CandidateDashboard() {
               <div className="text-center py-8">
                 <Bell className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-600">No job alerts set up</p>
-                <Button 
+                <Button
                   className="cb-gradient-primary mt-4"
                   onClick={() => setShowCreateAlert(true)}
                 >
@@ -1656,30 +1656,30 @@ export default function CandidateDashboard() {
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
-            <input 
-              type="password" 
+            <input
+              type="password"
               className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               placeholder="Enter current password"
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">New Password</label>
-            <input 
-              type="password" 
+            <input
+              type="password"
               className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               placeholder="Enter new password"
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
-            <input 
-              type="password" 
+            <input
+              type="password"
               className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               placeholder="Confirm new password"
             />
           </div>
         </div>
-        
+
         <div className="p-4 bg-blue-50 rounded-lg">
           <h4 className="font-medium text-blue-900 mb-2">Password Requirements:</h4>
           <ul className="text-sm text-blue-700 space-y-1">
@@ -1709,7 +1709,7 @@ export default function CandidateDashboard() {
           </p>
         </CardHeader>
         <CardContent>
-          <JobRecommendations 
+          <JobRecommendations
             title="Your Best Matches"
             subtitle="Jobs tailored specifically for your profile"
             limit={12}
@@ -1782,7 +1782,7 @@ export default function CandidateDashboard() {
 
     React.useEffect(() => {
       if (savedJobs && Array.isArray(savedJobs)) {
-        const filtered = savedJobs.filter((savedJob: any) => 
+        const filtered = savedJobs.filter((savedJob: any) =>
           savedJob.job?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           savedJob.job?.company?.name?.toLowerCase().includes(searchTerm.toLowerCase())
         );
@@ -1799,7 +1799,7 @@ export default function CandidateDashboard() {
           },
           body: JSON.stringify({ userId: user?.id, jobId }),
         });
-        
+
         if (response.ok) {
           // Refetch saved jobs
           queryClient.invalidateQueries({ queryKey: ['/api/saved-jobs'] });
@@ -1865,15 +1865,15 @@ export default function CandidateDashboard() {
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         size="sm"
                         onClick={() => window.open(`/jobs/${savedJob.job?.id}`, '_blank')}
                       >
                         <ExternalLink className="h-4 w-4" />
                       </Button>
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         size="sm"
                         onClick={() => handleUnsaveJob(savedJob.job?.id)}
                         className="text-red-600 hover:text-red-700"
@@ -1961,7 +1961,7 @@ export default function CandidateDashboard() {
               <FileText className="h-5 w-5 text-blue-600" />
               My Blogs ({Array.isArray(userBlogs) ? userBlogs.length : 0})
             </CardTitle>
-            <Button 
+            <Button
               className="cb-gradient-primary"
               onClick={() => setShowWriteBlog(true)}
             >
@@ -2058,7 +2058,7 @@ export default function CandidateDashboard() {
               <div className="text-center py-8">
                 <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-600">You haven't written any blogs yet</p>
-                <Button 
+                <Button
                   className="cb-gradient-primary mt-4"
                   onClick={() => setShowWriteBlog(true)}
                 >
@@ -2071,6 +2071,30 @@ export default function CandidateDashboard() {
       </Card>
     );
   };
+
+  // Fetch user data and check role
+  const { data: user, isLoading: userLoading, error: userError } = useQuery({
+    queryKey: ["/api/auth/user"],
+    queryFn: () => apiRequest("/api/auth/user"),
+    retry: false,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+
+  // Check if user is actually a candidate
+  const isValidCandidate = user && user.role === 'candidate';
+
+  if (userLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Clock className="h-8 w-8 animate-spin text-purple-600" />
+      </div>
+    );
+  }
+
+  if (userError || !user || !isValidCandidate) {
+    setLocation('/auth/login');
+    return null;
+  }
 
   const tabItems = [
     { id: "dashboard", label: "User Dashboard", icon: User, component: DashboardOverview },
@@ -2111,8 +2135,8 @@ export default function CandidateDashboard() {
                         key={item.id}
                         onClick={() => setActiveTab(item.id)}
                         className={`w-full flex items-center gap-3 px-6 py-3 text-left hover:bg-purple-50 transition-colors ${
-                          activeTab === item.id 
-                            ? 'bg-purple-100 text-purple-700 border-r-2 border-purple-600' 
+                          activeTab === item.id
+                            ? 'bg-purple-100 text-purple-700 border-r-2 border-purple-600'
                             : 'text-gray-700'
                         }`}
                       >
