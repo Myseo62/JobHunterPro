@@ -16,6 +16,9 @@ import bcrypt from "bcrypt";
 import multer from "multer";
 import * as fs from "fs";
 import * as path from "path";
+import { eq } from "drizzle-orm"; // Assuming you're using drizzle-orm for database operations
+import { db } from "./db"; // Assuming you have a db instance initialized
+import { employers } from "@shared/schema"; // Assuming you have employers schema defined
 
 // Configure multer for file uploads
 const upload = multer({ 
@@ -52,7 +55,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       done(error, null);
     }
   });
-  
+
   // Set up social authentication strategies
   setupSocialAuth();
   // Google OAuth routes
@@ -108,12 +111,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!req.session?.user && !req.isAuthenticated()) {
         return res.status(401).json({ message: "Not authenticated" });
       }
-      
+
       const user = req.session?.user || req.user;
       if (!allowedRoles.includes(user.role)) {
         return res.status(403).json({ message: "Insufficient permissions" });
       }
-      
+
       req.user = user;
       next();
     };
@@ -138,7 +141,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/employer-register", async (req, res) => {
     try {
       const data = employerRegistrationSchema.parse(req.body);
-      
+
       // Check if user already exists
       const existingUser = await storage.getUserByEmail(data.email);
       if (existingUser) {
@@ -147,7 +150,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Hash password
       const hashedPassword = await bcrypt.hash(data.password, 10);
-      
+
       // Create company first
       const company = await storage.createCompany({
         name: data.companyName,
@@ -168,7 +171,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Store user in session
       req.session.user = user;
-      
+
       res.json({ 
         message: "Employer account created successfully", 
         user: { ...user, password: undefined },
@@ -183,7 +186,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/employer-login", async (req, res) => {
     try {
       const { email, password } = loginSchema.parse(req.body);
-      
+
       const user = await storage.getUserByEmail(email);
       if (!user) {
         return res.status(401).json({ message: "Invalid credentials" });
@@ -201,7 +204,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Store user in session
       req.session.user = user;
-      
+
       res.json({ 
         message: "Login successful", 
         user: { ...user, password: undefined } 
@@ -216,13 +219,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/register", async (req, res) => {
     try {
       const userData = insertUserSchema.parse(req.body);
-      
+
       // Check if user already exists
       const existingUser = await storage.getUserByEmail(userData.email);
       if (existingUser) {
         return res.status(400).json({ message: "User already exists" });
       }
-      
+
       // Hash password for manual registration
       const hashedPassword = await bcrypt.hash(userData.password, 10);
       const user = await storage.createUser({
@@ -230,7 +233,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         password: hashedPassword,
         role: "candidate", // Default role for manual registration
       });
-      
+
       // Log in user using Passport.js
       (req as any).login(user, (err: any) => {
         if (err) {
@@ -255,7 +258,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
-      
+
       // Remove password from response
       const { password, ...userResponse } = user;
       res.json(userResponse);
@@ -274,14 +277,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           cleanedBody[key] = null;
         }
       });
-      
+
       const updateData = updateUserSchema.parse(cleanedBody);
-      
+
       const user = await storage.updateUser(id, updateData);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
-      
+
       // Remove password from response
       const { password, ...userResponse } = user;
       res.json(userResponse);
@@ -294,7 +297,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/jobs", async (req, res) => {
     try {
       const { search, userId } = req.query;
-      
+
       if (search && typeof search === 'string') {
         // Intelligent search with ranking
         const userIdNum = userId ? parseInt(userId as string) : undefined;
@@ -366,10 +369,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/companies", async (req, res) => {
     try {
       let companies = await storage.getCompanies();
-      
+
       // Apply filters
       const { search, industry, type } = req.query;
-      
+
       if (search && typeof search === 'string') {
         companies = companies.filter(company => 
           company.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -377,15 +380,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           company.location?.toLowerCase().includes(search.toLowerCase())
         );
       }
-      
+
       if (industry && typeof industry === 'string') {
         companies = companies.filter(company => company.industry === industry);
       }
-      
+
       if (type && typeof type === 'string') {
         companies = companies.filter(company => company.companyType === type);
       }
-      
+
       res.json(companies);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch companies" });
@@ -431,23 +434,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = req.user || (req.session as any)?.user;
 
       const { jobId } = req.body;
-      
+
       if (!user || !user.id) {
         return res.status(401).json({ message: "User not authenticated properly" });
       }
-      
+
       // Check if user already applied
       const hasApplied = await storage.hasUserApplied(user.id, jobId);
       if (hasApplied) {
         return res.status(400).json({ message: "You have already applied for this job" });
       }
-      
+
       const applicationData = {
         userId: user.id,
         jobId: jobId,
         status: "pending"
       };
-      
+
       const application = await storage.createApplication(applicationData);
       res.json(application);
     } catch (error) {
@@ -493,7 +496,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const points = await RewardService.getUserPoints(userId);
       const history = await RewardService.getUserRewardHistory(userId, 20);
       const redemptions = await RewardService.getUserRedemptions(userId);
-      
+
       res.json({
         points,
         history,
@@ -583,16 +586,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/employer-register", async (req, res) => {
     try {
       const { email, password, firstName, lastName, companyName, role } = req.body;
-      
+
       // Check if employer already exists
       const existingEmployer = employerUsers.find(u => u.email === email);
       if (existingEmployer) {
         return res.status(400).json({ message: "Employer already exists" });
       }
-      
+
       // Hash password
       const hashedPassword = await bcrypt.hash(password, 10);
-      
+
       // Create employer user with role (default to employer_admin)
       const newEmployer = {
         id: employerUsers.length + 1,
@@ -603,12 +606,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         companyName,
         role: role || 'employer_admin' as const
       };
-      
+
       employerUsers.push(newEmployer);
-      
+
       // Create session
       req.session.employerId = newEmployer.id;
-      
+
       res.json({ 
         message: "Employer registered successfully",
         employer: { id: newEmployer.id, email, firstName, lastName, companyName, role: newEmployer.role }
@@ -621,16 +624,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/employer/register", async (req, res) => {
     try {
       const { email, password, firstName, lastName, companyName } = req.body;
-      
+
       // Check if employer already exists
       const existingEmployer = employerUsers.find(u => u.email === email);
       if (existingEmployer) {
         return res.status(400).json({ message: "Employer already exists" });
       }
-      
+
       // Hash password
       const hashedPassword = await bcrypt.hash(password, 10);
-      
+
       // Create employer user
       const newEmployer = {
         id: employerUsers.length + 1,
@@ -640,12 +643,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         lastName,
         companyName
       };
-      
+
       employerUsers.push(newEmployer);
-      
+
       // Create session
       req.session.employerId = newEmployer.id;
-      
+
       res.json({ 
         message: "Employer registered successfully",
         employer: { id: newEmployer.id, email, firstName, lastName, companyName }
@@ -658,22 +661,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/employer-login", async (req, res) => {
     try {
       const { email, password } = req.body;
-      
+
       // Find employer
       const employer = employerUsers.find(u => u.email === email);
       if (!employer) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
-      
+
       // Verify password
       const isValidPassword = await bcrypt.compare(password, employer.password);
       if (!isValidPassword) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
-      
+
       // Create session
       req.session.employerId = employer.id;
-      
+
       res.json({ 
         message: "Login successful",
         employer: { id: employer.id, email: employer.email, firstName: employer.firstName, lastName: employer.lastName, companyName: employer.companyName, role: employer.role }
@@ -686,22 +689,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/employer/login", async (req, res) => {
     try {
       const { email, password } = req.body;
-      
+
       // Find employer
       const employer = employerUsers.find(u => u.email === email);
       if (!employer) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
-      
+
       // Verify password
       const isValidPassword = await bcrypt.compare(password, employer.password);
       if (!isValidPassword) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
-      
+
       // Create session
       req.session.employerId = employer.id;
-      
+
       res.json({ 
         message: "Login successful",
         employer: { id: employer.id, email: employer.email, firstName: employer.firstName, lastName: employer.lastName, companyName: employer.companyName }
@@ -711,23 +714,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/employer/profile", requireEmployerAuth, async (req: any, res) => {
+  // Get employer profile
+  app.get("/api/employer/profile", async (req, res) => {
     try {
-      const employer = employerUsers.find(u => u.id === req.session.employerId);
-      if (!employer) {
-        return res.status(404).json({ message: "Employer not found" });
+      const employerId = req.session?.employerId;
+
+      if (!employerId) {
+        return res.status(401).json({ 
+          error: "Not authenticated",
+          message: "Employer authentication required" 
+        });
       }
-      
-      res.json({
-        id: employer.id,
-        email: employer.email,
-        firstName: employer.firstName,
-        lastName: employer.lastName,
-        companyName: employer.companyName,
-        role: employer.role
+
+      const employer = await db.query.employers.findFirst({
+        where: eq(employers.id, employerId),
+        with: {
+          company: true,
+        },
       });
+
+      if (!employer) {
+        return res.status(404).json({ 
+          error: "Employer not found",
+          message: "Employer profile does not exist" 
+        });
+      }
+
+      res.json(employer);
     } catch (error) {
-      res.status(500).json({ message: "Failed to fetch profile" });
+      console.error("Error fetching employer profile:", error);
+      res.status(500).json({ 
+        error: "Internal server error",
+        message: "Failed to fetch employer profile" 
+      });
     }
   });
 
@@ -750,7 +769,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!employer) {
         return res.status(404).json({ message: "Employer not found" });
       }
-      
+
       // Mock stats for demo (real app would query database)
       const stats = {
         activeJobs: 5,
@@ -760,7 +779,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         downloadLimit: 25,
         downloadsUsed: 8
       };
-      
+
       res.json(stats);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch stats" });
@@ -774,7 +793,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!employer) {
         return res.status(404).json({ message: "Employer not found" });
       }
-      
+
       const jobData = {
         ...req.body,
         companyId: 1, // For demo, use first company
@@ -782,7 +801,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         postedAt: new Date(),
         applicationCount: 0
       };
-      
+
       const job = await storage.createJob(jobData);
       res.json(job);
     } catch (error) {
@@ -804,7 +823,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const blogId = parseInt(req.params.id);
       const blog = await storage.getBlogById(blogId);
-      
+
       if (!blog) {
         return res.status(404).json({ message: "Blog not found" });
       }
@@ -832,7 +851,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       const blog = await storage.createBlog(blogData);
-      
+
       // Award points for blog writing if published
       if (blogData.isPublished) {
         await rewardPointsService.awardBlogWritePoints(user.id, blog.id);
@@ -850,7 +869,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const user = req.user as any;
       const { referredEmail } = friendReferralSchema.parse(req.body);
-      
+
       const referral = await storage.createFriendReferral({
         referrerId: user.id,
         referredEmail,
@@ -1082,7 +1101,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { email, password } = loginSchema.parse(req.body);
       const user = await storage.getUserByEmail(email);
-      
+
       if (!user) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
@@ -1119,7 +1138,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!user) {
         return res.status(401).json({ message: "User not authenticated" });
       }
-      
+
       // If user is just an ID, fetch full user object
       const fullUser = typeof user === 'number' ? await storage.getUser(user) : user;
       if (!fullUser?.id) {
@@ -1141,7 +1160,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!user) {
         return res.status(401).json({ message: "User not authenticated" });
       }
-      
+
       // If user is just an ID, fetch full user object
       const fullUser = typeof user === 'number' ? await storage.getUser(user) : user;
       if (!fullUser?.id) {
@@ -1149,7 +1168,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { fileName, fileUrl, fileSize } = req.body;
-      
+
       // Set ACL policy for the uploaded file
       const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
         fileUrl,
@@ -1170,9 +1189,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Deactivate other resumes first
       await storage.deactivateUserResumes(fullUser.id);
-      
+
       const resume = await storage.createResumeUpload(resumeData);
-      
+
       // Update user's resume URL
       await storage.updateUser(fullUser.id, { resumeUrl: objectPath });
 
@@ -1202,7 +1221,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!user) {
         return res.status(401).json({ message: "User not authenticated" });
       }
-      
+
       // If user is just an ID, fetch full user object
       const fullUser = typeof user === 'number' ? await storage.getUser(user) : user;
       if (!fullUser?.id) {
@@ -1210,7 +1229,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const resumeId = parseInt(req.params.resumeId);
-      
+
       // Check ownership
       const resume = await storage.getResumeUpload(resumeId);
       if (!resume || resume.userId !== fullUser.id) {
@@ -1232,7 +1251,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!user) {
         return res.status(401).json({ message: "User not authenticated" });
       }
-      
+
       // If user is just an ID, fetch full user object
       const fullUser = typeof user === 'number' ? await storage.getUser(user) : user;
       if (!fullUser?.id) {
@@ -1240,7 +1259,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const resumeId = parseInt(req.params.resumeId);
-      
+
       // Check ownership
       const resume = await storage.getResumeUpload(resumeId);
       if (!resume || resume.userId !== fullUser.id) {
@@ -1250,7 +1269,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Deactivate other resumes and activate this one
       await storage.deactivateUserResumes(fullUser.id);
       await storage.activateResumeUpload(resumeId);
-      
+
       // Update user's resume URL
       await storage.updateUser(fullUser.id, { resumeUrl: resume.fileUrl });
 
@@ -1268,7 +1287,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!user) {
         return res.status(401).json({ message: "User not authenticated" });
       }
-      
+
       // If user is just an ID, fetch full user object
       const fullUser = typeof user === 'number' ? await storage.getUser(user) : user;
       if (!fullUser?.id) {
@@ -1276,18 +1295,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const objectPath = `/objects/${req.params.path}`;
-      
+
       const objectFile = await objectStorageService.getObjectEntityFile(objectPath);
       const canAccess = await objectStorageService.canAccessObjectEntity({
         objectFile,
         userId: String(fullUser.id),
         requestedPermission: ObjectPermission.READ,
       });
-      
+
       if (!canAccess) {
         return res.status(403).json({ message: 'Access denied' });
       }
-      
+
       objectStorageService.downloadObject(objectFile, res);
     } catch (error) {
       console.error("Error accessing resume file:", error);
@@ -1311,7 +1330,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const file = req.file;
-      
+
       // Validate file type
       const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
       if (!allowedTypes.includes(file.mimetype)) {
@@ -1337,7 +1356,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Deactivate other resumes first
       await storage.deactivateUserResumes(user.id);
-      
+
       const resume = await storage.createResumeUpload(resumeData);
 
       res.json({
@@ -1361,12 +1380,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = parseInt(req.params.id);
       const { resumeUrl, originalName } = req.body;
-      
+
       const updatedUser = await storage.updateUser(userId, { resumeUrl });
       if (!updatedUser) {
         return res.status(404).json({ message: 'User not found' });
       }
-      
+
       res.json({ message: 'Resume URL updated successfully', user: updatedUser });
     } catch (error: any) {
       console.error('Resume URL update error:', error);
@@ -1379,7 +1398,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const { skills } = req.body;
-      
+
       // Mock update - in real app, save to database
       res.json({ message: 'Skills updated successfully', skills });
     } catch (error: any) {
@@ -1393,7 +1412,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const experienceData = req.body;
-      
+
       // Mock add - in real app, save to database
       res.json({ message: 'Work experience added successfully', experience: experienceData });
     } catch (error: any) {
@@ -1407,7 +1426,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const educationData = req.body;
-      
+
       // Mock add - in real app, save to database
       res.json({ message: 'Education details added successfully', education: educationData });
     } catch (error: any) {
@@ -1421,13 +1440,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = parseInt(req.params.id);
       const { skills, workExperience, education } = req.body;
-      
+
       // Get current user data
       const currentUser = await storage.getUserById(userId);
       if (!currentUser) {
         return res.status(404).json({ message: 'User not found' });
       }
-      
+
       // Update user with parsed resume data
       const updatedData = {
         skills: [...(currentUser.skills || []), ...(skills || [])],
@@ -1435,9 +1454,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         workExperience: [...(currentUser.workExperience || []), ...(workExperience || [])],
         education: [...(currentUser.education || []), ...(education || [])]
       };
-      
+
       const updatedUser = await storage.updateUser(userId, updatedData);
-      
+
       res.json({
         message: 'Profile updated with resume data',
         user: updatedUser
@@ -1452,16 +1471,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/uploads/:filename', (req, res) => {
     const filename = req.params.filename;
     const filePath = path.join(__dirname, '../uploads', filename);
-    
+
     // Check if file exists
     if (!fs.existsSync(filePath)) {
       return res.status(404).json({ message: 'File not found' });
     }
-    
+
     // Set appropriate headers
     res.setHeader('Content-Type', 'application/octet-stream');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-    
+
     // Stream the file
     const fileStream = fs.createReadStream(filePath);
     fileStream.pipe(res);

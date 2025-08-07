@@ -44,19 +44,25 @@ export function useEmployerAuth() {
       const response = await fetch("/api/employer/profile", {
         credentials: "include",
       });
-      
+
       if (!response.ok) {
         if (response.status === 401) {
           return null;
         }
         throw new Error("Failed to fetch employer profile");
       }
-      
+
       return response.json();
     },
     retry: false,
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: true,
+    onError: (error: any) => {
+      if (error?.status === 401) {
+        // Handle unauthorized access silently
+        console.log("Employer not authenticated");
+      }
+    }
   });
 
   const loginMutation = useMutation({
@@ -69,12 +75,12 @@ export function useEmployerAuth() {
         body: JSON.stringify(data),
         credentials: "include",
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "Login failed");
       }
-      
+
       return response.json();
     },
     onSuccess: () => {
@@ -99,12 +105,12 @@ export function useEmployerAuth() {
         body: JSON.stringify(data),
         credentials: "include",
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "Registration failed");
       }
-      
+
       return response.json();
     },
     onSuccess: () => {
@@ -117,17 +123,17 @@ export function useEmployerAuth() {
     mutationFn: async () => {
       // Clear localStorage first
       localStorage.removeItem("user");
-      
+
       // Then call server logout
       const response = await fetch("/api/auth/employer-logout", {
         method: "POST",
         credentials: "include",
       });
-      
+
       if (!response.ok) {
         throw new Error("Logout failed");
       }
-      
+
       return response.json();
     },
     onSuccess: () => {
