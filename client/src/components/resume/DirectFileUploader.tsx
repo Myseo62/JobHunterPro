@@ -166,7 +166,8 @@ export function DirectFileUploader({ userId, onUploadComplete }: DirectFileUploa
                       file:text-sm file:font-semibold
                       file:bg-purple-50 file:text-purple-700
                       hover:file:bg-purple-100
-                      file:cursor-pointer cursor-pointer"
+                      file:cursor-pointer cursor-pointer
+                      focus:outline-none focus:ring-2 focus:ring-purple-500"
                   />
                 </form>
                 

@@ -118,7 +118,11 @@ export function SimpleResumeUploader({ userId, onUploadComplete }: SimpleResumeU
     }
   };
 
-  const triggerFileInput = () => {
+  const triggerFileInput = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     console.log('Triggering file input directly');
     if (fileInputRef.current) {
       fileInputRef.current.click();
@@ -170,7 +174,7 @@ export function SimpleResumeUploader({ userId, onUploadComplete }: SimpleResumeU
               
               {/* Direct button approach */}
               <Button 
-                onClick={triggerFileInput}
+                onClick={(e) => triggerFileInput(e)}
                 className="cb-gradient-primary"
                 disabled={isUploading}
                 type="button"

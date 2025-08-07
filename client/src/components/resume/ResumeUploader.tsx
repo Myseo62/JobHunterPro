@@ -169,7 +169,9 @@ export function ResumeUploader({ userId, currentResumes = [], onUploadComplete }
     handleFileUpload(file);
     
     // Reset the file input to allow selecting the same file again if needed
-    e.target.value = '';
+    if (e.target) {
+      e.target.value = '';
+    }
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -259,9 +261,7 @@ export function ResumeUploader({ userId, currentResumes = [], onUploadComplete }
     });
   };
 
-  const handleButtonClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleButtonClick = () => {
     console.log('Button clicked, triggering file input');
     console.log('File input ref:', fileInputRef.current);
     
@@ -307,7 +307,7 @@ export function ResumeUploader({ userId, currentResumes = [], onUploadComplete }
                 type="file"
                 accept=".pdf,.doc,.docx"
                 onChange={handleFileSelect}
-                className="hidden"
+                style={{ display: 'none' }}
                 disabled={isUploading}
               />
               
