@@ -45,7 +45,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect } from "react";
-import { ResumeUploader } from "@/components/resume/ResumeUploader";
+import { SimpleResumeUploader } from "@/components/resume/SimpleResumeUploader";
 
 export default function CandidateDashboard() {
   const { user, logout } = useAuth();
@@ -1174,7 +1174,7 @@ export default function CandidateDashboard() {
                 </div>
               </div>
             ) : (
-              <ResumeUploader 
+              <SimpleResumeUploader 
                 userId={user?.id}
                 onUploadComplete={() => {
                   // Refresh user data
@@ -1216,7 +1216,7 @@ export default function CandidateDashboard() {
                     className="w-full"
                     onClick={() => window.location.href = '/blogs'}
                   >
-                    <BarChart className="h-4 w-4 mr-2" />
+                    <BookOpen className="h-4 w-4 mr-2" />
                     Explore Blogs
                   </Button>
                 </CardContent>

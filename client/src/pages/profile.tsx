@@ -38,7 +38,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import RewardPointsWidget from "@/components/rewards/reward-points-widget";
 import { useRewardTracking } from "@/hooks/useRewardTracking";
-import { ResumeUploader } from "@/components/resume/ResumeUploader";
+import { SimpleResumeUploader } from "@/components/resume/SimpleResumeUploader";
 
 export default function Profile({ user }: { user: any }) {
   const { trackAndNotify } = useRewardTracking(user?.id);
@@ -662,7 +662,7 @@ export default function Profile({ user }: { user: any }) {
             </div>
           </div>
         ) : (
-          <ResumeUploader 
+          <SimpleResumeUploader 
             userId={user?.id}
             onUploadComplete={() => {
               // Refresh user data
