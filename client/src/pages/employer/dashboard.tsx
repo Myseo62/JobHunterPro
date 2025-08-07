@@ -100,12 +100,22 @@ function PostJobForm({ user, onSuccess }: { user: User; onSuccess: () => void })
 
   const createJobMutation = useMutation({
     mutationFn: async (data: JobPostingFormData) => {
-      return apiRequest("POST", "/api/jobs", {
+      // Convert string fields to arrays as expected by the schema
+      const jobData = {
         ...data,
         companyId: 1, // Default company for now
         isActive: true,
-        jobCategoryId: 1
-      });
+        jobCategoryId: 1,
+        // Convert comma-separated strings to arrays
+        skills: data.skills ? data.skills.split(',').map(s => s.trim()).filter(s => s) : [],
+        requirements: data.requirements ? data.requirements.split('\n').map(r => r.trim()).filter(r => r) : [],
+        benefits: data.benefits ? data.benefits.split('\n').map(b => b.trim()).filter(b => b) : [],
+        // Convert salary fields to strings for decimal storage
+        salaryMin: String(data.salaryMin || 0),
+        salaryMax: String(data.salaryMax || 0)
+      };
+      
+      return apiRequest("POST", "/api/jobs", jobData);
     },
     onSuccess: () => {
       toast({

@@ -378,6 +378,8 @@ export const insertJobSchema = createInsertSchema(jobs).omit({
   skills: z.array(z.string()).optional(),
   requirements: z.array(z.string()).optional(),
   benefits: z.array(z.string()).optional(),
+  salaryMin: z.union([z.string(), z.number()]).transform(val => String(val)).optional(),
+  salaryMax: z.union([z.string(), z.number()]).transform(val => String(val)).optional(),
 });
 
 export const insertApplicationSchema = createInsertSchema(applications).omit({
