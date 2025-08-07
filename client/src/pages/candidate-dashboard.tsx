@@ -1149,60 +1149,18 @@ export default function CandidateDashboard() {
               <div className="space-y-4">
                 <div className="p-8 border-2 border-dashed border-gray-300 rounded-lg text-center">
                   <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Upload Your Resume</h3>
-                  <p className="text-gray-600 mb-4">Upload any file type to enhance your profile visibility</p>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Resume Upload Temporarily Disabled</h3>
+                  <p className="text-gray-600 mb-4">Resume upload functionality is currently under maintenance. Please check back later.</p>
                   <div className="flex items-center justify-center">
-                    <input 
-                      ref={fileInputRef}
-                      type="file" 
-                      className="hidden"
-                      accept="*"
-                      onChange={(e) => {
-                        console.log('File input changed event triggered');
-                        console.log('Files:', e.target.files);
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          console.log('File selected:', file.name, 'Size:', file.size, 'Type:', file.type);
-                          handleResumeUpload(file);
-                        } else {
-                          console.log('No file selected');
-                        }
-                      }}
-                    />
                     <Button 
                       className="cb-gradient-primary"
-                      disabled={parseStatus === 'parsing'}
-                      onClick={() => {
-                        console.log('Upload button clicked, triggering file input...');
-                        fileInputRef.current?.click();
-                      }}
+                      disabled={true}
                     >
-                      {parseStatus === 'parsing' ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                          Uploading...
-                        </>
-                      ) : (
-                        <>
-                          <Upload className="h-4 w-4 mr-2" />
-                          Choose File
-                        </>
-                      )}
+                      <Upload className="h-4 w-4 mr-2" />
+                      Upload Disabled
                     </Button>
                   </div>
                 </div>
-
-                {parseStatus === 'error' && (
-                  <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                    <p className="text-red-700">Resume upload failed. Please try again or contact support.</p>
-                  </div>
-                )}
-
-                {parseStatus === 'completed' && (
-                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <p className="text-green-700">Resume uploaded successfully! Please update your profile sections manually with your resume information.</p>
-                  </div>
-                )}
               </div>
             )}
 
@@ -1211,39 +1169,35 @@ export default function CandidateDashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card className="cb-glass-card">
                 <CardHeader>
-                  <CardTitle className="text-lg">Resume Builder</CardTitle>
+                  <CardTitle className="text-lg">Write Blog Posts</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-gray-600 mb-4">Create a professional resume using our guided builder</p>
-                  <Button variant="outline" className="w-full">
+                  <p className="text-gray-600 mb-4">Share your experience and earn 50 reward points per blog post</p>
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => window.location.href = '/blogs/write'}
+                  >
                     <Edit className="h-4 w-4 mr-2" />
-                    Open Resume Builder
+                    Write New Blog
                   </Button>
                 </CardContent>
               </Card>
 
               <Card className="cb-glass-card">
                 <CardHeader>
-                  <CardTitle className="text-lg">Resume Analytics</CardTitle>
+                  <CardTitle className="text-lg">Read Blogs</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Profile Completeness</span>
-                      <span className="text-sm font-medium">75%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div className="bg-purple-600 h-2 rounded-full" style={{"width": "75%"}}></div>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">ATS Score</span>
-                      <span className="text-sm font-medium text-green-600">Good</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Skills Match</span>
-                      <span className="text-sm font-medium text-blue-600">85%</span>
-                    </div>
-                  </div>
+                  <p className="text-gray-600 mb-4">Read career advice and earn 5 reward points per blog read</p>
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => window.location.href = '/blogs'}
+                  >
+                    <BarChart className="h-4 w-4 mr-2" />
+                    Explore Blogs
+                  </Button>
                 </CardContent>
               </Card>
             </div>
@@ -1262,11 +1216,19 @@ export default function CandidateDashboard() {
             My Applications
           </CardTitle>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => alert('Filter functionality coming soon!')}
+            >
               <Filter className="h-4 w-4 mr-2" />
               Filter
             </Button>
-            <Button variant="outline" size="sm">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => alert('Search functionality coming soon!')}
+            >
               <Search className="h-4 w-4 mr-2" />
               Search
             </Button>

@@ -50,8 +50,9 @@ import Contact from "@/pages/contact";
 import About from "@/pages/about";
 import FAQ from "@/pages/faq";
 import Help from "@/pages/help";
-import BlogIndex from "@/pages/blog/index";
-import BlogPost from "@/pages/blog/post";
+import BlogIndex from "@/pages/blogs/index";
+import BlogPost from "@/pages/blogs/blog-detail";
+import WriteBlog from "@/pages/blogs/write-blog";
 
 
 function Router() {
@@ -101,8 +102,9 @@ function Router() {
           
           {/* Additional routes */}
           <Route path="/companies" component={() => <CompaniesDirectory user={user} />} />
-          <Route path="/blog" component={() => <BlogIndex />} />
-          <Route path="/blog/:id" component={() => <BlogPost />} />
+          <Route path="/blogs" component={() => <BlogIndex />} />
+          <Route path="/blogs/write" component={() => <WriteBlog />} />
+          <Route path="/blogs/:id" component={() => <BlogPost />} />
           <Route path="/services" component={() => <Services user={user} />} />
           <Route path="/resources" component={() => <Resources user={user} />} />
           <Route path="/terms" component={() => <Terms />} />
