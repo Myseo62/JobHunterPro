@@ -45,7 +45,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect } from "react";
-import { SimpleResumeUploader } from "@/components/resume/SimpleResumeUploader";
+import { DirectFileUploader } from "@/components/resume/DirectFileUploader";
 
 export default function CandidateDashboard() {
   const { user, logout } = useAuth();
@@ -1174,7 +1174,7 @@ export default function CandidateDashboard() {
                 </div>
               </div>
             ) : (
-              <SimpleResumeUploader 
+              <DirectFileUploader 
                 userId={user?.id}
                 onUploadComplete={() => {
                   // Refresh user data
