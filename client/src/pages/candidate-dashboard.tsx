@@ -1149,49 +1149,45 @@ export default function CandidateDashboard() {
                 <div className="p-8 border-2 border-dashed border-gray-300 rounded-lg text-center">
                   <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">Upload Your Resume</h3>
-                  <p className="text-gray-600 mb-4">Upload a PDF or Word document to enhance your profile visibility</p>
+                  <p className="text-gray-600 mb-4">Upload any file type to enhance your profile visibility</p>
                   <div className="flex items-center justify-center">
-                    <label htmlFor="resume-upload-input" className="cursor-pointer">
+                    <label 
+                      htmlFor="resume-upload-input" 
+                      className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2 cb-gradient-primary text-white cursor-pointer hover:opacity-90"
+                    >
                       <input 
                         id="resume-upload-input"
                         type="file" 
-                        className="hidden" 
+                        className="sr-only"
                         accept="*"
                         onChange={(e) => {
-                          console.log('File input changed:', e.target.files);
+                          console.log('File input changed event triggered');
+                          console.log('Files:', e.target.files);
                           const file = e.target.files?.[0];
                           if (file) {
-                            console.log('File selected:', file.name);
+                            console.log('File selected:', file.name, 'Size:', file.size, 'Type:', file.type);
                             handleResumeUpload(file);
+                          } else {
+                            console.log('No file selected');
                           }
+                        }}
+                        onClick={(e) => {
+                          console.log('File input clicked');
+                          // Reset the input to allow re-uploading the same file
+                          e.currentTarget.value = '';
                         }}
                       />
-                      <Button 
-                        type="button"
-                        className="cb-gradient-primary" 
-                        disabled={parseStatus === 'parsing'}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          console.log('Button clicked, triggering file input...');
-                          const fileInput = document.getElementById('resume-upload-input') as HTMLInputElement;
-                          if (fileInput) {
-                            fileInput.click();
-                          }
-                        }}
-                      >
-                        {parseStatus === 'parsing' ? (
-                          <>
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                            Uploading...
-                          </>
-                        ) : (
-                          <>
-                            <Upload className="h-4 w-4 mr-2" />
-                            Choose File
-                          </>
-                        )}
-                      </Button>
+                      {parseStatus === 'parsing' ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Uploading...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="h-4 w-4 mr-2" />
+                          Choose File
+                        </>
+                      )}
                     </label>
                   </div>
                 </div>
