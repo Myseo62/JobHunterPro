@@ -55,11 +55,11 @@ export function DirectFileUploader({ userId, onUploadComplete }: DirectFileUploa
         },
         credentials: 'include',
       });
-      
+
       if (!uploadResponse.ok) {
         throw new Error('Failed to get upload URL');
       }
-      
+
       const { uploadURL } = await uploadResponse.json();
 
       // Upload file directly to object storage
@@ -138,7 +138,7 @@ export function DirectFileUploader({ userId, onUploadComplete }: DirectFileUploa
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          
+
           {isUploading ? (
             <div className="p-8 text-center">
               <Clock className="h-12 w-12 text-purple-600 mx-auto animate-spin mb-4" />
@@ -151,7 +151,7 @@ export function DirectFileUploader({ userId, onUploadComplete }: DirectFileUploa
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Upload Your Resume</h3>
               <p className="text-gray-600 mb-4">Select your resume file from your computer</p>
               <p className="text-sm text-gray-500 mb-4">Supported formats: PDF, DOC, DOCX (Max 10MB)</p>
-              
+
               {/* Direct file input - visible approach */}
               <div className="space-y-4">
                 <form>
@@ -170,7 +170,7 @@ export function DirectFileUploader({ userId, onUploadComplete }: DirectFileUploa
                       focus:outline-none focus:ring-2 focus:ring-purple-500"
                   />
                 </form>
-                
+
                 <div className="text-xs text-gray-400">
                   Click "Choose File" above to select your resume
                 </div>

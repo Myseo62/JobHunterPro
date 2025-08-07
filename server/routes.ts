@@ -1298,6 +1298,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Direct resume file upload endpoint (for legacy components)
+  app.post('/api/upload-resume-file', upload.single('resume'), async (req: any, res) => {
+    try {
+      const user = req.user || (req.session as any)?.user;
+      if (!user) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ message: 'No file uploaded' });
+      }
+
+      const file = req.file;
+      
+      // Validate file type
+      const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+      if (!allowedTypes.includes(file.mimetype)) {
+        // Clean up uploaded file
+        fs.unlinkSync(file.path);
+        return res.status(400).json({ message: 'Invalid file type. Please upload PDF, DOC, or DOCX files only.' });
+      }
+
+      // Validate file size (10MB limit)
+      if (file.size > 10 * 1024 * 1024) {
+        fs.unlinkSync(file.path);
+        return res.status(400).json({ message: 'File too large. Maximum size is 10MB.' });
+      }
+
+      // Create resume record in database
+      const resumeData = {
+        userId: user.id,
+        fileName: file.originalname,
+        fileUrl: `/uploads/${file.filename}`,
+        fileSize: file.size,
+        isActive: true
+      };
+
+      // Deactivate other resumes first
+      await storage.deactivateUserResumes(user.id);
+      
+      const resume = await storage.createResumeUpload(resumeData);
+
+      res.json({
+        message: 'Resume uploaded successfully',
+        fileInfo: {
+          filename: file.filename,
+          originalName: file.originalname,
+          size: file.size,
+          mimetype: file.mimetype
+        },
+        resume
+      });
+    } catch (error: any) {
+      console.error('Resume upload error:', error);
+      res.status(500).json({ message: 'Failed to upload resume: ' + error.message });
+    }
+  });
+
   // Update user resume URL
   app.post('/api/users/:id/resume', async (req, res) => {
     try {
@@ -1388,6 +1446,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('Profile update error:', error);
       res.status(500).json({ message: 'Failed to update profile' });
     }
+  });
+
+  // Serve uploaded files
+  app.get('/uploads/:filename', (req, res) => {
+    const filename = req.params.filename;
+    const filePath = path.join(__dirname, '../uploads', filename);
+    
+    // Check if file exists
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ message: 'File not found' });
+    }
+    
+    // Set appropriate headers
+    res.setHeader('Content-Type', 'application/octet-stream');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    
+    // Stream the file
+    const fileStream = fs.createReadStream(filePath);
+    fileStream.pipe(res);
   });
 
   const httpServer = createServer(app);
