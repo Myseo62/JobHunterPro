@@ -147,10 +147,29 @@ export function ResumeUploader({ userId, currentResumes = [], onUploadComplete }
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('File input change triggered');
     const file = e.target.files?.[0];
-    if (file) {
-      handleFileUpload(file);
+    console.log('Selected file:', file);
+    
+    if (!file) {
+      console.log('No file selected');
+      return;
     }
+    
+    if (!userId) {
+      console.log('No user ID available');
+      toast({
+        title: "Authentication Error",
+        description: "Please log in to upload your resume.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    handleFileUpload(file);
+    
+    // Reset the file input to allow selecting the same file again if needed
+    e.target.value = '';
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -240,6 +259,25 @@ export function ResumeUploader({ userId, currentResumes = [], onUploadComplete }
     });
   };
 
+  const handleButtonClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Button clicked, triggering file input');
+    console.log('File input ref:', fileInputRef.current);
+    
+    if (fileInputRef.current) {
+      console.log('Clicking file input');
+      fileInputRef.current.click();
+    } else {
+      console.error('File input ref not found');
+      toast({
+        title: "Upload Error",
+        description: "File selection dialog could not be opened. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Upload Area */}
@@ -296,9 +334,10 @@ export function ResumeUploader({ userId, currentResumes = [], onUploadComplete }
                     </p>
                   </div>
                   <Button 
-                    onClick={() => fileInputRef.current?.click()}
+                    onClick={handleButtonClick}
                     className="cb-gradient-primary"
                     disabled={isUploading}
+                    type="button"
                   >
                     <Upload className="h-4 w-4 mr-2" />
                     Choose File
