@@ -1,4 +1,4 @@
-import { users, companies, jobs, applications, jobCategories, companyEmployees, type User, type InsertUser, type Company, type InsertCompany, type Job, type InsertJob, type Application, type InsertApplication, type JobCategory, type InsertJobCategory, type JobWithCompany, type ApplicationWithJobAndCompany, type JobSearchParams, type CompanyEmployee, type InsertCompanyEmployee } from "@shared/schema";
+import { users, companies, jobs, applications, jobCategories, companyEmployees, resumeUploads, type User, type InsertUser, type Company, type InsertCompany, type Job, type InsertJob, type Application, type InsertApplication, type JobCategory, type InsertJobCategory, type JobWithCompany, type ApplicationWithJobAndCompany, type JobSearchParams, type CompanyEmployee, type InsertCompanyEmployee, type ResumeUpload, type InsertResumeUpload } from "@shared/schema";
 
 export interface IStorage {
   // User operations
@@ -41,6 +41,14 @@ export interface IStorage {
   // Job category operations
   getJobCategories(): Promise<JobCategory[]>;
   createJobCategory(category: InsertJobCategory): Promise<JobCategory>;
+  
+  // Resume operations
+  createResumeUpload(resume: InsertResumeUpload): Promise<ResumeUpload>;
+  getUserResumeVersions(userId: number): Promise<ResumeUpload[]>;
+  getResumeUpload(id: number): Promise<ResumeUpload | undefined>;
+  deleteResumeUpload(id: number): Promise<void>;
+  activateResumeUpload(id: number): Promise<void>;
+  deactivateUserResumes(userId: number): Promise<void>;
 }
 
 import { DatabaseStorage } from "./db-storage";

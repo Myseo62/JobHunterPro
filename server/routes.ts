@@ -6,6 +6,8 @@ import { rewardPointsService } from "./reward-points";
 import { jobMatchingService } from "./job-matching-service";
 // Removed ResumeParser import since we're not using AI parsing for now
 import { insertUserSchema, updateUserSchema, loginSchema, insertJobSchema, insertApplicationSchema, jobSearchSchema, employerRegistrationSchema, insertBlogPostSchema, friendReferralSchema } from "@shared/schema";
+import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
+import { ObjectPermission } from "./objectAcl";
 import { z } from "zod";
 import session from "express-session";
 import passport from "passport";
@@ -1107,31 +1109,192 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Simple resume file upload endpoint (without AI parsing)
-  app.post('/api/upload-resume-file', upload.single('resume'), async (req, res) => {
+  // Resume upload endpoints with object storage
+  const objectStorageService = new ObjectStorageService();
+
+  // Get presigned URL for resume upload
+  app.post('/api/resume/upload-url', async (req: any, res) => {
     try {
-      if (!req.file) {
-        return res.status(400).json({ message: 'No file uploaded' });
+      const user = req.user || (req.session as any)?.passport?.user;
+      if (!user) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      
+      // If user is just an ID, fetch full user object
+      const fullUser = typeof user === 'number' ? await storage.getUser(user) : user;
+      if (!fullUser?.id) {
+        return res.status(401).json({ message: "User not found" });
       }
 
-      // Store file information (you could save to database here)
-      const fileInfo = {
-        originalName: req.file.originalname,
-        filename: req.file.filename,
-        size: req.file.size,
-        uploadedAt: new Date()
-      };
-      
-      res.json({
-        message: 'Resume uploaded successfully',
-        fileInfo
-      });
+      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+      res.json({ uploadURL });
     } catch (error) {
-      console.error('Resume upload error:', error);
-      res.status(500).json({ 
-        message: 'Failed to upload resume',
-        error: error instanceof Error ? error.message : 'Unknown error'
+      console.error('Failed to generate upload URL:', error);
+      res.status(500).json({ message: 'Failed to generate upload URL' });
+    }
+  });
+
+  // Save resume metadata after upload
+  app.post('/api/resume/save', async (req: any, res) => {
+    try {
+      const user = req.user || (req.session as any)?.passport?.user;
+      if (!user) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      
+      // If user is just an ID, fetch full user object
+      const fullUser = typeof user === 'number' ? await storage.getUser(user) : user;
+      if (!fullUser?.id) {
+        return res.status(401).json({ message: "User not found" });
+      }
+
+      const { fileName, fileUrl, fileSize } = req.body;
+      
+      // Set ACL policy for the uploaded file
+      const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
+        fileUrl,
+        {
+          owner: String(fullUser.id),
+          visibility: "private"
+        }
+      );
+
+      // Save resume record to database
+      const resumeData = {
+        userId: fullUser.id,
+        fileName,
+        fileUrl: objectPath,
+        fileSize,
+        isActive: true // Make new upload active by default
+      };
+
+      // Deactivate other resumes first
+      await storage.deactivateUserResumes(fullUser.id);
+      
+      const resume = await storage.createResumeUpload(resumeData);
+      
+      // Update user's resume URL
+      await storage.updateUser(fullUser.id, { resumeUrl: objectPath });
+
+      res.json({ message: 'Resume saved successfully', resume });
+    } catch (error) {
+      console.error('Failed to save resume:', error);
+      res.status(500).json({ message: 'Failed to save resume' });
+    }
+  });
+
+  // Get user's resume versions
+  app.get('/api/resume/versions/:userId', async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const resumes = await storage.getUserResumeVersions(userId);
+      res.json(resumes);
+    } catch (error) {
+      console.error('Failed to fetch resume versions:', error);
+      res.status(500).json({ message: 'Failed to fetch resume versions' });
+    }
+  });
+
+  // Delete resume version
+  app.delete('/api/resume/:resumeId', async (req: any, res) => {
+    try {
+      const user = req.user || (req.session as any)?.passport?.user;
+      if (!user) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      
+      // If user is just an ID, fetch full user object
+      const fullUser = typeof user === 'number' ? await storage.getUser(user) : user;
+      if (!fullUser?.id) {
+        return res.status(401).json({ message: "User not found" });
+      }
+
+      const resumeId = parseInt(req.params.resumeId);
+      
+      // Check ownership
+      const resume = await storage.getResumeUpload(resumeId);
+      if (!resume || resume.userId !== fullUser.id) {
+        return res.status(404).json({ message: 'Resume not found' });
+      }
+
+      await storage.deleteResumeUpload(resumeId);
+      res.json({ message: 'Resume deleted successfully' });
+    } catch (error) {
+      console.error('Failed to delete resume:', error);
+      res.status(500).json({ message: 'Failed to delete resume' });
+    }
+  });
+
+  // Activate resume version
+  app.put('/api/resume/:resumeId/activate', async (req: any, res) => {
+    try {
+      const user = req.user || (req.session as any)?.passport?.user;
+      if (!user) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      
+      // If user is just an ID, fetch full user object
+      const fullUser = typeof user === 'number' ? await storage.getUser(user) : user;
+      if (!fullUser?.id) {
+        return res.status(401).json({ message: "User not found" });
+      }
+
+      const resumeId = parseInt(req.params.resumeId);
+      
+      // Check ownership
+      const resume = await storage.getResumeUpload(resumeId);
+      if (!resume || resume.userId !== fullUser.id) {
+        return res.status(404).json({ message: 'Resume not found' });
+      }
+
+      // Deactivate other resumes and activate this one
+      await storage.deactivateUserResumes(fullUser.id);
+      await storage.activateResumeUpload(resumeId);
+      
+      // Update user's resume URL
+      await storage.updateUser(fullUser.id, { resumeUrl: resume.fileUrl });
+
+      res.json({ message: 'Resume activated successfully' });
+    } catch (error) {
+      console.error('Failed to activate resume:', error);
+      res.status(500).json({ message: 'Failed to activate resume' });
+    }
+  });
+
+  // Serve private resume files
+  app.get("/api/resume/file/:path(*)", async (req: any, res) => {
+    try {
+      const user = req.user || (req.session as any)?.passport?.user;
+      if (!user) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      
+      // If user is just an ID, fetch full user object
+      const fullUser = typeof user === 'number' ? await storage.getUser(user) : user;
+      if (!fullUser?.id) {
+        return res.status(401).json({ message: "User not found" });
+      }
+
+      const objectPath = `/objects/${req.params.path}`;
+      
+      const objectFile = await objectStorageService.getObjectEntityFile(objectPath);
+      const canAccess = await objectStorageService.canAccessObjectEntity({
+        objectFile,
+        userId: String(fullUser.id),
+        requestedPermission: ObjectPermission.READ,
       });
+      
+      if (!canAccess) {
+        return res.status(403).json({ message: 'Access denied' });
+      }
+      
+      objectStorageService.downloadObject(objectFile, res);
+    } catch (error) {
+      console.error("Error accessing resume file:", error);
+      if (error instanceof ObjectNotFoundError) {
+        return res.status(404).json({ message: 'File not found' });
+      }
+      return res.status(500).json({ message: 'Server error' });
     }
   });
 

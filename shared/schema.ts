@@ -168,6 +168,9 @@ export const resumeUploads = pgTable("resume_uploads", {
   extractedEducation: text("extracted_education"),
 });
 
+export type ResumeUpload = typeof resumeUploads.$inferSelect;
+export type InsertResumeUpload = typeof resumeUploads.$inferInsert;
+
 export const companies = pgTable("companies", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),

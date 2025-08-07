@@ -33,12 +33,17 @@ import {
   X,
   Save
 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import RewardPointsWidget from "@/components/rewards/reward-points-widget";
 import { useRewardTracking } from "@/hooks/useRewardTracking";
+import { ResumeUploader } from "@/components/resume/ResumeUploader";
 
 export default function Profile({ user }: { user: any }) {
   const { trackAndNotify } = useRewardTracking(user?.id);
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
   
   // Extract tab from URL hash or default to dashboard
   const getTabFromUrl = () => {
@@ -657,36 +662,13 @@ export default function Profile({ user }: { user: any }) {
             </div>
           </div>
         ) : (
-          <div className="p-8 border-2 border-dashed border-gray-200 rounded-lg text-center">
-            <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600 mb-4">No resume uploaded yet</p>
-            <div>
-              <input
-                type="file"
-                accept=".pdf,.doc,.docx"
-                onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-                className="hidden"
-                id="resume-upload"
-              />
-              <label htmlFor="resume-upload">
-                <Button className="cb-gradient-primary" type="button">
-                  Choose Resume File
-                </Button>
-              </label>
-              {selectedFile && (
-                <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-                  <p className="text-sm text-blue-700 mb-2">Selected: {selectedFile.name}</p>
-                  <Button 
-                    onClick={handleFileUpload}
-                    disabled={isUploadingResume}
-                    className="cb-gradient-primary"
-                  >
-                    {isUploadingResume ? 'Uploading...' : 'Upload Resume'}
-                  </Button>
-                </div>
-              )}
-            </div>
-          </div>
+          <ResumeUploader 
+            userId={user?.id}
+            onUploadComplete={() => {
+              // Refresh user data
+              queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+            }}
+          />
         )}
 
         <div className="space-y-4">

@@ -45,6 +45,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect } from "react";
+import { ResumeUploader } from "@/components/resume/ResumeUploader";
 
 export default function CandidateDashboard() {
   const { user, logout } = useAuth();
@@ -1173,22 +1174,15 @@ export default function CandidateDashboard() {
                 </div>
               </div>
             ) : (
-              <div className="space-y-4">
-                <div className="p-8 border-2 border-dashed border-gray-300 rounded-lg text-center">
-                  <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Resume Upload Temporarily Disabled</h3>
-                  <p className="text-gray-600 mb-4">Resume upload functionality is currently under maintenance. Please check back later.</p>
-                  <div className="flex items-center justify-center">
-                    <Button 
-                      className="cb-gradient-primary"
-                      disabled={true}
-                    >
-                      <Upload className="h-4 w-4 mr-2" />
-                      Upload Disabled
-                    </Button>
-                  </div>
-                </div>
-              </div>
+              <ResumeUploader 
+                userId={user?.id}
+                onUploadComplete={() => {
+                  // Refresh user data
+                  if (user?.id) {
+                    queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+                  }
+                }}
+              />
             )}
 
 

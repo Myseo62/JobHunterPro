@@ -1,4 +1,4 @@
-import { users, companies, jobs, applications, jobCategories, companyEmployees, blogPosts, friendReferrals, savedJobs, jobAlerts, followedCompanies, messages, companyReviews, type User, type InsertUser, type Company, type InsertCompany, type Job, type InsertJob, type Application, type InsertApplication, type JobCategory, type InsertJobCategory, type JobWithCompany, type ApplicationWithJobAndCompany, type JobSearchParams, type CompanyEmployee, type InsertCompanyEmployee, type SavedJob, type InsertSavedJob, type JobAlert, type InsertJobAlert, type FollowedCompany, type InsertFollowedCompany, type Message, type InsertMessage, type CompanyReview, type InsertCompanyReview } from "@shared/schema";
+import { users, companies, jobs, applications, jobCategories, companyEmployees, blogPosts, friendReferrals, savedJobs, jobAlerts, followedCompanies, messages, companyReviews, resumeUploads, type User, type InsertUser, type Company, type InsertCompany, type Job, type InsertJob, type Application, type InsertApplication, type JobCategory, type InsertJobCategory, type JobWithCompany, type ApplicationWithJobAndCompany, type JobSearchParams, type CompanyEmployee, type InsertCompanyEmployee, type SavedJob, type InsertSavedJob, type JobAlert, type InsertJobAlert, type FollowedCompany, type InsertFollowedCompany, type Message, type InsertMessage, type CompanyReview, type InsertCompanyReview, type ResumeUpload, type InsertResumeUpload } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, like, gte, lte, desc, sql, ilike, or } from "drizzle-orm";
 import type { IStorage } from "./storage";
@@ -658,5 +658,46 @@ export class DatabaseStorage implements IStorage {
       profileViews: Math.floor(Math.random() * 100) + 50, // Simulated for now
       jobAlertsCount: jobAlertsResult?.count || 0,
     };
+  }
+
+  // Resume operations
+  async createResumeUpload(resume: InsertResumeUpload): Promise<ResumeUpload> {
+    const [created] = await db.insert(resumeUploads).values(resume).returning();
+    return created;
+  }
+
+  async getUserResumeVersions(userId: number): Promise<ResumeUpload[]> {
+    return await db
+      .select()
+      .from(resumeUploads)
+      .where(eq(resumeUploads.userId, userId))
+      .orderBy(desc(resumeUploads.uploadDate))
+      .limit(3);
+  }
+
+  async getResumeUpload(id: number): Promise<ResumeUpload | undefined> {
+    const [resume] = await db
+      .select()
+      .from(resumeUploads)
+      .where(eq(resumeUploads.id, id));
+    return resume;
+  }
+
+  async deleteResumeUpload(id: number): Promise<void> {
+    await db.delete(resumeUploads).where(eq(resumeUploads.id, id));
+  }
+
+  async activateResumeUpload(id: number): Promise<void> {
+    await db
+      .update(resumeUploads)
+      .set({ isActive: true })
+      .where(eq(resumeUploads.id, id));
+  }
+
+  async deactivateUserResumes(userId: number): Promise<void> {
+    await db
+      .update(resumeUploads)
+      .set({ isActive: false })
+      .where(eq(resumeUploads.userId, userId));
   }
 }
