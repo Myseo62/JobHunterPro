@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Upload, FileText, Clock } from "lucide-react";
@@ -12,6 +12,7 @@ interface DirectFileUploaderProps {
 
 export function DirectFileUploader({ userId, onUploadComplete }: DirectFileUploaderProps) {
   const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -117,6 +118,13 @@ export function DirectFileUploader({ userId, onUploadComplete }: DirectFileUploa
     }
   };
 
+  const triggerFileInput = () => {
+    console.log('Triggering file input click');
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
   const handleDirectFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     console.log('Direct file input changed');
     const file = event.target.files?.[0];
@@ -152,27 +160,29 @@ export function DirectFileUploader({ userId, onUploadComplete }: DirectFileUploa
               <p className="text-gray-600 mb-4">Select your resume file from your computer</p>
               <p className="text-sm text-gray-500 mb-4">Supported formats: PDF, DOC, DOCX (Max 10MB)</p>
 
-              {/* Direct file input - visible approach */}
+              {/* Hidden file input with button trigger */}
               <div className="space-y-4">
-                <form>
-                  <input
-                    type="file"
-                    accept=".pdf,.doc,.docx"
-                    onChange={handleDirectFileChange}
-                    disabled={isUploading}
-                    className="block w-full text-sm text-gray-500
-                      file:mr-4 file:py-2 file:px-4
-                      file:rounded-full file:border-0
-                      file:text-sm file:font-semibold
-                      file:bg-purple-50 file:text-purple-700
-                      hover:file:bg-purple-100
-                      file:cursor-pointer cursor-pointer
-                      focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  />
-                </form>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  onChange={handleDirectFileChange}
+                  disabled={isUploading}
+                  style={{ display: 'none' }}
+                />
+                
+                <Button 
+                  onClick={triggerFileInput}
+                  className="cb-gradient-primary"
+                  disabled={isUploading}
+                  type="button"
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  Choose Resume File
+                </Button>
 
                 <div className="text-xs text-gray-400">
-                  Click "Choose File" above to select your resume
+                  Click the button above to select your resume file
                 </div>
               </div>
             </div>
