@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -1055,6 +1055,7 @@ export default function CandidateDashboard() {
   const ResumeTab = () => {
     const [parseStatus, setParseStatus] = useState('idle'); // idle, parsing, completed, error
     const [parsedData, setParsedData] = useState(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     
     const handleResumeUpload = async (file: File) => {
       console.log('handleResumeUpload called with file:', file.name, file.size, file.type);
@@ -1151,32 +1152,31 @@ export default function CandidateDashboard() {
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">Upload Your Resume</h3>
                   <p className="text-gray-600 mb-4">Upload any file type to enhance your profile visibility</p>
                   <div className="flex items-center justify-center">
-                    <label 
-                      htmlFor="resume-upload-input" 
-                      className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2 cb-gradient-primary text-white cursor-pointer hover:opacity-90"
+                    <input 
+                      ref={fileInputRef}
+                      type="file" 
+                      className="hidden"
+                      accept="*"
+                      onChange={(e) => {
+                        console.log('File input changed event triggered');
+                        console.log('Files:', e.target.files);
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          console.log('File selected:', file.name, 'Size:', file.size, 'Type:', file.type);
+                          handleResumeUpload(file);
+                        } else {
+                          console.log('No file selected');
+                        }
+                      }}
+                    />
+                    <Button 
+                      className="cb-gradient-primary"
+                      disabled={parseStatus === 'parsing'}
+                      onClick={() => {
+                        console.log('Upload button clicked, triggering file input...');
+                        fileInputRef.current?.click();
+                      }}
                     >
-                      <input 
-                        id="resume-upload-input"
-                        type="file" 
-                        className="sr-only"
-                        accept="*"
-                        onChange={(e) => {
-                          console.log('File input changed event triggered');
-                          console.log('Files:', e.target.files);
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            console.log('File selected:', file.name, 'Size:', file.size, 'Type:', file.type);
-                            handleResumeUpload(file);
-                          } else {
-                            console.log('No file selected');
-                          }
-                        }}
-                        onClick={(e) => {
-                          console.log('File input clicked');
-                          // Reset the input to allow re-uploading the same file
-                          e.currentTarget.value = '';
-                        }}
-                      />
                       {parseStatus === 'parsing' ? (
                         <>
                           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
@@ -1188,7 +1188,7 @@ export default function CandidateDashboard() {
                           Choose File
                         </>
                       )}
-                    </label>
+                    </Button>
                   </div>
                 </div>
 

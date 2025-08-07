@@ -1,0 +1,71 @@
+Problem: The "Upload Your Resume" button on the candidate dashboard (client/src/pages/candidate-dashboard.tsx) is not triggering the file selection process when clicked.
+
+Explanation for the developer:
+
+Looking at the code for the candidate dashboard ([2]), the file input element (<input type="file">) is hidden with className="hidden". The "Upload Your Resume" button is a separate <Button> element. The intended behavior is likely that clicking the visible button should programmatically trigger a click on the hidden file input.
+
+The relevant code snippet shows the structure:
+
+<div className="space-y-4">
+                    <div className="p-8 border-2 border-dashed border-gray-300 rounded-lg text-center">
+                      {/* ... other elements ... */}
+                      <div className="flex items-center justify-center">
+                        <input
+                          id="resume-upload"
+                          type="file"
+                          className="hidden"
+                          accept=".pdf,.doc,.docx"
+                        />
+                        {/* The visible button */}
+                        {/* ... Button code is here ... */}
+                      </div>
+                    </div>
+                  </div>
+
+
+How to fix it:
+
+The developer needs to add an event listener to the visible "Upload Your Resume" button. When this button is clicked, the event listener should programmatically trigger a click event on the hidden file input element with the ID resume-upload.
+
+Here's a general approach to implement this:
+
+Get a reference to the button and the file input: Use useRef in React to get references to both the button and the input elements.
+Add an onClick handler to the button: Attach an onClick event handler to the visible button component.
+Trigger the file input click: Inside the onClick handler, access the file input element using its ref and call its click() method.
+Example (Conceptual React Code):
+
+import React, { useRef } from 'react';
+import { Button } from "@/components/ui/button"; // Assuming this is the Button component being used
+
+// ... other imports and component code ...
+
+const CandidateDashboard = () => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  // ... other state and refs ...
+
+  const handleUploadButtonClick = () => {
+    fileInputRef.current?.click(); // Trigger click on the hidden file input
+  };
+
+  return (
+    // ... Jsx structure ...
+    <div className="space-y-4">
+      <div className="p-8 border-2 border-dashed border-gray-300 rounded-lg text-center">
+        {/* ... */}
+        <div className="flex items-center justify-center">
+          <input
+            id="resume-upload"
+            type="file"
+            className="hidden"
+            accept=".pdf,.doc,.docx"
+            ref={fileInputRef} // Assign the ref to the input
+          />
+          <Button variant="outline" size="sm" onClick={handleUploadButtonClick}> {/* Add onClick */}
+            Upload Your Resume
+          </Button>
+        </div>
+      </div>
+    </div>
+    // ... rest of the Jsx structure ...
+  );
+};
